@@ -69,12 +69,39 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
       setCurrentUserEmail(userEmail);
     }
 
-    // Always fetch auth info to resolve role name, avatar, and dynamic navigation for staff/admin
-    fetch("/api/auth/me")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
+    const verifyAndLoadAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          cache: "no-store",
+          headers: { Pragma: "no-cache" },
+        });
+
+        if (!res.ok) {
+          const loginTarget =
+            role === "TEACHER"
+              ? "/teacher/login"
+              : role === "ADMIN"
+              ? "/admin/login"
+              : role === "STAFF"
+              ? "/staff/login"
+              : "/student/login";
+          window.location.replace(loginTarget);
+          return;
+        }
+
+        const json = await res.json();
         if (json?.data?.user) {
           const u = json.data.user;
+          // Protect against role mismatch
+          if (role === "TEACHER" && u.role !== "TEACHER") {
+            window.location.replace("/teacher/login");
+            return;
+          }
+          if (role === "STUDENT" && u.role !== "STUDENT") {
+            window.location.replace("/student/login");
+            return;
+          }
+
           const resolvedName =
             u.name ||
             [u.firstName, u.lastName].filter(Boolean).join(" ").trim() ||
@@ -96,9 +123,30 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
             setDynamicNav(u.navigation);
           }
         }
-      })
-      .catch(() => {});
-  }, [userName, userEmail]);
+      } catch {
+        const loginTarget =
+          role === "TEACHER"
+            ? "/teacher/login"
+            : role === "ADMIN"
+            ? "/admin/login"
+            : role === "STAFF"
+            ? "/staff/login"
+            : "/student/login";
+        window.location.replace(loginTarget);
+      }
+    };
+
+    verifyAndLoadAuth();
+
+    // Defense against browser back button (bfcache restoration)
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        verifyAndLoadAuth();
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, [userName, userEmail, role]);
 
   const roleColors: Record<string, "admin" | "teacher" | "student"> = {
     ADMIN: "admin",
@@ -176,19 +224,25 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      showToast("Logged out", "You have been signed out.", "info");
-      if (role === "TEACHER") {
-        router.push("/teacher/logout");
-      } else {
-        router.push("/");
-      }
-    } catch {
-      if (role === "TEACHER") {
-        router.push("/teacher/logout");
-      } else {
-        router.push("/");
-      }
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        cache: "no-store",
+        headers: { Pragma: "no-cache" },
+      });
+    } catch {}
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("educonnect_auth_changed"));
+    }
+
+    showToast("Logged out", "You have been signed out.", "info");
+
+    if (role === "TEACHER") {
+      window.location.replace("/teacher/logout");
+    } else if (role === "ADMIN" || role === "STAFF") {
+      window.location.replace("/login");
+    } else {
+      window.location.replace("/");
     }
   };
 

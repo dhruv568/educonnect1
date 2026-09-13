@@ -7,7 +7,10 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const session = await getSession();
   if (!session) {
-    return apiUnauthorized("No active session.");
+    const res = apiUnauthorized("No active session.");
+    res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+    res.headers.set("Pragma", "no-cache");
+    return res;
   }
 
   try {
@@ -43,7 +46,7 @@ export async function GET() {
       resolvedName = roleName;
     }
 
-    return apiSuccess({
+    const response = apiSuccess({
       user: {
         ...session,
         id: user.id,
@@ -62,13 +65,19 @@ export async function GET() {
         navigation,
       },
     });
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+    response.headers.set("Pragma", "no-cache");
+    return response;
   } catch {
     const fullName = [session.firstName, session.lastName].filter(Boolean).join(" ").trim();
-    return apiSuccess({
+    const fallbackRes = apiSuccess({
       user: {
         ...session,
         name: fullName || session.email?.split("@")[0] || "User",
       },
     });
+    fallbackRes.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+    fallbackRes.headers.set("Pragma", "no-cache");
+    return fallbackRes;
   }
 }

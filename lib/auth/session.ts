@@ -28,7 +28,16 @@ export function decodeSession(token: string): UserSession | null {
   }
 }
 
-function getCookieDomain(): string | undefined {
+export function getCookieDomain(host?: string): string | undefined {
+  if (host) {
+    const clean = host.split(":")[0].toLowerCase();
+    if (clean.endsWith("educonnects.co.in")) {
+      return ".educonnects.co.in";
+    }
+    if (clean === "localhost" || clean === "127.0.0.1") {
+      return undefined;
+    }
+  }
   if (process.env.NODE_ENV === "production") {
     return ".educonnects.co.in";
   }
@@ -38,7 +47,7 @@ function getCookieDomain(): string | undefined {
 /**
  * Sets session cookie in Response headers or current cookie context.
  */
-export async function setSessionCookie(session: UserSession) {
+export async function setSessionCookie(session: UserSession, host?: string) {
   const cookieStore = await cookies();
   const encoded = encodeSession(session);
   const cookieOptions: any = {
@@ -48,7 +57,7 @@ export async function setSessionCookie(session: UserSession) {
     path: "/",
     maxAge: SESSION_DURATION_DAYS * 24 * 60 * 60,
   };
-  const domain = getCookieDomain();
+  const domain = getCookieDomain(host);
   if (domain) {
     cookieOptions.domain = domain;
   }
@@ -68,11 +77,68 @@ export async function getSession(): Promise<UserSession | null> {
 /**
  * Removes session cookie on logout.
  */
-export async function clearSessionCookie() {
+export async function clearSessionCookie(host?: string) {
   const cookieStore = await cookies();
-  const domain = getCookieDomain();
+  const domain = getCookieDomain(host);
   if (domain) {
     cookieStore.delete({ name: SESSION_COOKIE_NAME, path: "/", domain });
+  } else {
+    cookieStore.delete({ name: SESSION_COOKIE_NAME, path: "/" });
   }
-  cookieStore.delete(SESSION_COOKIE_NAME);
 }
+
+/**
+ * Injects multi-domain cookie expiration and anti-cache headers directly
+ * into a NextResponse instance. Guarantees cross-subdomain logout invalidation.
+ */
+export function applyLogoutCookies<T extends Response>(response: T, host?: string): T {
+  const isProd = process.env.NODE_ENV === "production";
+  const domainVariants: (string | undefined)[] = [".educonnects.co.in", "educonnects.co.in", undefined];
+
+  if (host) {
+    const clean = host.split(":")[0].toLowerCase();
+    if (clean && !domainVariants.includes(clean) && !domainVariants.includes(`.${clean}`)) {
+      domainVariants.push(clean);
+      domainVariants.push(`.${clean}`);
+    }
+  }
+
+  const cookieNames = [
+    SESSION_COOKIE_NAME,
+    "educonnect_session",
+    "educonnects_session",
+    "educonnects_token",
+    "token",
+  ];
+
+  for (const name of cookieNames) {
+    for (const domain of domainVariants) {
+      const parts = [
+        `${name}=`,
+        "Path=/",
+        "Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+        "Max-Age=0",
+        "HttpOnly",
+        "SameSite=Lax",
+      ];
+      if (domain) {
+        parts.push(`Domain=${domain}`);
+      }
+      if (isProd) {
+        parts.push("Secure");
+      }
+      response.headers.append("Set-Cookie", parts.join("; "));
+    }
+  }
+
+  // Set-Cookie header fallbacks for any response type
+  response.headers.set(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, post-check=0, pre-check=0"
+  );
+  response.headers.set("Pragma", "no-cache");
+  response.headers.set("Expires", "0");
+
+  return response;
+}
+

@@ -14,6 +14,8 @@ export interface UserSession {
   emailVerified: boolean;
   firstName: string;
   lastName: string;
+  name?: string;
+  avatarUrl?: string | null;
   status?: string;
   roleId?: string | null;
   roleName?: string | null;

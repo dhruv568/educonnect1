@@ -61,14 +61,22 @@ export default function StudentDashboardPage() {
   });
 
   useEffect(() => {
-    fetch("/api/student/dashboard")
-      .then((res) => res.json())
+    fetch("/api/student/dashboard", { cache: "no-store", headers: { Pragma: "no-cache" } })
+      .then((res) => {
+        if (!res.ok || res.status === 401) {
+          window.location.replace("/student/login");
+          return null;
+        }
+        return res.json();
+      })
       .then((json) => {
-        if (json.data) {
+        if (json?.data) {
           setData(json.data);
         }
       })
-      .catch((err) => console.error("Failed to load student dashboard:", err))
+      .catch(() => {
+        window.location.replace("/student/login");
+      })
       .finally(() => setLoading(false));
   }, []);
 

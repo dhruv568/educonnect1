@@ -20,10 +20,16 @@ import {
   Award,
   HelpCircle,
   ShieldCheck,
+  ArrowRight,
+  Settings,
+  FileCheck,
+  Video,
+  Sparkles,
 } from "lucide-react";
 import { GlassButton } from "@/components/glass/glass-button";
 import { UserSession } from "@/types/auth";
-import { getMainDomain, getLiveDomain } from "@/lib/app-url";
+import { getMainDomain, getLiveDomain, getStudentDomain, getEducatorDomain } from "@/lib/app-url";
+import { NotificationPopover } from "@/components/layout/notification-popover";
 
 export interface FloatingNavbarProps {
   variant?: "default" | "student" | "teacher";
@@ -37,38 +43,67 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [exploreDropdownOpen, setExploreDropdownOpen] = useState(false);
   const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [userSession, setUserSession] = useState<UserSession | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const moreDropdownRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
+  // Authenticate strictly with server-truth (no-cache headers)
   const checkAuthStatus = async () => {
     try {
-      const res = await fetch("/api/auth/me");
+      const res = await fetch("/api/auth/me", {
+        cache: "no-store",
+        headers: { Pragma: "no-cache" },
+      });
       if (res.ok) {
         const json = await res.json();
         if (json.data?.user) {
           setUserSession(json.data.user);
+          setAuthLoading(false);
           return;
         }
       }
       setUserSession(null);
     } catch {
       setUserSession(null);
+    } finally {
+      setAuthLoading(false);
     }
   };
 
   useEffect(() => {
     checkAuthStatus();
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 15);
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // Synchronize authentication changes across tabs and components
+    const onAuthChanged = () => {
+      checkAuthStatus();
+    };
+    const onFocus = () => {
+      checkAuthStatus();
+    };
+
+    window.addEventListener("educonnect_auth_changed", onAuthChanged);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onAuthChanged);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("educonnect_auth_changed", onAuthChanged);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onAuthChanged);
+    };
   }, []);
 
-  // Close dropdowns & mobile menu when clicking outside or pressing Escape
+  // Close dropdowns when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -77,6 +112,9 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
       }
       if (moreDropdownRef.current && !moreDropdownRef.current.contains(target)) {
         setMoreDropdownOpen(false);
+      }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(target)) {
+        setProfileDropdownOpen(false);
       }
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(target)) {
         setMobileOpen(false);
@@ -87,6 +125,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
       if (event.key === "Escape") {
         setExploreDropdownOpen(false);
         setMoreDropdownOpen(false);
+        setProfileDropdownOpen(false);
         setMobileOpen(false);
       }
     };
@@ -99,20 +138,30 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
     };
   }, []);
 
+  // Logout invalidation with real server call & hard navigation
   const handleLogout = async () => {
-    const wasTeacher = userSession?.role === "TEACHER";
+    const role = userSession?.role;
+    setUserSession(null);
+    setProfileDropdownOpen(false);
+    setMobileOpen(false);
+
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      setUserSession(null);
-      setMobileOpen(false);
-      if (wasTeacher) {
-        window.location.href = "/teacher/logout";
-      }
-    } catch {
-      setUserSession(null);
-      if (wasTeacher) {
-        window.location.href = "/teacher/logout";
-      }
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        cache: "no-store",
+        headers: { Pragma: "no-cache" },
+      });
+    } catch {}
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("educonnect_auth_changed"));
+    }
+
+    // Role-specific hard redirect to flush router cache & memory
+    if (role === "TEACHER") {
+      window.location.replace("/teacher/logout");
+    } else {
+      window.location.replace("/");
     }
   };
 
@@ -149,16 +198,40 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
         window.location.hostname.startsWith("teachers.") ||
         window.location.hostname.startsWith("teacher.")));
 
+  // Role-derived Portal Destinations & Labels (Strictly derived from server auth truth)
   const getDashboardPath = (session: UserSession) => {
-    if (session.role === "TEACHER" || isEducator) return "/teacher/dashboard";
-    if (session.role === "ADMIN") return "/admin/dashboard";
+    if (session.role === "TEACHER") return "/teacher/dashboard";
+    if (session.role === "ADMIN") return "/admin";
+    if (session.role === "STAFF") return "/staff/dashboard";
     return "/student/dashboard";
   };
 
   const getDashboardLabel = (session: UserSession) => {
-    if (session.role === "TEACHER" || isEducator) return "Educator Portal";
-    if (session.role === "ADMIN") return "Admin Dashboard";
+    if (session.role === "TEACHER") return "Educator Portal";
+    if (session.role === "ADMIN") return "Admin Governance";
+    if (session.role === "STAFF") return "Staff Dashboard";
     return "Learner Portal";
+  };
+
+  const getUserInitials = (session: UserSession) => {
+    if (session.firstName || session.lastName) {
+      return `${session.firstName?.[0] || ""}${session.lastName?.[0] || ""}`.toUpperCase();
+    }
+    if (session.name) {
+      const parts = session.name.trim().split(" ");
+      if (parts.length >= 2) {
+        return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+      }
+      return session.name.slice(0, 2).toUpperCase();
+    }
+    return (session.email?.[0] || "U").toUpperCase();
+  };
+
+  const getUserDisplayName = (session: UserSession) => {
+    if (session.name && session.name !== "User") return session.name;
+    if (session.firstName) return `${session.firstName} ${session.lastName || ""}`.trim();
+    if (session.email) return session.email.split("@")[0];
+    return "My Account";
   };
 
   return (
@@ -166,27 +239,27 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs py-2.5 sm:py-3"
-            : "bg-white/80 backdrop-blur-xs border-b border-slate-200/50 py-3 sm:py-3.5"
+            ? "bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-sm py-2 sm:py-2.5"
+            : "bg-white/90 backdrop-blur-xs border-b border-slate-200/60 py-2.5 sm:py-3.5"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-4">
           {/* ========================================================================= */}
-          {/* 1. LEFT: LOGO & ROLE CONTEXT BADGE */}
+          {/* 1. BRAND LOGO & CONTEXT BADGE */}
           {/* ========================================================================= */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link
-              href={getMainDomain() + "/"}
+              href={isLearner ? "/student" : isEducator ? "/teacher" : getMainDomain() + "/"}
               className="flex items-center gap-2.5 group shrink-0"
               onClick={() => setMobileOpen(false)}
             >
               <div
                 className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shadow-xs transition-transform group-hover:scale-105 shrink-0 ${
                   isLearner
-                    ? "bg-[#3157D5] text-white"
+                    ? "bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-blue-500/20"
                     : isEducator
-                    ? "bg-[#16805B] text-white"
-                    : "bg-[#0F5C5A] text-[#F2C14E]"
+                    ? "bg-gradient-to-br from-[#16805B] to-[#0D5C41] text-white shadow-emerald-600/20"
+                    : "bg-gradient-to-br from-[#0B4F4B] to-[#073F3C] text-[#F2C14E] shadow-teal-900/20"
                 }`}
               >
                 <GraduationCap className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
@@ -197,18 +270,18 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   <span
                     className={
                       isLearner
-                        ? "text-[#3157D5]"
+                        ? "text-blue-600"
                         : isEducator
                         ? "text-[#16805B]"
-                        : "text-[#0F5C5A]"
+                        : "text-[#0B4F4B]"
                     }
                   >
                     CONNECTS
                   </span>
                 </span>
-                <span className="text-[10px] font-semibold text-slate-500 tracking-wide mt-0.5">
+                <span className="text-[10px] font-semibold text-slate-500 tracking-wide mt-0.5 hidden sm:block">
                   {isLearner
-                    ? "Learner Portal"
+                    ? "Learner Gateway"
                     : isEducator
                     ? "Educator Network"
                     : "Learn • Grow • Belong"}
@@ -216,153 +289,48 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               </div>
             </Link>
 
-            {/* Clean Context Role Badge */}
+            {/* Context Tag */}
             {isLearner && (
-              <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#F3F6FF] text-[#3157D5] border border-[#BFDBFE] shadow-2xs whitespace-nowrap">
+              <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
                 Learner
               </span>
             )}
             {isEducator && (
-              <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#F0FAF5] text-[#16805B] border border-[#A7F3D0] shadow-2xs whitespace-nowrap">
+              <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                 Educator
               </span>
             )}
           </div>
 
           {/* ========================================================================= */}
-          {/* 2. CENTER: PRIMARY NAVIGATION (ZERO 2-LINE WRAPS) */}
+          {/* 2. CENTER PRIMARY NAVIGATION */}
           {/* ========================================================================= */}
           <nav className="hidden lg:flex items-center gap-1 xl:gap-2 text-sm font-semibold text-slate-700">
             {isEducator ? (
-              /* EDUCATOR NAVIGATION */
+              /* EDUCATOR SPECIFIC NAVIGATION */
               <>
-                <a
-                  href="#courses"
-                  className="px-3 py-1.5 rounded-lg hover:text-[#16805B] hover:bg-[#F0FAF5] transition-colors whitespace-nowrap"
+                <Link
+                  href="/teacher#courses"
+                  className="px-3 py-1.5 rounded-lg hover:text-[#16805B] hover:bg-emerald-50/70 transition-colors whitespace-nowrap"
                 >
                   Teaching Toolkit
-                </a>
-                <a
-                  href="#earnings"
-                  className="px-3 py-1.5 rounded-lg hover:text-[#16805B] hover:bg-[#F0FAF5] transition-colors whitespace-nowrap"
+                </Link>
+                <Link
+                  href="/teacher#earnings"
+                  className="px-3 py-1.5 rounded-lg hover:text-[#16805B] hover:bg-emerald-50/70 transition-colors whitespace-nowrap"
                 >
                   Earnings Calculator
-                </a>
-                <a
-                  href="#how-it-works"
-                  onClick={handleHowItWorksClick}
-                  className="px-3 py-1.5 rounded-lg hover:text-[#16805B] hover:bg-[#F0FAF5] transition-colors whitespace-nowrap"
-                >
-                  How It Works
-                </a>
-                <a
-                  href={getLiveDomain()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-[#16805B] hover:bg-[#F0FAF5] transition-colors whitespace-nowrap group"
-                >
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
-                  </span>
-                  <span className="font-bold text-red-600 group-hover:text-red-700">Live</span>
-                </a>
-
-                {/* More Dropdown for Educator */}
-                <div className="relative" ref={moreDropdownRef}>
-                  <button
-                    onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
-                    onMouseEnter={() => setMoreDropdownOpen(true)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:text-[#16805B] hover:bg-[#F0FAF5] transition-colors whitespace-nowrap focus:outline-none"
-                    aria-expanded={moreDropdownOpen}
-                  >
-                    <span>More</span>
-                    <ChevronDown
-                      className={`h-3.5 w-3.5 text-slate-500 transition-transform duration-200 ${
-                        moreDropdownOpen ? "rotate-180 text-[#16805B]" : ""
-                      }`}
-                    />
-                  </button>
-
-                  <AnimatePresence>
-                    {moreDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                        transition={{ duration: 0.15 }}
-                        onMouseLeave={() => setMoreDropdownOpen(false)}
-                        className="absolute top-full left-0 mt-1 w-60 bg-white rounded-2xl border border-slate-200 shadow-xl p-2 space-y-1 z-50"
-                      >
-                        <a
-                          href="#benefits"
-                          onClick={() => setMoreDropdownOpen(false)}
-                          className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-[#F0FAF5] transition-colors group"
-                        >
-                          <div className="p-1.5 rounded-lg bg-[#F0FAF5] text-[#16805B] group-hover:bg-[#16805B] group-hover:text-white transition-colors shrink-0">
-                            <Award className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-[#16805B] transition-colors">
-                              Advantages & Benefits
-                            </div>
-                            <div className="text-[11px] text-slate-500 font-normal">
-                              Why top educators teach with us
-                            </div>
-                          </div>
-                        </a>
-
-                        <a
-                          href="#faq"
-                          onClick={() => setMoreDropdownOpen(false)}
-                          className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-[#F0FAF5] transition-colors group"
-                        >
-                          <div className="p-1.5 rounded-lg bg-slate-100 text-slate-700 group-hover:bg-[#16805B] group-hover:text-white transition-colors shrink-0">
-                            <HelpCircle className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-[#16805B] transition-colors">
-                              Frequently Asked Questions
-                            </div>
-                            <div className="text-[11px] text-slate-500 font-normal">
-                              Verification, payouts, and classes
-                            </div>
-                          </div>
-                        </a>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </>
-            ) : isLearner ? (
-              /* LEARNER NAVIGATION */
-              <>
-                <a
-                  href="#courses"
-                  className="px-3 py-1.5 rounded-lg hover:text-[#2563EB] hover:bg-blue-50/70 transition-colors whitespace-nowrap"
-                >
-                  Courses
-                </a>
-                <Link
-                  href="/find-teachers"
-                  className="px-3 py-1.5 rounded-lg hover:text-[#2563EB] hover:bg-blue-50/70 transition-colors whitespace-nowrap"
-                >
-                  Find Teachers
                 </Link>
                 <a
-                  href="#live-classes"
-                  className="px-3 py-1.5 rounded-lg hover:text-[#2563EB] hover:bg-blue-50/70 transition-colors whitespace-nowrap"
-                >
-                  Live Classes
-                </a>
-                <a
-                  href="#how-it-works"
+                  href="/teacher#how-it-works"
                   onClick={handleHowItWorksClick}
-                  className="px-3 py-1.5 rounded-lg hover:text-[#2563EB] hover:bg-blue-50/70 transition-colors whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-lg hover:text-[#16805B] hover:bg-emerald-50/70 transition-colors whitespace-nowrap"
                 >
                   How It Works
                 </a>
                 <a
                   href={getLiveDomain()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-[#2563EB] hover:bg-blue-50/70 transition-colors whitespace-nowrap group"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-[#16805B] hover:bg-emerald-50/70 transition-colors whitespace-nowrap group"
                 >
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
@@ -370,72 +338,38 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   </span>
                   <span className="font-bold text-red-600 group-hover:text-red-700">Live</span>
                 </a>
-
-                {/* More Dropdown for Learner */}
-                <div className="relative" ref={moreDropdownRef}>
-                  <button
-                    onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
-                    onMouseEnter={() => setMoreDropdownOpen(true)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:text-[#2563EB] hover:bg-blue-50/70 transition-colors whitespace-nowrap focus:outline-none"
-                    aria-expanded={moreDropdownOpen}
-                  >
-                    <span>More</span>
-                    <ChevronDown
-                      className={`h-3.5 w-3.5 text-slate-500 transition-transform duration-200 ${
-                        moreDropdownOpen ? "rotate-180 text-[#2563EB]" : ""
-                      }`}
-                    />
-                  </button>
-
-                  <AnimatePresence>
-                    {moreDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                        transition={{ duration: 0.15 }}
-                        onMouseLeave={() => setMoreDropdownOpen(false)}
-                        className="absolute top-full left-0 mt-1 w-60 bg-white rounded-2xl border border-slate-200 shadow-xl p-2 space-y-1 z-50"
-                      >
-                        <a
-                          href="#benefits"
-                          onClick={() => setMoreDropdownOpen(false)}
-                          className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-blue-50/70 transition-colors group"
-                        >
-                          <div className="p-1.5 rounded-lg bg-blue-100 text-blue-700 shrink-0">
-                            <ShieldCheck className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-[#2563EB]">
-                              Why EduConnects
-                            </div>
-                            <div className="text-[11px] text-slate-500 font-normal">
-                              Verified tutors & student protection
-                            </div>
-                          </div>
-                        </a>
-
-                        <a
-                          href="#faq"
-                          onClick={() => setMoreDropdownOpen(false)}
-                          className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-blue-50/70 transition-colors group"
-                        >
-                          <div className="p-1.5 rounded-lg bg-slate-100 text-slate-700 shrink-0">
-                            <HelpCircle className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-[#2563EB]">
-                              Frequently Asked Questions
-                            </div>
-                            <div className="text-[11px] text-slate-500 font-normal">
-                              Demo sessions, refunds, and tools
-                            </div>
-                          </div>
-                        </a>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+              </>
+            ) : isLearner ? (
+              /* LEARNER SPECIFIC NAVIGATION */
+              <>
+                <Link
+                  href="/find-teachers"
+                  className="px-3 py-1.5 rounded-lg hover:text-blue-600 hover:bg-blue-50/70 transition-colors whitespace-nowrap"
+                >
+                  Find Educators
+                </Link>
+                <Link
+                  href="/courses"
+                  className="px-3 py-1.5 rounded-lg hover:text-blue-600 hover:bg-blue-50/70 transition-colors whitespace-nowrap"
+                >
+                  Explore Courses
+                </Link>
+                <Link
+                  href="/student#benefits"
+                  className="px-3 py-1.5 rounded-lg hover:text-blue-600 hover:bg-blue-50/70 transition-colors whitespace-nowrap"
+                >
+                  Why EduConnects
+                </Link>
+                <a
+                  href={getLiveDomain()}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-blue-600 hover:bg-blue-50/70 transition-colors whitespace-nowrap group"
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                  </span>
+                  <span className="font-bold text-red-600 group-hover:text-red-700">Live</span>
+                </a>
               </>
             ) : (
               /* MAIN PLATFORM NAVIGATION */
@@ -445,13 +379,13 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   <button
                     onClick={() => setExploreDropdownOpen(!exploreDropdownOpen)}
                     onMouseEnter={() => setExploreDropdownOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-[#0F5C5A] hover:bg-slate-100/70 transition-colors whitespace-nowrap focus:outline-none"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-[#0B4F4B] hover:bg-slate-100/70 transition-colors whitespace-nowrap focus:outline-none"
                     aria-expanded={exploreDropdownOpen}
                   >
                     <span>Explore</span>
                     <ChevronDown
                       className={`h-3.5 w-3.5 text-slate-500 transition-transform duration-200 ${
-                        exploreDropdownOpen ? "rotate-180 text-[#0F5C5A]" : ""
+                        exploreDropdownOpen ? "rotate-180 text-[#0B4F4B]" : ""
                       }`}
                     />
                   </button>
@@ -471,11 +405,11 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                           onClick={() => setExploreDropdownOpen(false)}
                           className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors group"
                         >
-                          <div className="p-2 rounded-lg bg-teal-50 text-[#0F5C5A] group-hover:bg-[#0F5C5A] group-hover:text-white transition-colors shrink-0">
+                          <div className="p-2 rounded-lg bg-teal-50 text-[#0B4F4B] group-hover:bg-[#0B4F4B] group-hover:text-white transition-colors shrink-0">
                             <Users className="h-4 w-4" />
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-[#0F5C5A] transition-colors">
+                            <div className="text-xs font-bold text-slate-900 group-hover:text-[#0B4F4B] transition-colors">
                               Find an Educator
                             </div>
                             <div className="text-[11px] text-slate-500 font-normal mt-0.5">
@@ -493,7 +427,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                             <BookOpen className="h-4 w-4" />
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-[#0F5C5A] transition-colors">
+                            <div className="text-xs font-bold text-slate-900 group-hover:text-[#0B4F4B] transition-colors">
                               Explore Courses
                             </div>
                             <div className="text-[11px] text-slate-500 font-normal mt-0.5">
@@ -507,11 +441,11 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                           onClick={() => setExploreDropdownOpen(false)}
                           className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors group"
                         >
-                          <div className="p-2 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-[#0F5C5A] group-hover:text-white transition-colors shrink-0">
+                          <div className="p-2 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-[#0B4F4B] group-hover:text-white transition-colors shrink-0">
                             <Grid className="h-4 w-4" />
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-slate-900 group-hover:text-[#0F5C5A] transition-colors">
+                            <div className="text-xs font-bold text-slate-900 group-hover:text-[#0B4F4B] transition-colors">
                               Browse Subjects
                             </div>
                             <div className="text-[11px] text-slate-500 font-normal mt-0.5">
@@ -526,26 +460,26 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
 
                 <Link
                   href="/student"
-                  className="px-3 py-1.5 rounded-lg hover:text-[#0F5C5A] hover:bg-slate-100/70 transition-colors whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-lg hover:text-[#0B4F4B] hover:bg-slate-100/70 transition-colors whitespace-nowrap"
                 >
                   For Learners
                 </Link>
                 <Link
                   href="/teacher"
-                  className="px-3 py-1.5 rounded-lg hover:text-[#0F5C5A] hover:bg-slate-100/70 transition-colors whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-lg hover:text-[#0B4F4B] hover:bg-slate-100/70 transition-colors whitespace-nowrap text-[#1B6863] font-bold"
                 >
                   For Educators
                 </Link>
                 <a
                   href="#how-it-works"
                   onClick={handleHowItWorksClick}
-                  className="px-3 py-1.5 rounded-lg hover:text-[#0F5C5A] hover:bg-slate-100/70 transition-colors whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-lg hover:text-[#0B4F4B] hover:bg-slate-100/70 transition-colors whitespace-nowrap"
                 >
                   How It Works
                 </a>
                 <a
                   href={getLiveDomain()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-[#0F5C5A] hover:bg-slate-100/70 transition-colors whitespace-nowrap group"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-[#0B4F4B] hover:bg-slate-100/70 transition-colors whitespace-nowrap group"
                 >
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
@@ -558,32 +492,34 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
           </nav>
 
           {/* ========================================================================= */}
-          {/* 3. RIGHT: CONTEXT SWITCHER, LOGIN & PRIMARY CTA */}
+          {/* 3. RIGHT: ROLE-AWARE ACTION CLUSTER */}
           {/* ========================================================================= */}
-          <div className="hidden lg:flex items-center gap-2.5 xl:gap-3 shrink-0">
-            {/* Subtle Role Switcher Pill */}
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
+            {/* Context Switcher Link */}
             {isEducator ? (
               <Link
                 href="/student"
-                className="hidden xl:inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-[#16805B] px-3 py-1.5 rounded-xl border border-slate-200 hover:border-[#A7F3D0] bg-slate-50/80 hover:bg-[#F0FAF5] transition-all whitespace-nowrap shadow-2xs"
+                className="hidden xl:inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-emerald-700 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-emerald-200 bg-slate-50/80 hover:bg-emerald-50/50 transition-all whitespace-nowrap shadow-2xs"
               >
                 Learner Portal →
               </Link>
             ) : isLearner ? (
               <Link
                 href="/teacher"
-                className="hidden xl:inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-[#3157D5] px-3 py-1.5 rounded-xl border border-slate-200 hover:border-[#BFDBFE] bg-slate-50/80 hover:bg-[#F3F6FF] transition-all whitespace-nowrap shadow-2xs"
+                className="hidden xl:inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-blue-700 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-blue-200 bg-slate-50/80 hover:bg-blue-50/50 transition-all whitespace-nowrap shadow-2xs"
               >
                 Teach on EduConnects →
               </Link>
             ) : null}
 
+            {/* Separator if switcher shown */}
             {(isEducator || isLearner) && (
               <div className="hidden xl:block h-4 w-px bg-slate-200" />
             )}
 
+            {/* STATE 1: Unauthenticated Visitor */}
             {!userSession ? (
-              <>
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Link
                   href={
                     isEducator
@@ -592,7 +528,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       ? "/student/login"
                       : "/login"
                   }
-                  className="text-sm font-semibold text-slate-700 hover:text-slate-950 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors whitespace-nowrap"
+                  className="text-xs sm:text-sm font-bold text-slate-700 hover:text-slate-950 px-3.5 py-2 rounded-xl hover:bg-slate-100 transition-colors whitespace-nowrap"
                 >
                   Login
                 </Link>
@@ -606,15 +542,14 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   }
                 >
                   <button
-                    className={`h-9.5 px-4 sm:px-5 rounded-xl text-sm font-bold shadow-xs hover:shadow-md transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                    className={`h-9 px-4 sm:px-5 rounded-xl text-xs sm:text-sm font-bold text-white shadow-xs hover:shadow-md transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer active:scale-95 ${
                       isLearner
-                        ? "bg-[#3157D5] hover:bg-[#243B9B] text-white shadow-blue-500/25"
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/20"
                         : isEducator
-                        ? "bg-[#16805B] hover:bg-[#0D5C41] text-white shadow-emerald-700/25"
-                        : "bg-[#0F5C5A] hover:bg-[#083F3D] text-white shadow-teal-900/20"
+                        ? "bg-gradient-to-r from-[#16805B] to-[#0D5C41] hover:from-[#12684A] hover:to-[#0A4732] shadow-emerald-700/20"
+                        : "bg-gradient-to-r from-[#0B4F4B] to-[#073F3C] hover:from-[#083F3D] hover:to-[#042423] shadow-teal-900/20"
                     }`}
                   >
-                    <UserPlus className="h-4 w-4" />
                     <span>
                       {isEducator
                         ? "Start Teaching"
@@ -622,47 +557,247 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                         ? "Start Learning"
                         : "Get Started"}
                     </span>
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </button>
                 </Link>
-              </>
+              </div>
             ) : (
-              <>
-                <Link href={getDashboardPath(userSession)}>
+              /* STATE 2: Authenticated User (Strictly Role-Aware) */
+              <div className="flex items-center gap-3">
+                {/* A. Role-Specific Portal Button */}
+                {userSession.role === "STUDENT" ? (
+                  <Link href="/student/dashboard">
+                    <button className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95">
+                      <LayoutDashboard className="h-4 w-4 text-blue-100" />
+                      <span>Learner Portal</span>
+                    </button>
+                  </Link>
+                ) : userSession.role === "TEACHER" ? (
+                  <Link href="/teacher/dashboard">
+                    <button className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95">
+                      <LayoutDashboard className="h-4 w-4 text-emerald-100" />
+                      <span>Educator Portal</span>
+                    </button>
+                  </Link>
+                ) : userSession.role === "ADMIN" ? (
+                  <Link href="/admin">
+                    <button className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#0B4F4B] hover:bg-[#073F3C] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95">
+                      <LayoutDashboard className="h-4 w-4 text-[#F2C14E]" />
+                      <span>Admin Governance</span>
+                    </button>
+                  </Link>
+                ) : (
+                  <Link href="/staff/dashboard">
+                    <button className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#0B4F4B] hover:bg-[#073F3C] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95">
+                      <LayoutDashboard className="h-4 w-4 text-teal-100" />
+                      <span>Staff Dashboard</span>
+                    </button>
+                  </Link>
+                )}
+
+                {/* B. Notification Bell Popover */}
+                <div className="flex items-center">
+                  <NotificationPopover />
+                </div>
+
+                {/* C. User Profile Account Menu */}
+                <div className="relative" ref={profileDropdownRef}>
                   <button
-                    className={`h-9.5 px-4 rounded-xl text-sm font-bold text-white shadow-xs transition-all flex items-center gap-1.5 ${
-                      isLearner
-                        ? "bg-[#3157D5] hover:bg-[#243B9B]"
-                        : isEducator
-                        ? "bg-[#16805B] hover:bg-[#0D5C41]"
-                        : "bg-[#0F5C5A] hover:bg-[#083F3D]"
-                    }`}
+                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                    className="flex items-center gap-2 p-1.5 sm:pr-2.5 rounded-xl hover:bg-slate-100/90 border border-slate-200/80 transition-all focus:outline-none"
+                    aria-label="Account Menu"
+                    aria-expanded={profileDropdownOpen}
                   >
-                    <LayoutDashboard className="h-4 w-4" />
-                    <span>{getDashboardLabel(userSession)}</span>
+                    {userSession.avatarUrl ? (
+                      <img
+                        src={userSession.avatarUrl}
+                        alt={getUserDisplayName(userSession)}
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover ring-1 ring-slate-200"
+                      />
+                    ) : (
+                      <div
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-white font-black text-xs flex items-center justify-center shadow-2xs ${
+                          userSession.role === "STUDENT"
+                            ? "bg-blue-600"
+                            : userSession.role === "TEACHER"
+                            ? "bg-[#16805B]"
+                            : "bg-[#0B4F4B]"
+                        }`}
+                      >
+                        {getUserInitials(userSession)}
+                      </div>
+                    )}
+
+                    <div className="hidden xl:flex flex-col text-left">
+                      <span className="text-xs font-bold text-slate-900 leading-tight truncate max-w-[110px]">
+                        {getUserDisplayName(userSession)}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-medium leading-none">
+                        {userSession.role === "STUDENT"
+                          ? "Learner"
+                          : userSession.role === "TEACHER"
+                          ? "Educator"
+                          : userSession.role === "ADMIN"
+                          ? "Admin"
+                          : "Staff"}
+                      </span>
+                    </div>
+
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 text-slate-500 transition-transform duration-200 ${
+                        profileDropdownOpen ? "rotate-180 text-slate-900" : ""
+                      }`}
+                    />
                   </button>
-                </Link>
-                <Link
-                  href="/profile"
-                  className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                  aria-label="Profile"
-                >
-                  <User className="h-4 w-4" />
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="p-2 rounded-xl text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                  aria-label="Logout"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </>
+
+                  <AnimatePresence>
+                    {profileDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl border border-slate-200/90 shadow-2xl p-2 space-y-1 z-50 overflow-hidden"
+                      >
+                        {/* Dropdown Header */}
+                        <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-100 space-y-1 mb-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-black text-slate-900 truncate">
+                              {getUserDisplayName(userSession)}
+                            </span>
+                            <span
+                              className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                                userSession.role === "STUDENT"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : userSession.role === "TEACHER"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-amber-100 text-amber-800"
+                              }`}
+                            >
+                              {userSession.role === "STUDENT"
+                                ? "Learner"
+                                : userSession.role === "TEACHER"
+                                ? "Educator"
+                                : "Administrator"}
+                            </span>
+                          </div>
+                          {userSession.email && (
+                            <p className="text-[11px] text-slate-500 truncate">
+                              {userSession.email}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Dropdown Links based on authenticated role */}
+                        {userSession.role === "STUDENT" && (
+                          <>
+                            <Link
+                              href="/student/dashboard"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-blue-700 hover:bg-blue-50/80 transition-colors"
+                            >
+                              <LayoutDashboard className="h-4 w-4 text-blue-600" />
+                              <span>Learner Dashboard</span>
+                            </Link>
+                            <Link
+                              href="/student/courses"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-blue-700 hover:bg-blue-50/80 transition-colors"
+                            >
+                              <BookOpen className="h-4 w-4 text-blue-600" />
+                              <span>Enrolled Courses</span>
+                            </Link>
+                            <Link
+                              href="/student/live-classes"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-blue-700 hover:bg-blue-50/80 transition-colors"
+                            >
+                              <Video className="h-4 w-4 text-blue-600" />
+                              <span>My Live Classes</span>
+                            </Link>
+                          </>
+                        )}
+
+                        {userSession.role === "TEACHER" && (
+                          <>
+                            <Link
+                              href="/teacher/dashboard"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-colors"
+                            >
+                              <LayoutDashboard className="h-4 w-4 text-emerald-600" />
+                              <span>Educator Dashboard</span>
+                            </Link>
+                            <Link
+                              href="/teacher/live-classes"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-colors"
+                            >
+                              <Video className="h-4 w-4 text-emerald-600" />
+                              <span>Live Class Slots</span>
+                            </Link>
+                            <Link
+                              href="/teacher/courses"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-colors"
+                            >
+                              <BookOpen className="h-4 w-4 text-emerald-600" />
+                              <span>Course Publisher</span>
+                            </Link>
+                            <Link
+                              href="/teacher/verification"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/80 transition-colors"
+                            >
+                              <FileCheck className="h-4 w-4 text-emerald-600" />
+                              <span>Verification Status</span>
+                            </Link>
+                          </>
+                        )}
+
+                        {(userSession.role === "ADMIN" || userSession.role === "STAFF") && (
+                          <Link
+                            href={userSession.role === "ADMIN" ? "/admin" : "/staff/dashboard"}
+                            onClick={() => setProfileDropdownOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-teal-800 hover:bg-teal-50 transition-colors"
+                          >
+                            <LayoutDashboard className="h-4 w-4 text-[#0B4F4B]" />
+                            <span>Governance Portal</span>
+                          </Link>
+                        )}
+
+                        <Link
+                          href="/profile"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-950 hover:bg-slate-50 transition-colors"
+                        >
+                          <User className="h-4 w-4 text-slate-500" />
+                          <span>Profile & Account</span>
+                        </Link>
+
+                        <div className="pt-1 mt-1 border-t border-slate-100">
+                          <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors text-left"
+                          >
+                            <LogOut className="h-4 w-4 text-rose-500" />
+                            <span>Sign Out</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Mobile Hamburger Menu Button */}
+          {/* ========================================================================= */}
+          {/* 4. MOBILE HAMBURGER BUTTON */}
+          {/* ========================================================================= */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2 rounded-xl bg-[#F5F7F8] border border-[#DCE5E4] text-[#102A2A] hover:bg-[#DCE5E4] transition-colors"
+            className="lg:hidden p-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 hover:bg-slate-100 transition-colors"
             aria-label="Toggle mobile menu"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -670,11 +805,12 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
         </div>
       </header>
 
-      {/* Mobile Menu Drawer */}
+      {/* ========================================================================= */}
+      {/* 5. MOBILE & TABLET DRAWER */}
+      {/* ========================================================================= */}
       <AnimatePresence>
         {mobileOpen && (
           <div className="fixed inset-0 z-40 lg:hidden overflow-hidden" ref={mobileMenuRef}>
-            {/* Backdrop overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -683,218 +819,171 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               className="absolute inset-0 bg-black/40 backdrop-blur-xs"
             />
 
-            {/* Menu Drawer */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="relative top-16 mx-3 sm:mx-6 bg-white rounded-3xl border border-[#DCE5E4] shadow-2xl p-6 space-y-5 max-h-[calc(100vh-5rem)] overflow-y-auto"
+              className="relative top-16 mx-3 sm:mx-6 bg-white rounded-3xl border border-slate-200 shadow-2xl p-5 space-y-4 max-h-[calc(100vh-5rem)] overflow-y-auto"
             >
+              {/* Authenticated User Card in Mobile Drawer */}
+              {userSession && (
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl text-white font-black text-sm flex items-center justify-center ${
+                        userSession.role === "STUDENT"
+                          ? "bg-blue-600"
+                          : userSession.role === "TEACHER"
+                          ? "bg-[#16805B]"
+                          : "bg-[#0B4F4B]"
+                      }`}
+                    >
+                      {getUserInitials(userSession)}
+                    </div>
+                    <div>
+                      <div className="text-xs font-extrabold text-slate-900">
+                        {getUserDisplayName(userSession)}
+                      </div>
+                      <div className="text-[11px] text-slate-500 truncate max-w-[160px]">
+                        {userSession.email}
+                      </div>
+                    </div>
+                  </div>
+                  <span
+                    className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                      userSession.role === "STUDENT"
+                        ? "bg-blue-100 text-blue-700"
+                        : userSession.role === "TEACHER"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-amber-100 text-amber-800"
+                    }`}
+                  >
+                    {userSession.role === "STUDENT"
+                      ? "Learner"
+                      : userSession.role === "TEACHER"
+                      ? "Educator"
+                      : "Admin"}
+                  </span>
+                </div>
+              )}
+
               {/* Navigation Links */}
-              <nav className="flex flex-col space-y-3 font-semibold text-[#102A2A] text-sm">
+              <nav className="flex flex-col space-y-1 font-semibold text-slate-800 text-sm">
                 {isEducator ? (
                   <>
-                    <div className="text-xs font-black uppercase text-[#16805B] tracking-wider px-2 py-1.5 rounded-lg bg-[#F0FAF5] flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#16805B]" />
-                      Educator Network
-                    </div>
-                    <a
-                      href="#courses"
+                    <Link
+                      href="/teacher#courses"
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F0FAF5] hover:text-[#16805B] rounded-xl border-b border-[#DCE5E4]"
+                      className="py-2 px-3 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl"
                     >
                       Teaching Toolkit
-                    </a>
-                    <a
-                      href="#earnings"
+                    </Link>
+                    <Link
+                      href="/teacher#earnings"
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F0FAF5] hover:text-[#16805B] rounded-xl border-b border-[#DCE5E4]"
+                      className="py-2 px-3 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl"
                     >
                       Earnings Calculator
-                    </a>
+                    </Link>
                     <a
-                      href="#how-it-works"
+                      href="/teacher#how-it-works"
                       onClick={handleHowItWorksClick}
-                      className="py-2 px-2 hover:bg-[#F0FAF5] hover:text-[#16805B] rounded-xl border-b border-[#DCE5E4]"
+                      className="py-2 px-3 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl"
                     >
                       How It Works
                     </a>
                     <a
-                      href="#benefits"
-                      onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F0FAF5] hover:text-[#16805B] rounded-xl border-b border-[#DCE5E4]"
-                    >
-                      Advantages
-                    </a>
-                    <a
-                      href="#faq"
-                      onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F0FAF5] hover:text-[#16805B] rounded-xl border-b border-[#DCE5E4]"
-                    >
-                      FAQ
-                    </a>
-                    <a
                       href={getLiveDomain()}
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F0FAF5] rounded-xl border-b border-[#DCE5E4] flex items-center justify-between"
+                      className="py-2 px-3 hover:bg-emerald-50 rounded-xl flex items-center justify-between text-red-600 font-bold"
                     >
                       <span>Live Events</span>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-600">
-                        <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
                         🔴 Live
                       </span>
                     </a>
-                    <Link
-                      href="/student"
-                      onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F3F6FF] rounded-xl text-[#3157D5] font-bold"
-                    >
-                      Learner Portal →
-                    </Link>
                   </>
                 ) : isLearner ? (
                   <>
-                    <div className="text-xs font-black uppercase text-[#3157D5] tracking-wider px-2 py-1.5 rounded-lg bg-[#F3F6FF] flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#3157D5]" />
-                      Learner Experience
-                    </div>
-                    <div className="pb-2 border-b border-[#DCE5E4] space-y-2">
-                      <div className="text-xs font-black uppercase text-[#5D7373] tracking-wider px-2">
-                        Explore
-                      </div>
-                      <Link
-                        href="/find-teachers"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#F3F6FF] text-[#102A2A] font-bold"
-                      >
-                        <Users className="h-4 w-4 text-[#3157D5]" />
-                        Find an Educator
-                      </Link>
-                      <Link
-                        href="/courses"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#F3F6FF] text-[#102A2A] font-bold"
-                      >
-                        <BookOpen className="h-4 w-4 text-[#3157D5]" />
-                        Explore Courses
-                      </Link>
-                    </div>
-                    <a
-                      href="#live-classes"
+                    <Link
+                      href="/find-teachers"
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F3F6FF] hover:text-[#3157D5] rounded-xl border-b border-[#DCE5E4]"
+                      className="py-2 px-3 hover:bg-blue-50 hover:text-blue-700 rounded-xl"
                     >
-                      Live Classes
-                    </a>
-                    <a
-                      href="#courses"
+                      Find Educators
+                    </Link>
+                    <Link
+                      href="/courses"
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F3F6FF] hover:text-[#3157D5] rounded-xl border-b border-[#DCE5E4]"
+                      className="py-2 px-3 hover:bg-blue-50 hover:text-blue-700 rounded-xl"
                     >
-                      Courses
-                    </a>
-                    <a
-                      href="#how-it-works"
-                      onClick={handleHowItWorksClick}
-                      className="py-2 px-2 hover:bg-[#F3F6FF] hover:text-[#3157D5] rounded-xl border-b border-[#DCE5E4]"
-                    >
-                      How It Works
-                    </a>
-                    <a
-                      href="#benefits"
+                      Explore Courses
+                    </Link>
+                    <Link
+                      href="/student#benefits"
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F3F6FF] hover:text-[#3157D5] rounded-xl border-b border-[#DCE5E4]"
+                      className="py-2 px-3 hover:bg-blue-50 hover:text-blue-700 rounded-xl"
                     >
                       Why EduConnects
-                    </a>
-                    <a
-                      href="#faq"
-                      onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F3F6FF] hover:text-[#3157D5] rounded-xl border-b border-[#DCE5E4]"
-                    >
-                      FAQ
-                    </a>
+                    </Link>
                     <a
                       href={getLiveDomain()}
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F3F6FF] rounded-xl border-b border-[#DCE5E4] flex items-center justify-between"
+                      className="py-2 px-3 hover:bg-blue-50 rounded-xl flex items-center justify-between text-red-600 font-bold"
                     >
                       <span>Live Events</span>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-600">
-                        <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
                         🔴 Live
                       </span>
                     </a>
-                    <Link
-                      href="/teacher"
-                      onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F0FAF5] rounded-xl text-[#16805B] font-bold"
-                    >
-                      Teach on EduConnects →
-                    </Link>
                   </>
                 ) : (
                   <>
-                    <div className="pb-2 border-b border-[#DCE5E4] space-y-2">
-                      <div className="text-xs font-black uppercase text-[#5D7373] tracking-wider px-2">
-                        Explore
-                      </div>
-                      <Link
-                        href="/find-teachers"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#F5F7F8] text-[#102A2A] font-bold"
-                      >
-                        <Users className="h-4 w-4 text-[#0F5C5A]" />
-                        Find an Educator
-                      </Link>
-                      <Link
-                        href="/courses"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#F5F7F8] text-[#102A2A] font-bold"
-                      >
-                        <BookOpen className="h-4 w-4 text-[#B8860B]" />
-                        Explore Courses
-                      </Link>
-                      <Link
-                        href="/courses"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#F5F7F8] text-[#102A2A] font-bold"
-                      >
-                        <Grid className="h-4 w-4 text-[#5D7373]" />
-                        Browse Subjects
-                      </Link>
-                    </div>
-
+                    <Link
+                      href="/find-teachers"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2.5 py-2 px-3 rounded-xl hover:bg-slate-50"
+                    >
+                      <Users className="h-4 w-4 text-[#0B4F4B]" />
+                      Find an Educator
+                    </Link>
+                    <Link
+                      href="/courses"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2.5 py-2 px-3 rounded-xl hover:bg-slate-50"
+                    >
+                      <BookOpen className="h-4 w-4 text-amber-600" />
+                      Explore Courses
+                    </Link>
                     <Link
                       href="/student"
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F5F7F8] rounded-xl border-b border-[#DCE5E4]"
+                      className="py-2 px-3 hover:bg-slate-50 rounded-xl"
                     >
                       For Learners
                     </Link>
                     <Link
                       href="/teacher"
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F5F7F8] rounded-xl border-b border-[#DCE5E4]"
+                      className="py-2 px-3 hover:bg-slate-50 rounded-xl text-emerald-700 font-bold"
                     >
                       For Educators
                     </Link>
                     <a
                       href="#how-it-works"
                       onClick={handleHowItWorksClick}
-                      className="py-2 px-2 hover:bg-[#F5F7F8] rounded-xl border-b border-[#DCE5E4]"
+                      className="py-2 px-3 hover:bg-slate-50 rounded-xl"
                     >
                       How It Works
                     </a>
                     <a
                       href={getLiveDomain()}
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-2 hover:bg-[#F5F7F8] rounded-xl border-b border-[#DCE5E4] flex items-center justify-between"
+                      className="py-2 px-3 hover:bg-slate-50 rounded-xl flex items-center justify-between text-red-600 font-bold"
                     >
                       <span>Live Events</span>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-600">
-                        <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
                         🔴 Live
                       </span>
                     </a>
@@ -902,8 +991,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                 )}
               </nav>
 
-              {/* Mobile Auth CTAs */}
-              <div className="pt-2 border-t border-[#DCE5E4] flex flex-col gap-2.5">
+              {/* Mobile Auth Actions */}
+              <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
                 {!userSession ? (
                   <>
                     <Link
@@ -916,9 +1005,9 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       }
                       onClick={() => setMobileOpen(false)}
                     >
-                      <GlassButton variant="secondary" className="w-full justify-center text-sm font-bold">
+                      <button className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-800 text-sm font-bold hover:bg-slate-50 transition-colors">
                         Login
-                      </GlassButton>
+                      </button>
                     </Link>
                     <Link
                       href={
@@ -930,44 +1019,63 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       }
                       onClick={() => setMobileOpen(false)}
                     >
-                      <GlassButton
-                        variant={
-                          isLearner ? "learner" : isEducator ? "educator" : "primary"
-                        }
-                        className="w-full justify-center text-white text-sm font-bold"
+                      <button
+                        className={`w-full py-2.5 rounded-xl text-white text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5 ${
+                          isLearner
+                            ? "bg-blue-600 hover:bg-blue-700"
+                            : isEducator
+                            ? "bg-[#16805B] hover:bg-[#0D5C41]"
+                            : "bg-[#0B4F4B] hover:bg-[#073F3C]"
+                        }`}
                       >
-                        {isEducator
-                          ? "Start Teaching"
-                          : isLearner
-                          ? "Start Learning"
-                          : "Get Started"}
-                      </GlassButton>
+                        <span>
+                          {isEducator
+                            ? "Start Teaching"
+                            : isLearner
+                            ? "Start Learning"
+                            : "Get Started"}
+                        </span>
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
                     </Link>
                   </>
                 ) : (
                   <>
-                    <Link href={getDashboardPath(userSession)} onClick={() => setMobileOpen(false)}>
-                      <GlassButton
-                        variant={
-                          isLearner ? "learner" : isEducator ? "educator" : "primary"
-                        }
-                        className="w-full justify-center text-white text-sm"
-                      >
-                        {getDashboardLabel(userSession)}
-                      </GlassButton>
-                    </Link>
-                    <Link href="/profile" onClick={() => setMobileOpen(false)}>
-                      <GlassButton variant="secondary" className="w-full justify-center text-sm">
-                        Profile
-                      </GlassButton>
-                    </Link>
-                    <GlassButton
-                      variant="ghost"
-                      className="w-full justify-center text-sm text-[#5D7373]"
-                      onClick={handleLogout}
+                    {/* Role-Specific Portal Button in Mobile */}
+                    <Link
+                      href={getDashboardPath(userSession)}
+                      onClick={() => setMobileOpen(false)}
                     >
-                      Logout
-                    </GlassButton>
+                      <button
+                        className={`w-full py-2.5 rounded-xl text-white text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 ${
+                          userSession.role === "STUDENT"
+                            ? "bg-blue-600 hover:bg-blue-700"
+                            : userSession.role === "TEACHER"
+                            ? "bg-[#16805B] hover:bg-[#0D5C41]"
+                            : "bg-[#0B4F4B] hover:bg-[#073F3C]"
+                        }`}
+                      >
+                        <LayoutDashboard className="h-4 w-4" />
+                        <span>{getDashboardLabel(userSession)}</span>
+                      </button>
+                    </Link>
+
+                    <Link
+                      href="/profile"
+                      onClick={() => setMobileOpen(false)}
+                      className="w-full py-2 rounded-xl text-slate-700 text-xs font-semibold hover:bg-slate-50 flex items-center justify-center gap-2 border border-slate-200"
+                    >
+                      <User className="h-3.5 w-3.5 text-slate-500" />
+                      <span>Account Profile</span>
+                    </Link>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full py-2 rounded-xl text-rose-600 text-xs font-semibold hover:bg-rose-50 flex items-center justify-center gap-2 border border-rose-100"
+                    >
+                      <LogOut className="h-3.5 w-3.5 text-rose-500" />
+                      <span>Sign Out</span>
+                    </button>
                   </>
                 )}
               </div>

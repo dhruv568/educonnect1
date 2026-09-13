@@ -59,14 +59,22 @@ export default function TeacherDashboardPage() {
   });
 
   useEffect(() => {
-    fetch("/api/teacher/dashboard")
-      .then((res) => res.json())
+    fetch("/api/teacher/dashboard", { cache: "no-store", headers: { Pragma: "no-cache" } })
+      .then((res) => {
+        if (!res.ok || res.status === 401) {
+          window.location.replace("/teacher/login");
+          return null;
+        }
+        return res.json();
+      })
       .then((json) => {
-        if (json.data) {
+        if (json?.data) {
           setData(json.data);
         }
       })
-      .catch((err) => console.error("Failed to load teacher dashboard:", err))
+      .catch(() => {
+        window.location.replace("/teacher/login");
+      })
       .finally(() => setLoading(false));
   }, []);
 
