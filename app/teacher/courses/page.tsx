@@ -26,6 +26,9 @@ import {
   Archive,
   Star,
   Settings,
+  Lock,
+  ShieldAlert,
+  ArrowRight,
 } from "lucide-react";
 
 export default function TeacherCoursesDashboardPage() {
@@ -35,6 +38,7 @@ export default function TeacherCoursesDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("Educator");
   const [userEmail, setUserEmail] = useState("");
+  const [verificationStatus, setVerificationStatus] = useState<string>("PENDING");
 
   const [courses, setCourses] = useState<any[]>([]);
   const [stats, setStats] = useState<any>({
@@ -63,6 +67,9 @@ export default function TeacherCoursesDashboardPage() {
       if (profileJson.data) {
         setUserName(`${profileJson.data.profile.firstName} ${profileJson.data.profile.lastName}`.trim() || profileJson.data.user.email);
         setUserEmail(profileJson.data.user.email);
+        if (profileJson.data.teacherProfile) {
+          setVerificationStatus(profileJson.data.teacherProfile.verificationStatus || "PENDING");
+        }
       }
 
       const res = await fetch("/api/teacher/courses");
@@ -85,6 +92,11 @@ export default function TeacherCoursesDashboardPage() {
 
   const handleCreateCourse = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (verificationStatus !== "VERIFIED") {
+      showToast("Verification Required 🔒", "Only verified educators can create or publish courses.", "error");
+      router.push("/teacher/onboarding");
+      return;
+    }
     if (!newTitle.trim() || !newDescription.trim()) return;
     setCreating(true);
     try {
@@ -128,6 +140,11 @@ export default function TeacherCoursesDashboardPage() {
   };
 
   const handlePublishToggle = async (course: any) => {
+    if (verificationStatus !== "VERIFIED" && course.status !== "PUBLISHED") {
+      showToast("Verification Required 🔒", "Only verified educators can publish courses to learners.", "error");
+      router.push("/teacher/onboarding");
+      return;
+    }
     const endpoint = course.status === "PUBLISHED" ? "unpublish" : "publish";
     try {
       const res = await fetch(`/api/teacher/courses/${course.id}/${endpoint}`, {
@@ -153,6 +170,26 @@ export default function TeacherCoursesDashboardPage() {
   return (
     <DashboardLayout role="TEACHER" userName={userName} userEmail={userEmail}>
       <div className="space-y-6">
+        {/* Verification Required Banner for Unverified Educators */}
+        {verificationStatus !== "VERIFIED" && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-3">
+              <ShieldAlert className="h-5 w-5 text-amber-600 shrink-0" />
+              <div>
+                <h4 className="text-xs font-black text-amber-950">Educator Verification Required for Course Creation</h4>
+                <p className="text-[11px] text-amber-800 font-medium">
+                  You must be an approved, verified educator to build LMS courses or publish lessons to learners.
+                </p>
+              </div>
+            </div>
+            <Link href="/teacher/onboarding" className="shrink-0 w-full sm:w-auto">
+              <Button size="sm" variant="secondary" rightIcon={<ArrowRight className="h-3.5 w-3.5" />} className="w-full sm:w-auto text-xs font-bold bg-amber-600 text-white hover:bg-amber-700">
+                Complete Verification
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
@@ -170,14 +207,27 @@ export default function TeacherCoursesDashboardPage() {
             </p>
           </div>
 
-          <Button
-            onClick={() => setShowCreateModal(true)}
-            variant="primary"
-            size="sm"
-            leftIcon={<Plus className="h-4 w-4" />}
-          >
-            + Create Course
-          </Button>
+          {verificationStatus === "VERIFIED" ? (
+            <Button
+              onClick={() => setShowCreateModal(true)}
+              variant="primary"
+              size="sm"
+              leftIcon={<Plus className="h-4 w-4" />}
+            >
+              + Create Course
+            </Button>
+          ) : (
+            <Link href="/teacher/onboarding" title="Educator verification required to create courses">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Lock className="h-4 w-4 text-amber-600" />}
+                className="bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 font-bold"
+              >
+                🔒 Verification required
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Stats Metrics Cards */}

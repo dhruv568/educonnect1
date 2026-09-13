@@ -1,4 +1,5 @@
 import { getPublicAppUrl } from "../../app-url";
+import { OFFICIAL_COMPANY_INFO } from "../../company";
 
 export interface EmailTemplateParams {
   recipientEmail: string;
@@ -208,8 +209,11 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
     <div class="main-card">
       <!-- Header Banner -->
       <div class="header-banner">
-        <h1 class="brand-title">EDUCONNECTS</h1>
-        <p class="brand-tagline">Learn. Connect. Grow.</p>
+        <div style="margin-bottom: 12px;">
+          <img src="${baseUrl}/images/logo.jpeg" alt="EduConnect Logo" width="56" height="56" style="border-radius: 14px; border: 2px solid rgba(255,255,255,0.4); display: inline-block; object-fit: cover;" />
+        </div>
+        <h1 class="brand-title">EDUCONNECT</h1>
+        <p class="brand-tagline">Learn • Grow • Belong</p>
       </div>
 
       <!-- Icon Avatar Badge -->
@@ -219,7 +223,7 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
       <div class="content-body">
         <h2 class="greeting">Hello ${recipientName},</h2>
         <p class="welcome-text">
-          Welcome to EduConnects! 🎓<br>
+          Welcome to EduConnect! 🎓<br>
           We're excited to have you with us. To verify your email address, please enter the verification code below:
         </p>
 
@@ -232,12 +236,12 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
 
         <!-- Security Warning -->
         <div class="security-notice">
-          <strong>🔐 For your security:</strong> EduConnects will never ask you to share your verification code with anyone.
+          <strong>🔐 For your security:</strong> EduConnect will never ask you to share your verification code with anyone.
         </div>
 
         <!-- Call to Action Button -->
         <div class="cta-container">
-          <a href="${baseUrl}" class="cta-button" target="_blank">Open EduConnects</a>
+          <a href="${baseUrl}/verify-otp?email=${encodeURIComponent(params.recipientEmail)}" class="cta-button" target="_blank">Verify OTP</a>
         </div>
 
         <!-- Disregard Disclaimer -->
@@ -248,9 +252,9 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
 
       <!-- Footer -->
       <div class="footer">
-        <p class="footer-brand">EduConnects</p>
-        <p class="footer-tagline">Learn. Connect. Grow.</p>
-        <p class="footer-copyright">&copy; ${currentYear} EduConnects. All rights reserved.</p>
+        <p class="footer-brand" style="font-weight: 700; font-size: 13px; color: #334155; margin: 0;">&copy; ${currentYear} ${OFFICIAL_COMPANY_INFO.legalName}</p>
+        <p class="footer-tagline" style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Brand Name: ${OFFICIAL_COMPANY_INFO.brandName}</p>
+        <p class="footer-copyright" style="font-size: 11px; color: #94a3b8; margin: 6px 0 0 0;">All rights reserved.</p>
       </div>
     </div>
   </div>

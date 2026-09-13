@@ -61,13 +61,13 @@ export function RoleGatewaySection() {
                     <BookOpen className="h-7 w-7" />
                   </div>
                   <GlassBadge variant="emerald" size="md">
-                    FOR STUDENTS & LEARNERS
+                    FOR LEARNERS
                   </GlassBadge>
                 </div>
 
                 <div className="space-y-2">
                   <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
-                    I am a Student
+                    I am a Learner
                   </h3>
                   <p className="text-sm text-emerald-700 font-semibold">
                     Master subjects, attend live interactive classes & ace your exams
@@ -105,7 +105,7 @@ export function RoleGatewaySection() {
                     className="w-full bg-emerald-600 hover:bg-emerald-700 border-emerald-500 shadow-emerald-600/20"
                     rightIcon={<ArrowRight className="h-4 w-4" />}
                   >
-                    Enter Student Experience
+                    Enter Learner Portal
                   </GlassButton>
                 </Link>
                 <Link href="/student/login" className="w-full sm:w-auto">
@@ -114,7 +114,7 @@ export function RoleGatewaySection() {
                     size="lg"
                     className="w-full text-slate-700 border-slate-200"
                   >
-                    Student Login
+                    Learner Login
                   </GlassButton>
                 </Link>
               </div>
@@ -141,13 +141,13 @@ export function RoleGatewaySection() {
                     <GraduationCap className="h-7 w-7" />
                   </div>
                   <GlassBadge variant="indigo" size="md">
-                    FOR TEACHERS & EDUCATORS
+                    FOR EDUCATORS
                   </GlassBadge>
                 </div>
 
                 <div className="space-y-2">
                   <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
-                    I am a Teacher
+                    I am an Educator
                   </h3>
                   <p className="text-sm text-indigo-700 font-semibold">
                     Build your teaching brand, host live sessions & scale your revenue
@@ -185,7 +185,7 @@ export function RoleGatewaySection() {
                     className="w-full bg-indigo-600 hover:bg-indigo-700 border-indigo-500 shadow-indigo-600/20"
                     rightIcon={<ArrowRight className="h-4 w-4" />}
                   >
-                    Enter Teacher Experience
+                    Enter Educator Portal
                   </GlassButton>
                 </Link>
                 <Link href="/teacher/login" className="w-full sm:w-auto">
@@ -194,7 +194,7 @@ export function RoleGatewaySection() {
                     size="lg"
                     className="w-full text-slate-700 border-slate-200"
                   >
-                    Teacher Login
+                    Educator Login
                   </GlassButton>
                 </Link>
               </div>

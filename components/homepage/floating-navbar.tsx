@@ -100,12 +100,19 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
   }, []);
 
   const handleLogout = async () => {
+    const wasTeacher = userSession?.role === "TEACHER";
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       setUserSession(null);
       setMobileOpen(false);
+      if (wasTeacher) {
+        window.location.href = "/teacher/logout";
+      }
     } catch {
       setUserSession(null);
+      if (wasTeacher) {
+        window.location.href = "/teacher/logout";
+      }
     }
   };
 

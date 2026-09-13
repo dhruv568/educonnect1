@@ -46,6 +46,30 @@ export async function requireStaffOrAdmin(): Promise<UserSession & { userId: str
   return requireRole(["ADMIN", "STAFF"]);
 }
 
+export async function requireVerifiedEducator(): Promise<UserSession & { userId: string; teacherProfile: any }> {
+  const session = await requireRole(["TEACHER"]);
+  const teacherProfile = await prisma.teacherProfile.findUnique({
+    where: { userId: session.userId },
+  });
+
+  if (!teacherProfile) {
+    throw new Error("NOT_FOUND: Educator profile record not found.");
+  }
+
+  const isVerified =
+    teacherProfile.verificationStatus === "VERIFIED" ||
+    teacherProfile.verificationStatus === "APPROVED";
+
+  if (!isVerified) {
+    if (teacherProfile.verificationStatus === "PENDING") {
+      throw new Error("FORBIDDEN: Educator verification is under review. You will be notified once approved.");
+    }
+    throw new Error("FORBIDDEN: Educator verification is required before using this feature.");
+  }
+
+  return { ...session, teacherProfile };
+}
+
 export {
   requirePermission,
   requireAnyPermission,

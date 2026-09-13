@@ -592,6 +592,14 @@ export class LmsService {
       throw new Error("TEACHER_NOT_FOUND: Teacher profile required to create courses.");
     }
 
+    const isVerified =
+      teacher.verificationStatus === "VERIFIED" ||
+      teacher.verificationStatus === "APPROVED";
+
+    if (!isVerified) {
+      throw new Error("FORBIDDEN: Educator verification is required before creating courses.");
+    }
+
     const slug = await LmsService.generateUniqueSlug(input.title);
 
     const outcomesStr = input.learningOutcomes ? JSON.stringify(input.learningOutcomes) : null;
@@ -796,6 +804,14 @@ export class LmsService {
    * Publish course after checking validation requirements
    */
   static async publishCourse(teacherUserId: string, courseId: string) {
+    const teacher = await prisma.teacherProfile.findUnique({
+      where: { userId: teacherUserId },
+    });
+
+    if (!teacher || (teacher.verificationStatus !== "VERIFIED" && teacher.verificationStatus !== "APPROVED")) {
+      throw new Error("FORBIDDEN: Educator verification is required before publishing courses.");
+    }
+
     const editorData = await LmsService.getTeacherCourseEditorDetails(teacherUserId, courseId);
 
     if (!editorData.checklist.isPublishable) {

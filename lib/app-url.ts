@@ -52,8 +52,8 @@ export function getMainDomain(): string {
  */
 export function getStudentDomain(): string {
   const envUrl =
-    process.env.NEXT_PUBLIC_STUDENT_DOMAIN ||
     process.env.NEXT_PUBLIC_LEARNER_DOMAIN ||
+    process.env.NEXT_PUBLIC_STUDENT_DOMAIN ||
     "https://learners.educonnects.co.in";
   return envUrl.trim().replace(/\/+$/, "");
 }

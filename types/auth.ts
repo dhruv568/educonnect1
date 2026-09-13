@@ -2,7 +2,7 @@ export type UserRole = "ADMIN" | "STAFF" | "TEACHER" | "STUDENT";
 
 export type VerificationStatus = "PENDING" | "VERIFIED" | "REJECTED" | "SUSPENDED";
 
-export type DocumentCategory = "IDENTITY" | "QUALIFICATION" | "CERTIFICATE" | "EXPERIENCE" | "OTHER";
+export type DocumentCategory = "IDENTITY" | "QUALIFICATION" | "CERTIFICATE" | "EXPERIENCE" | "CANCELLED_CHEQUE" | "OTHER";
 
 export type TeachingMode = "ONLINE" | "OFFLINE" | "BOTH";
 

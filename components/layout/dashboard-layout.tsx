@@ -32,6 +32,7 @@ import { UserRole } from "@/types/auth";
 import { useToast } from "@/components/ui/toast";
 import { NotificationPopover } from "@/components/layout/notification-popover";
 import { PermissionProvider } from "@/components/shared/permission-guard";
+import { DashboardFooter } from "@/components/layout/dashboard-footer";
 
 export interface DashboardLayoutProps {
   role: UserRole;
@@ -46,9 +47,17 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
   const pathname = usePathname();
   const { showToast } = useToast();
 
+  const getDisplayRole = (r: string) => {
+    if (r === "ADMIN") return "SUPER ADMIN";
+    if (r === "STAFF") return "STAFF";
+    if (r === "TEACHER") return "EDUCATOR";
+    if (r === "STUDENT") return "LEARNER";
+    return r;
+  };
+
   const [currentUserName, setCurrentUserName] = useState<string>(userName || "");
   const [currentUserEmail, setCurrentUserEmail] = useState<string>(userEmail || "");
-  const [currentRoleTitle, setCurrentRoleTitle] = useState<string>(role === "ADMIN" ? "SUPER ADMIN" : role === "STAFF" ? "STAFF" : role);
+  const [currentRoleTitle, setCurrentRoleTitle] = useState<string>(getDisplayRole(role));
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [dynamicNav, setDynamicNav] = useState<any[] | null>(null);
 
@@ -81,7 +90,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
             setAvatarUrl(u.avatarUrl);
           }
           if (u.roleName) {
-            setCurrentRoleTitle(u.roleName.toUpperCase());
+            setCurrentRoleTitle(getDisplayRole(u.roleName.toUpperCase()));
           }
           if (Array.isArray(u.navigation) && u.navigation.length > 0) {
             setDynamicNav(u.navigation);
@@ -121,8 +130,8 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
     ADMIN: [
       { label: "Overview Dashboard", icon: LayoutDashboard, href: "/admin" },
       { label: "User Governance", icon: Users, href: "/admin/users" },
-      { label: "Teacher Verifications", icon: ShieldCheck, href: "/admin/verification" },
-      { label: "Teacher Roster", icon: TeacherIcon, href: "/admin/teachers" },
+      { label: "Educator Verifications", icon: ShieldCheck, href: "/admin/verification" },
+      { label: "Educator Roster", icon: TeacherIcon, href: "/admin/teachers" },
       { label: "Course Moderation", icon: BookOpen, href: "/admin/courses" },
       { label: "Live Classes", icon: Video, href: "/admin/live-classes" },
       { label: "Payment Ledger", icon: FileCheck, href: "/admin/payments" },
@@ -139,15 +148,15 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
       { label: "Staff Dashboard", icon: LayoutDashboard, href: "/staff/dashboard" },
     ],
     TEACHER: [
-      { label: "Teacher Dashboard", icon: LayoutDashboard, href: "/teacher/dashboard" },
+      { label: "Educator Dashboard", icon: LayoutDashboard, href: "/teacher/dashboard" },
       { label: "Profile Onboarding", icon: FileCheck, href: "/teacher/onboarding" },
       { label: "Verification Status", icon: ShieldCheck, href: "/teacher/verification" },
       { label: "Live Class Slots", icon: Video, href: "/teacher/live-classes" },
       { label: "Courses & Content", icon: BookOpen, href: "/teacher/courses" },
     ],
     STUDENT: [
-      { label: "Student Hub", icon: LayoutDashboard, href: "/student/dashboard" },
-      { label: "Find Teachers", icon: TeacherIcon, href: "/student/teachers" },
+      { label: "Learner Hub", icon: LayoutDashboard, href: "/student/dashboard" },
+      { label: "Find Educators", icon: TeacherIcon, href: "/student/teachers" },
       { label: "My Live Classes", icon: Video, href: "/student/live-classes" },
       { label: "Enrolled Courses", icon: BookOpen, href: "/student/courses" },
     ],
@@ -169,9 +178,17 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       showToast("Logged out", "You have been signed out.", "info");
-      router.push("/");
+      if (role === "TEACHER") {
+        router.push("/teacher/logout");
+      } else {
+        router.push("/");
+      }
     } catch {
-      router.push("/");
+      if (role === "TEACHER") {
+        router.push("/teacher/logout");
+      } else {
+        router.push("/");
+      }
     }
   };
 
@@ -300,6 +317,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
 
         {/* Dashboard Main Content */}
         <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto">{children}</main>
+        <DashboardFooter />
       </div>
     </div>
     </PermissionProvider>

@@ -30,6 +30,7 @@ import {
   Loader2,
   Plus,
   Lock,
+  Landmark,
 } from "lucide-react";
 
 export default function AdminTeacherReviewPage() {
@@ -40,7 +41,7 @@ export default function AdminTeacherReviewPage() {
 
   const [loading, setLoading] = useState(true);
   const [application, setApplication] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "qualifications" | "documents" | "history" | "notes">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "qualifications" | "documents" | "bank" | "history" | "notes">("overview");
 
   // Modal / Decision Action States
   const [showApproveModal, setShowApproveModal] = useState(false);
@@ -225,7 +226,7 @@ export default function AdminTeacherReviewPage() {
     );
   }
 
-  const { profile, professional, user, verificationStatus, documents, qualifications, certificates, history, adminNotes } = application;
+  const { profile, professional, user, verificationStatus, documents, qualifications, certificates, history, adminNotes, bankDetails } = application;
 
   return (
     <DashboardLayout role="ADMIN" userName="System Administrator" userEmail="admin@educonnects.com">
@@ -310,6 +311,7 @@ export default function AdminTeacherReviewPage() {
             { id: "overview", label: "Profile & Overview", icon: User },
             { id: "qualifications", label: `Qualifications & Certs (${qualifications.length + certificates.length})`, icon: GraduationCap },
             { id: "documents", label: `Secure Documents (${documents.length})`, icon: FileText },
+            { id: "bank", label: "Bank & Cheque", icon: Landmark },
             { id: "history", label: `Audit History (${history.length})`, icon: History },
             { id: "notes", label: `Admin Notes (${adminNotes.length})`, icon: MessageSquare },
           ].map((tab) => {
@@ -402,6 +404,47 @@ export default function AdminTeacherReviewPage() {
                       {s}
                     </span>
                   ))}
+                </div>
+              </div>
+            </Card>
+
+            {/* Bank Details Summary Card */}
+            <Card className="p-6 border-slate-200 bg-white space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <Landmark className="h-5 w-5 text-emerald-600" /> Bank & Settlement Account Details
+                </h3>
+                <button
+                  onClick={() => setActiveTab("bank")}
+                  className="text-xs font-extrabold text-blue-600 hover:text-blue-700 underline"
+                >
+                  View Bank Documents →
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <span className="text-slate-500 font-semibold block">Account Holder</span>
+                  <span className="font-extrabold text-slate-900 text-sm">
+                    {bankDetails?.accountHolderName || "Pending submission"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 font-semibold block">Account Number</span>
+                  <span className="font-mono font-extrabold text-slate-900 text-sm">
+                    {bankDetails?.accountNumber ? `•••• ${bankDetails.accountNumber.slice(-4)}` : "Pending submission"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 font-semibold block">Bank Name</span>
+                  <span className="font-extrabold text-slate-900 text-sm">
+                    {bankDetails?.bankName || "Pending submission"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 font-semibold block">IFSC Code</span>
+                  <span className="font-mono font-extrabold text-emerald-700 text-sm uppercase">
+                    {bankDetails?.ifscCode || "Pending submission"}
+                  </span>
                 </div>
               </div>
             </Card>
@@ -515,7 +558,135 @@ export default function AdminTeacherReviewPage() {
           </Card>
         )}
 
-        {/* TAB 4: AUDIT HISTORY */}
+        {/* TAB 4: BANK & CANCELLED CHEQUE */}
+        {activeTab === "bank" && (
+          <div className="space-y-6">
+            <Card className="p-6 border-slate-200 bg-white space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <Landmark className="h-5 w-5 text-emerald-600" /> Bank Account Details (Settlements & Payouts)
+                </h3>
+                <span className="text-xs font-bold text-slate-500">
+                  {bankDetails?.accountNumber ? "Details Provided" : "Pending Submission"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-500 font-semibold block mb-1">Account Holder Name</span>
+                  <span className="font-extrabold text-slate-900 text-sm">
+                    {bankDetails?.accountHolderName || "Not provided"}
+                  </span>
+                </div>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-500 font-semibold block mb-1">Account Number</span>
+                  <span className="font-mono font-extrabold text-slate-900 text-sm tracking-wide">
+                    {bankDetails?.accountNumber ? `${bankDetails.accountNumber}` : "Not provided"}
+                  </span>
+                </div>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-500 font-semibold block mb-1">Bank Name</span>
+                  <span className="font-extrabold text-slate-900 text-sm">
+                    {bankDetails?.bankName || "Not provided"}
+                  </span>
+                </div>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-500 font-semibold block mb-1">IFSC Code</span>
+                  <span className="font-mono font-extrabold text-emerald-700 text-sm uppercase">
+                    {bankDetails?.ifscCode || "Not provided"}
+                  </span>
+                </div>
+              </div>
+            </Card>
+
+            {/* Cancelled Cheque Card */}
+            <Card className="p-6 border-slate-200 bg-white space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-blue-600" /> Cancelled Cheque Verification
+                </h3>
+                <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                  <Lock className="h-3.5 w-3.5 text-emerald-600" /> KYC Regulatory Requirement
+                </span>
+              </div>
+
+              {(() => {
+                const chequeDoc = documents.find((d: DocumentItem) => d.category === "CANCELLED_CHEQUE");
+                if (chequeDoc) {
+                  return (
+                    <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-sm">
+                          <FileText className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-extrabold text-slate-900">{chequeDoc.fileName}</h4>
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-200 text-emerald-900 uppercase">
+                              Uploaded Cheque
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-600 mt-0.5">
+                            {chequeDoc.fileType} • {(chequeDoc.fileSize / 1024).toFixed(1)} KB • Uploaded {new Date(chequeDoc.uploadedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setViewDoc(chequeDoc)}
+                          className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-extrabold hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-xs"
+                        >
+                          <Eye className="h-4 w-4" /> Preview Cheque
+                        </button>
+                        <a
+                          href={`/api/documents/${chequeDoc.id}`}
+                          download={chequeDoc.fileName}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                          title="Download Cancelled Cheque"
+                        >
+                          <Download className="h-4 w-4" />
+                        </a>
+                      </div>
+                    </div>
+                  );
+                } else if (bankDetails?.cancelledChequeUrl) {
+                  return (
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-6 w-6 text-slate-500" />
+                        <div>
+                          <h4 className="text-sm font-extrabold text-slate-900">Cancelled Cheque on File</h4>
+                          <p className="text-xs text-slate-500">{bankDetails.cancelledChequeUrl}</p>
+                        </div>
+                      </div>
+                      <a
+                        href={bankDetails.cancelledChequeUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-extrabold hover:bg-blue-700 transition-colors"
+                      >
+                        View Cheque
+                      </a>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="p-6 text-center bg-amber-50/50 border border-amber-200 rounded-2xl">
+                      <p className="text-xs font-bold text-amber-800">
+                        No cancelled cheque uploaded by educator. Cheque is required for payout verification.
+                      </p>
+                    </div>
+                  );
+                }
+              })()}
+            </Card>
+          </div>
+        )}
+
+        {/* TAB 5: AUDIT HISTORY */}
         {activeTab === "history" && (
           <Card className="p-6 border-slate-200 bg-white space-y-4">
             <h3 className="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-2">

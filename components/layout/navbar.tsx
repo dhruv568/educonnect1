@@ -38,12 +38,19 @@ export function Navbar() {
   }, []);
 
   const handleLogout = async () => {
+    const wasTeacher = userSession?.role === "TEACHER";
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       setUserSession(null);
       setMobileMenuOpen(false);
+      if (wasTeacher) {
+        window.location.href = "/teacher/logout";
+      }
     } catch {
       setUserSession(null);
+      if (wasTeacher) {
+        window.location.href = "/teacher/logout";
+      }
     }
   };
 
@@ -56,7 +63,7 @@ export function Navbar() {
   const getDashboardLabel = (session: UserSession) => {
     if (session.role === "TEACHER") return "Educator Portal";
     if (session.role === "ADMIN") return "Admin Dashboard";
-    return "Student Dashboard";
+    return "Learner Dashboard";
   };
 
   return (

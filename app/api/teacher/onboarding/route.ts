@@ -55,7 +55,16 @@ export async function GET(request: NextRequest) {
       missingItems.push("Identity Document (Passport, Driving License, or National ID)");
     }
 
-    const totalChecklistItems = 6;
+    if (!tp.accountHolderName || !tp.accountNumber || !tp.bankName || !tp.ifscCode) {
+      missingItems.push("Bank Account Details (Account Holder Name, Account Number, Bank Name, IFSC Code)");
+    }
+
+    const hasCancelledCheque = !!tp.cancelledChequeUrl || tp.teacherDocuments.some((d) => d.category === "CANCELLED_CHEQUE");
+    if (!hasCancelledCheque) {
+      missingItems.push("Cancelled Cheque Document (JPG, PNG, or PDF <= 10MB)");
+    }
+
+    const totalChecklistItems = 8;
     const completedItems = totalChecklistItems - missingItems.length;
     const completionPercentage = Math.round((completedItems / totalChecklistItems) * 100);
     const isReady = missingItems.length === 0;
@@ -83,6 +92,11 @@ export async function GET(request: NextRequest) {
         hourlyRate: tp.hourlyRate || 40,
         languages: tp.languages ? tp.languages.split(",").map((s) => s.trim()) : ["English"],
         teachingMode: tp.teachingMode || "ONLINE",
+        accountHolderName: tp.accountHolderName || "",
+        accountNumber: tp.accountNumber || "",
+        bankName: tp.bankName || "",
+        ifscCode: tp.ifscCode || "",
+        cancelledChequeUrl: tp.cancelledChequeUrl || null,
         verificationStatus: tp.verificationStatus,
         submittedAt: tp.submittedAt,
         verifiedAt: tp.verifiedAt,

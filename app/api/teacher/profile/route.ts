@@ -24,6 +24,11 @@ export async function PATCH(request: NextRequest) {
       experienceYears,
       hourlyRate,
       teachingMode,
+      accountHolderName,
+      accountNumber,
+      bankName,
+      ifscCode,
+      cancelledChequeUrl,
     } = body;
 
     const subjectsStr = Array.isArray(subjects) ? subjects.join(", ") : subjects;
@@ -54,6 +59,11 @@ export async function PATCH(request: NextRequest) {
         ...(experienceYears !== undefined && { experienceYears: Number(experienceYears) }),
         ...(hourlyRate !== undefined && { hourlyRate: Number(hourlyRate) }),
         ...(teachingMode !== undefined && { teachingMode }),
+        ...(accountHolderName !== undefined && { accountHolderName }),
+        ...(accountNumber !== undefined && { accountNumber }),
+        ...(bankName !== undefined && { bankName }),
+        ...(ifscCode !== undefined && { ifscCode: ifscCode ? ifscCode.toUpperCase().trim() : ifscCode }),
+        ...(cancelledChequeUrl !== undefined && { cancelledChequeUrl }),
       },
     });
 

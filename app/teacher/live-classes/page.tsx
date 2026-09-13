@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
@@ -28,7 +28,42 @@ import {
   ChevronRight,
   Shield,
   BookOpen,
+  Lock,
+  ShieldAlert,
+  ArrowRight,
+  CalendarDays,
 } from "lucide-react";
+
+const TIMEZONE = "Asia/Kolkata";
+
+function formatInKolkata(d: Date, options: Intl.DateTimeFormatOptions): string {
+  return new Intl.DateTimeFormat("en-IN", { timeZone: TIMEZONE, ...options }).format(d);
+}
+
+function getKolkataDateParts(d: Date) {
+  const formatter = new Intl.DateTimeFormat("en-IN", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hourCycle: "h23",
+  });
+  const parts = formatter.formatToParts(d);
+  const year = parseInt(parts.find((p) => p.type === "year")?.value || "1970");
+  const month = parseInt(parts.find((p) => p.type === "month")?.value || "1") - 1;
+  const day = parseInt(parts.find((p) => p.type === "day")?.value || "1");
+  const hour = parseInt(parts.find((p) => p.type === "hour")?.value || "0");
+  const minute = parseInt(parts.find((p) => p.type === "minute")?.value || "0");
+  return { year, month, day, hour, minute };
+}
+
+function isSameDayKolkata(d1: Date, d2: Date): boolean {
+  const p1 = getKolkataDateParts(d1);
+  const p2 = getKolkataDateParts(d2);
+  return p1.year === p2.year && p1.month === p2.month && p1.day === p2.day;
+}
 
 export default function TeacherLiveClassesPage() {
   const router = useRouter();
@@ -37,8 +72,11 @@ export default function TeacherLiveClassesPage() {
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("Educator");
   const [userEmail, setUserEmail] = useState("");
+  const [verificationStatus, setVerificationStatus] = useState<string>("PENDING");
+
   const [viewMode, setViewMode] = useState<"CALENDAR" | "LIST">("LIST");
   const [calendarMode, setCalendarMode] = useState<"DAY" | "WEEK" | "MONTH">("WEEK");
+  const [currentCalendarDate, setCurrentCalendarDate] = useState<Date>(new Date());
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
 
   const [stats, setStats] = useState({
@@ -85,12 +123,15 @@ export default function TeacherLiveClassesPage() {
   const fetchLiveClassesData = async () => {
     setLoading(true);
     try {
-      // Fetch onboarding for user info
+      // Fetch onboarding for user info and verification status
       const profileRes = await fetch("/api/teacher/onboarding");
       const profileJson = await profileRes.json();
       if (profileJson.data) {
         setUserName(`${profileJson.data.profile.firstName} ${profileJson.data.profile.lastName}`.trim() || profileJson.data.user.email);
         setUserEmail(profileJson.data.user.email);
+        if (profileJson.data.teacherProfile) {
+          setVerificationStatus(profileJson.data.teacherProfile.verificationStatus || "PENDING");
+        }
       }
 
       // Fetch live class slots & stats
@@ -112,7 +153,131 @@ export default function TeacherLiveClassesPage() {
     fetchLiveClassesData();
   }, [filterStatus]);
 
+  // Calendar Navigation Controls
+  const handleCalendarPrev = () => {
+    const next = new Date(currentCalendarDate);
+    if (calendarMode === "DAY") {
+      next.setDate(next.getDate() - 1);
+    } else if (calendarMode === "WEEK") {
+      next.setDate(next.getDate() - 7);
+    } else if (calendarMode === "MONTH") {
+      next.setMonth(next.getMonth() - 1);
+    }
+    setCurrentCalendarDate(next);
+  };
+
+  const handleCalendarNext = () => {
+    const next = new Date(currentCalendarDate);
+    if (calendarMode === "DAY") {
+      next.setDate(next.getDate() + 1);
+    } else if (calendarMode === "WEEK") {
+      next.setDate(next.getDate() + 7);
+    } else if (calendarMode === "MONTH") {
+      next.setMonth(next.getMonth() + 1);
+    }
+    setCurrentCalendarDate(next);
+  };
+
+  const handleCalendarToday = () => {
+    setCurrentCalendarDate(new Date());
+  };
+
+  // Calendar Header Title
+  const calendarTitle = useMemo(() => {
+    if (calendarMode === "DAY") {
+      return formatInKolkata(currentCalendarDate, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
+    if (calendarMode === "WEEK") {
+      const currentDayOfWeek = currentCalendarDate.getDay();
+      const start = new Date(currentCalendarDate);
+      start.setDate(currentCalendarDate.getDate() - currentDayOfWeek);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return `${formatInKolkata(start, { day: "numeric", month: "short" })} - ${formatInKolkata(end, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })}`;
+    }
+    if (calendarMode === "MONTH") {
+      return formatInKolkata(currentCalendarDate, {
+        month: "long",
+        year: "numeric",
+      });
+    }
+    return "";
+  }, [calendarMode, currentCalendarDate]);
+
+  // Calculated Days for Week View
+  const weekDays = useMemo(() => {
+    const currentDayOfWeek = currentCalendarDate.getDay();
+    const start = new Date(currentCalendarDate);
+    start.setDate(currentCalendarDate.getDate() - currentDayOfWeek);
+    start.setHours(0, 0, 0, 0);
+
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      days.push(d);
+    }
+    return days;
+  }, [currentCalendarDate]);
+
+  // Calculated Days for Month View Grid
+  const monthGridDays = useMemo(() => {
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+    const daysInMonth = lastDayOfMonth.getDate();
+    const startDayOfWeek = firstDayOfMonth.getDay();
+
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    const cells: { date: Date; isCurrentMonth: boolean }[] = [];
+
+    // Padding for previous month
+    for (let i = startDayOfWeek - 1; i >= 0; i--) {
+      cells.push({
+        date: new Date(year, month - 1, prevMonthLastDay - i),
+        isCurrentMonth: false,
+      });
+    }
+
+    // Days in current month
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push({
+        date: new Date(year, month, d),
+        isCurrentMonth: true,
+      });
+    }
+
+    // Padding for next month to complete rows of 7
+    const totalCells = Math.ceil(cells.length / 7) * 7;
+    const nextDaysCount = totalCells - cells.length;
+    for (let d = 1; d <= nextDaysCount; d++) {
+      cells.push({
+        date: new Date(year, month + 1, d),
+        isCurrentMonth: false,
+      });
+    }
+
+    return cells;
+  }, [currentCalendarDate]);
+
+  // Handle Create Class Submit
   const handleCreateSubmit = async (publishImmediate: boolean = true) => {
+    if (verificationStatus !== "VERIFIED") {
+      showToast("Verification Required 🔒", "Only verified educators can create live classes.", "error");
+      router.push("/teacher/onboarding");
+      return;
+    }
+
     if (!title.trim() || !date || !startTime || !endTime) {
       showToast("Validation Error", "Title, date, start time, and end time are required.", "error");
       return;
@@ -151,67 +316,98 @@ export default function TeacherLiveClassesPage() {
 
       const json = await res.json();
       if (json.success) {
-        showToast("Success", publishImmediate ? "Live Class published to schedule!" : "Live Class saved as draft.", "success");
+        showToast("Success", "Live class created successfully.", "success");
         setShowCreateModal(false);
         resetForm();
         fetchLiveClassesData();
       } else {
-        showToast("Schedule Error", json.error?.message || "Failed to create class slot.", "error");
+        showToast("Error", json.error || "Failed to create live class.", "error");
       }
     } catch (err: any) {
-      showToast("Server Error", "An error occurred while creating live class.", "error");
+      showToast("Error", err.message || "Failed to submit live class.", "error");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const resetForm = () => {
-    setStep(1);
-    setTitle("");
-    setDescription("");
-    setDate("");
-    setStartTime("17:00");
-    setEndTime("18:00");
-    setMaxCapacity(10);
-  };
-
   const handleStartClassroom = async (slotId: string) => {
+    if (verificationStatus !== "VERIFIED") {
+      showToast("Verification Required 🔒", "Only verified educators can host live classrooms.", "error");
+      router.push("/teacher/onboarding");
+      return;
+    }
+
     try {
       const res = await fetch(`/api/teacher/live-classes/${slotId}/start-session`, {
         method: "POST",
       });
       const json = await res.json();
-      if (json.success && json.data.sessionId) {
-        showToast("Launching Classroom", "Connecting to live virtual classroom...", "info");
-        router.push(`/classroom/${json.data.sessionId}`);
+      if (json.success && json.data) {
+        router.push(`/classroom/${slotId}`);
       } else {
-        showToast("Error", json.error?.message || "Could not launch classroom.", "error");
+        showToast("Cannot Enter", json.error || "Class session could not be started.", "error");
       }
     } catch (err) {
-      showToast("Error", "Failed to launch classroom session.", "error");
+      showToast("Error", "Failed to start live classroom.", "error");
     }
   };
 
-  const handleCancelConfirm = async () => {
+  const handleCancelSlot = async () => {
     if (!cancellingSlot) return;
     try {
-      const res = await fetch(`/api/teacher/live-classes/${cancellingSlot.id}/cancel`, {
-        method: "POST",
+      const res = await fetch(`/api/teacher/live-classes/${cancellingSlot.id}`, {
+        method: "DELETE",
       });
       const json = await res.json();
       if (json.success) {
-        showToast("Cancelled", "Class slot has been cancelled.", "info");
+        showToast("Cancelled", "Live class has been cancelled.", "info");
         setCancellingSlot(null);
         fetchLiveClassesData();
+      } else {
+        showToast("Error", json.error || "Failed to cancel live class.", "error");
       }
     } catch (err) {
-      showToast("Error", "Failed to cancel class slot.", "error");
+      showToast("Error", "Failed to cancel live class.", "error");
     }
   };
+
+  const resetForm = (prefillDate?: string) => {
+    setStep(1);
+    setTitle("");
+    setSubject("Mathematics");
+    setDescription("");
+    setDate(prefillDate || new Date().toISOString().split("T")[0]);
+    setStartTime("17:00");
+    setEndTime("18:00");
+    setPrice(0);
+    setMaxCapacity(10);
+  };
+
+  const today = new Date();
 
   return (
     <DashboardLayout role="TEACHER" userName={userName} userEmail={userEmail}>
       <div className="space-y-6">
+        {/* Verification Required Banner for Unverified Educators */}
+        {verificationStatus !== "VERIFIED" && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-3">
+              <ShieldAlert className="h-5 w-5 text-amber-600 shrink-0" />
+              <div>
+                <h4 className="text-xs font-black text-amber-950">Educator Verification Required for Live Classes</h4>
+                <p className="text-[11px] text-amber-800 font-medium">
+                  You must be an approved, verified educator to schedule live slots or launch interactive LiveKit classrooms.
+                </p>
+              </div>
+            </div>
+            <Link href="/teacher/onboarding" className="shrink-0 w-full sm:w-auto">
+              <Button size="sm" variant="secondary" rightIcon={<ArrowRight className="h-3.5 w-3.5" />} className="w-full sm:w-auto text-xs font-bold bg-amber-600 text-white hover:bg-amber-700">
+                Complete Verification
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
@@ -225,7 +421,7 @@ export default function TeacherLiveClassesPage() {
               <Video className="h-7 w-7 text-blue-600" /> Live Class Slots
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Create and manage your interactive teaching schedule.
+              Create and manage your interactive teaching schedule in Asia/Kolkata (IST).
             </p>
           </div>
 
@@ -236,21 +432,34 @@ export default function TeacherLiveClassesPage() {
               </Button>
             </Link>
 
-            <Button
-              onClick={() => {
-                resetForm();
-                setShowCreateModal(true);
-              }}
-              variant="primary"
-              size="sm"
-              leftIcon={<Plus className="h-4 w-4" />}
-            >
-              + Create Live Class
-            </Button>
+            {verificationStatus === "VERIFIED" ? (
+              <Button
+                onClick={() => {
+                  resetForm();
+                  setShowCreateModal(true);
+                }}
+                variant="primary"
+                size="sm"
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                + Create Live Class
+              </Button>
+            ) : (
+              <Link href="/teacher/onboarding" title="Verification required to schedule live classes">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Lock className="h-4 w-4 text-amber-600" />}
+                  className="bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 font-bold"
+                >
+                  🔒 Verification required
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
-        {/* Real Metrics Cards */}
+        {/* Metrics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="space-y-1 border-l-4 border-l-blue-600">
             <div className="text-xs font-semibold text-slate-500 uppercase">Upcoming Classes</div>
@@ -278,7 +487,7 @@ export default function TeacherLiveClassesPage() {
         </div>
 
         {/* View Mode & Filter Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
             <button
               onClick={() => setViewMode("LIST")}
@@ -298,14 +507,14 @@ export default function TeacherLiveClassesPage() {
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto">
             {["ALL", "SCHEDULED", "OPEN", "LIVE", "COMPLETED", "CANCELLED"].map((st) => (
               <button
                 key={st}
                 onClick={() => setFilterStatus(st)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition whitespace-nowrap ${
                   filterStatus === st
-                    ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                    ? "bg-blue-600 text-white border-blue-600 shadow-xs"
                     : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                 }`}
               >
@@ -323,7 +532,9 @@ export default function TeacherLiveClassesPage() {
             ))}
           </div>
         ) : viewMode === "LIST" ? (
-          /* List View */
+          /* ========================================================================= */
+          /* LIST VIEW */
+          /* ========================================================================= */
           slots.length === 0 ? (
             <Card className="p-12 text-center space-y-4 border-dashed border-2">
               <Video className="h-12 w-12 text-slate-400 mx-auto" />
@@ -333,17 +544,25 @@ export default function TeacherLiveClassesPage() {
                   You haven't scheduled any live classes matching this filter.
                 </p>
               </div>
-              <Button
-                onClick={() => {
-                  resetForm();
-                  setShowCreateModal(true);
-                }}
-                variant="primary"
-                size="sm"
-                leftIcon={<Plus className="h-4 w-4" />}
-              >
-                Create Your First Live Class
-              </Button>
+              {verificationStatus === "VERIFIED" ? (
+                <Button
+                  onClick={() => {
+                    resetForm();
+                    setShowCreateModal(true);
+                  }}
+                  variant="primary"
+                  size="sm"
+                  leftIcon={<Plus className="h-4 w-4" />}
+                >
+                  Create Your First Live Class
+                </Button>
+              ) : (
+                <Link href="/teacher/onboarding">
+                  <Button variant="outline" size="sm" leftIcon={<Lock className="h-4 w-4 text-amber-600" />}>
+                    Complete Verification to Schedule
+                  </Button>
+                </Link>
+              )}
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -386,20 +605,21 @@ export default function TeacherLiveClassesPage() {
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-slate-400" />
                           <span>
-                            {new Date(slot.startTime).toLocaleDateString("en-US", {
+                            {formatInKolkata(new Date(slot.startTime), {
                               weekday: "short",
                               month: "short",
                               day: "numeric",
                             })}{" "}
-                            ({new Date(slot.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -{" "}
-                            {new Date(slot.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })})
+                            ({formatInKolkata(new Date(slot.startTime), { hour: "2-digit", minute: "2-digit" })} -{" "}
+                            {formatInKolkata(new Date(slot.endTime), { hour: "2-digit", minute: "2-digit" })}{" "}
+                            IST)
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-slate-400" />
                           <span>
-                            {slot.studentCount} / {slot.maxCapacity} Students Enrolled ({slot.classType})
+                            {slot.studentCount || 0} / {slot.maxCapacity} Students Enrolled ({slot.classType})
                           </span>
                         </div>
                       </div>
@@ -439,63 +659,362 @@ export default function TeacherLiveClassesPage() {
             </div>
           )
         ) : (
-          /* Calendar View */
+          /* ========================================================================= */
+          /* CALENDAR VIEW (DAY / WEEK / MONTH IN ASIA/KOLKATA) */
+          /* ========================================================================= */
           <Card className="p-6 space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-slate-800">Calendar View</span>
+            {/* Calendar Control Toolbar */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              {/* Prev / Next / Today Controls & Date Title */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                  <button
+                    onClick={handleCalendarPrev}
+                    className="p-1.5 rounded-lg hover:bg-white text-slate-600 transition"
+                    title="Previous"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={handleCalendarToday}
+                    className="px-3 py-1 rounded-lg text-xs font-bold hover:bg-white text-slate-700 transition"
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={handleCalendarNext}
+                    className="p-1.5 rounded-lg hover:bg-white text-slate-600 transition"
+                    title="Next"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900">{calendarTitle}</h3>
+                  <p className="text-[10px] text-slate-400 font-semibold">Indian Standard Time (Asia/Kolkata)</p>
+                </div>
               </div>
+
+              {/* Mode Switcher: DAY / WEEK / MONTH */}
               <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
                 {(["DAY", "WEEK", "MONTH"] as const).map((m) => (
                   <button
                     key={m}
                     onClick={() => setCalendarMode(m)}
-                    className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                      calendarMode === m ? "bg-white text-slate-900 shadow-xs" : "text-slate-500"
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${
+                      calendarMode === m ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
-                    {m} View
+                    {m === "DAY" ? "Day View" : m === "WEEK" ? "Week View" : "Month View"}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Calendar Grid Representation */}
-            <div className="grid grid-cols-7 gap-2 text-center border-b border-slate-100 pb-2 text-xs font-bold text-slate-500 uppercase">
-              <div>Sun</div>
-              <div>Mon</div>
-              <div>Tue</div>
-              <div>Wed</div>
-              <div>Thu</div>
-              <div>Fri</div>
-              <div>Sat</div>
-            </div>
+            {/* --------------------------------------------------------------------- */}
+            {/* 1. DAY VIEW */}
+            {/* --------------------------------------------------------------------- */}
+            {calendarMode === "DAY" && (
+              <div className="space-y-4">
+                <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100 flex items-center justify-between">
+                  <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                    <CalendarDays className="h-4 w-4 text-blue-600" />
+                    <span>Viewing Schedule for: {formatInKolkata(currentCalendarDate, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      resetForm(currentCalendarDate.toISOString().split("T")[0]);
+                      setShowCreateModal(true);
+                    }}
+                    leftIcon={<Plus className="h-3.5 w-3.5" />}
+                    className="text-xs font-bold"
+                  >
+                    Schedule on this Day
+                  </Button>
+                </div>
 
-            <div className="grid grid-cols-7 gap-2 min-h-[300px]">
-              {Array.from({ length: 7 }).map((_, colIdx) => {
-                const daySlots = slots.filter((s) => new Date(s.startTime).getDay() === colIdx);
-                return (
-                  <div key={colIdx} className="bg-slate-50 rounded-xl p-2 space-y-2 border border-slate-100">
-                    {daySlots.length === 0 ? (
-                      <div className="text-[10px] text-slate-400 text-center pt-4">No slots</div>
-                    ) : (
-                      daySlots.map((s) => (
-                        <div
-                          key={s.id}
-                          onClick={() => router.push(`/teacher/live-classes/${s.id}`)}
-                          className="p-2 rounded-lg bg-blue-600 text-white text-[11px] font-bold cursor-pointer hover:bg-blue-700 transition shadow-xs text-left"
+                {/* Day hourly schedule list */}
+                {(() => {
+                  const daySlots = slots.filter((s) => isSameDayKolkata(new Date(s.startTime), currentCalendarDate));
+                  if (daySlots.length === 0) {
+                    return (
+                      <div className="p-12 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 space-y-2">
+                        <Clock className="h-8 w-8 text-slate-300 mx-auto" />
+                        <p className="text-xs font-bold text-slate-600">No live classes scheduled for this day.</p>
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={() => {
+                            resetForm(currentCalendarDate.toISOString().split("T")[0]);
+                            setShowCreateModal(true);
+                          }}
+                          leftIcon={<Plus className="h-3.5 w-3.5" />}
+                          className="mt-2"
                         >
-                          <div className="truncate">{s.title}</div>
-                          <div className="text-[9px] opacity-90">
-                            {new Date(s.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </div>
+                          Schedule a Class
+                        </Button>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-3">
+                      {daySlots
+                        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+                        .map((slot) => {
+                          const isLive = slot.status === "LIVE";
+                          return (
+                            <div
+                              key={slot.id}
+                              className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition ${
+                                isLive ? "bg-emerald-50/30 border-emerald-300" : "bg-white border-slate-200 hover:border-blue-300"
+                              }`}
+                            >
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-800 uppercase">
+                                    {slot.subject}
+                                  </span>
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                                      isLive ? "bg-rose-500 text-white animate-pulse" : "bg-slate-100 text-slate-700"
+                                    }`}
+                                  >
+                                    ● {slot.status}
+                                  </span>
+                                </div>
+                                <h4 className="text-sm font-extrabold text-slate-900">{slot.title}</h4>
+                                <div className="text-xs text-slate-500 flex items-center gap-2">
+                                  <Clock className="h-3.5 w-3.5 text-slate-400" />
+                                  <span>
+                                    {formatInKolkata(new Date(slot.startTime), { hour: "2-digit", minute: "2-digit" })} -{" "}
+                                    {formatInKolkata(new Date(slot.endTime), { hour: "2-digit", minute: "2-digit" })} IST
+                                  </span>
+                                  <span>•</span>
+                                  <Users className="h-3.5 w-3.5 text-slate-400" />
+                                  <span>{slot.studentCount || 0} / {slot.maxCapacity} Booked</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 self-end sm:self-center">
+                                <Link href={`/teacher/live-classes/${slot.id}`}>
+                                  <Button variant="outline" size="sm">
+                                    View Details
+                                  </Button>
+                                </Link>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={() => handleStartClassroom(slot.id)}
+                                  leftIcon={<Play className="h-3.5 w-3.5" />}
+                                >
+                                  Enter Classroom
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* --------------------------------------------------------------------- */}
+            {/* 2. WEEK VIEW */}
+            {/* --------------------------------------------------------------------- */}
+            {calendarMode === "WEEK" && (
+              <div className="space-y-2">
+                {/* 7-Day Column Headers with actual dates */}
+                <div className="grid grid-cols-7 gap-2 text-center pb-2 border-b border-slate-100">
+                  {weekDays.map((dayDate) => {
+                    const isCurrentDay = isSameDayKolkata(dayDate, today);
+                    return (
+                      <div
+                        key={dayDate.toISOString()}
+                        className={`p-2 rounded-xl transition ${
+                          isCurrentDay ? "bg-blue-600 text-white font-black shadow-xs" : "text-slate-600 font-bold"
+                        }`}
+                      >
+                        <div className="text-[11px] uppercase tracking-wider">
+                          {formatInKolkata(dayDate, { weekday: "short" })}
                         </div>
-                      ))
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                        <div className="text-base font-extrabold">
+                          {formatInKolkata(dayDate, { day: "numeric" })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* 7-Day Slot Columns */}
+                <div className="grid grid-cols-7 gap-2 min-h-[380px]">
+                  {weekDays.map((dayDate) => {
+                    const isCurrentDay = isSameDayKolkata(dayDate, today);
+                    const daySlots = slots.filter((s) => isSameDayKolkata(new Date(s.startTime), dayDate));
+
+                    return (
+                      <div
+                        key={dayDate.toISOString()}
+                        className={`rounded-2xl p-2.5 space-y-2 border flex flex-col justify-between ${
+                          isCurrentDay
+                            ? "bg-blue-50/40 border-blue-200 ring-1 ring-blue-300"
+                            : "bg-slate-50/70 border-slate-100 hover:border-slate-200"
+                        }`}
+                      >
+                        <div className="space-y-2">
+                          {daySlots.length === 0 ? (
+                            <div className="text-[10px] text-slate-400 text-center py-6 italic">
+                              No classes
+                            </div>
+                          ) : (
+                            daySlots.map((s) => {
+                              const isLive = s.status === "LIVE";
+                              return (
+                                <div
+                                  key={s.id}
+                                  onClick={() => router.push(`/teacher/live-classes/${s.id}`)}
+                                  className={`p-2 rounded-xl text-left cursor-pointer transition shadow-2xs space-y-1 ${
+                                    isLive
+                                      ? "bg-emerald-600 text-white ring-2 ring-emerald-300"
+                                      : "bg-white text-slate-800 border border-slate-200 hover:border-blue-400"
+                                  }`}
+                                >
+                                  <div className="text-[10px] font-black line-clamp-2 leading-tight">
+                                    {s.title}
+                                  </div>
+                                  <div className={`text-[9px] font-semibold flex items-center gap-1 ${isLive ? "text-emerald-100" : "text-slate-500"}`}>
+                                    <Clock className="h-2.5 w-2.5" />
+                                    <span>
+                                      {formatInKolkata(new Date(s.startTime), { hour: "2-digit", minute: "2-digit" })}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            resetForm(dayDate.toISOString().split("T")[0]);
+                            setShowCreateModal(true);
+                          }}
+                          className="w-full py-1 text-[10px] font-extrabold text-slate-400 hover:text-blue-600 hover:bg-white rounded-lg transition text-center"
+                          title="Add class on this day"
+                        >
+                          + Add
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* --------------------------------------------------------------------- */}
+            {/* 3. MONTH VIEW */}
+            {/* --------------------------------------------------------------------- */}
+            {calendarMode === "MONTH" && (
+              <div className="space-y-2">
+                {/* Day of week headers */}
+                <div className="grid grid-cols-7 gap-1 text-center pb-2 border-b border-slate-100 text-[11px] font-black text-slate-500 uppercase">
+                  <div>Sun</div>
+                  <div>Mon</div>
+                  <div>Tue</div>
+                  <div>Wed</div>
+                  <div>Thu</div>
+                  <div>Fri</div>
+                  <div>Sat</div>
+                </div>
+
+                {/* Monthly 7-column calendar matrix */}
+                <div className="grid grid-cols-7 gap-1.5">
+                  {monthGridDays.map((cell, idx) => {
+                    const isCurrentDay = isSameDayKolkata(cell.date, today);
+                    const daySlots = slots.filter((s) => isSameDayKolkata(new Date(s.startTime), cell.date));
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`min-h-[90px] p-2 rounded-xl border flex flex-col justify-between transition ${
+                          !cell.isCurrentMonth
+                            ? "bg-slate-50/40 text-slate-300 border-slate-100 opacity-60"
+                            : isCurrentDay
+                            ? "bg-blue-50/50 border-blue-300 ring-2 ring-blue-200"
+                            : "bg-white border-slate-100 hover:border-slate-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`text-xs font-black ${
+                              isCurrentDay
+                                ? "w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]"
+                                : cell.isCurrentMonth
+                                ? "text-slate-800"
+                                : "text-slate-400"
+                            }`}
+                          >
+                            {cell.date.getDate()}
+                          </span>
+
+                          {daySlots.length > 0 && (
+                            <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-800">
+                              {daySlots.length}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Slot Chips */}
+                        <div className="space-y-1 my-1 overflow-hidden">
+                          {daySlots.slice(0, 2).map((s) => (
+                            <div
+                              key={s.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/teacher/live-classes/${s.id}`);
+                              }}
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-bold truncate cursor-pointer transition ${
+                                s.status === "LIVE"
+                                  ? "bg-rose-500 text-white"
+                                  : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100"
+                              }`}
+                              title={`${s.title} (${formatInKolkata(new Date(s.startTime), { hour: "2-digit", minute: "2-digit" })})`}
+                            >
+                              {formatInKolkata(new Date(s.startTime), { hour: "2-digit", minute: "2-digit" })} • {s.title}
+                            </div>
+                          ))}
+                          {daySlots.length > 2 && (
+                            <div
+                              onClick={() => {
+                                setCurrentCalendarDate(cell.date);
+                                setCalendarMode("DAY");
+                              }}
+                              className="text-[9px] font-bold text-blue-600 cursor-pointer hover:underline text-center"
+                            >
+                              +{daySlots.length - 2} more
+                            </div>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            resetForm(cell.date.toISOString().split("T")[0]);
+                            setShowCreateModal(true);
+                          }}
+                          className="opacity-0 hover:opacity-100 text-[9px] font-bold text-slate-400 hover:text-blue-600 text-center transition"
+                        >
+                          +
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </Card>
         )}
 
@@ -549,11 +1068,10 @@ export default function TeacherLiveClassesPage() {
                     <label className="text-xs font-bold text-slate-700 block mb-1">Class Title *</label>
                     <input
                       type="text"
-                      required
-                      placeholder="e.g. Algebra Fundamentals & Practice"
+                      placeholder="e.g. Masterclass on Calculus Integration"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none focus:border-blue-500"
                     />
                   </div>
 
@@ -563,24 +1081,23 @@ export default function TeacherLiveClassesPage() {
                       <select
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none"
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none bg-white"
                       >
-                        {["Mathematics", "Science", "Physics", "Chemistry", "Biology", "Computer Science", "English"].map(
-                          (s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          )
-                        )}
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Biology">Biology</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="English">English</option>
                       </select>
                     </div>
 
                     <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">Target Level</label>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Level</label>
                       <select
                         value={level}
                         onChange={(e) => setLevel(e.target.value)}
-                        className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none"
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none bg-white"
                       >
                         <option value="ALL_LEVELS">All Levels</option>
                         <option value="BEGINNER">Beginner</option>
@@ -591,52 +1108,49 @@ export default function TeacherLiveClassesPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">Class Description</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Description</label>
                     <textarea
                       rows={3}
-                      placeholder="Detail topics covered, prerequisites, and learning outcomes..."
+                      placeholder="Describe what will be covered in this live session..."
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none"
+                      className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none focus:border-blue-500"
                     />
                   </div>
                 </div>
               )}
 
-              {/* Step 2: Schedule */}
+              {/* Step 2: Schedule & Time */}
               {step === 2 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">Class Date *</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Date *</label>
                     <input
                       type="date"
-                      required
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none"
+                      className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">Start Time *</label>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Start Time (IST) *</label>
                       <input
                         type="time"
-                        required
                         value={startTime}
                         onChange={(e) => setStartTime(e.target.value)}
-                        className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none"
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">End Time *</label>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">End Time (IST) *</label>
                       <input
                         type="time"
-                        required
                         value={endTime}
                         onChange={(e) => setEndTime(e.target.value)}
-                        className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none"
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none"
                       />
                     </div>
                   </div>
@@ -644,16 +1158,15 @@ export default function TeacherLiveClassesPage() {
                   <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1">Timezone</label>
                     <input
-                      type="text"
                       disabled
-                      value={timezone}
-                      className="w-full px-4 py-2.5 text-xs bg-slate-100 border border-slate-200 rounded-xl text-slate-600 cursor-not-allowed"
+                      value="Asia/Kolkata (IST - Indian Standard Time)"
+                      className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-500 font-medium cursor-not-allowed"
                     />
                   </div>
                 </div>
               )}
 
-              {/* Step 3: Capacity & Booking */}
+              {/* Step 3: Booking & Pricing */}
               {step === 3 && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -661,175 +1174,157 @@ export default function TeacherLiveClassesPage() {
                       <label className="text-xs font-bold text-slate-700 block mb-1">Class Type</label>
                       <select
                         value={classType}
-                        onChange={(e) => {
-                          setClassType(e.target.value);
-                          if (e.target.value === "ONE_TO_ONE") setMaxCapacity(1);
-                        }}
-                        className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none"
+                        onChange={(e) => setClassType(e.target.value)}
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none bg-white"
                       >
-                        <option value="GROUP">Group Class (Multi-Student)</option>
-                        <option value="ONE_TO_ONE">One-to-One Private</option>
+                        <option value="GROUP">Group Class</option>
+                        <option value="ONE_ON_ONE">1-on-1 Mentorship</option>
                       </select>
                     </div>
 
                     <div>
-                      <label className="text-xs font-bold text-slate-700 block mb-1">Maximum Capacity</label>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Price per Seat (₹)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={price}
+                        onChange={(e) => setPrice(Number(e.target.value))}
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none font-bold"
+                      />
+                      <span className="text-[10px] text-slate-400">Set 0 for Free class</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Max Capacity</label>
                       <input
                         type="number"
                         min="1"
-                        max="100"
+                        max="50"
                         value={maxCapacity}
                         onChange={(e) => setMaxCapacity(Number(e.target.value))}
-                        disabled={classType === "ONE_TO_ONE"}
-                        className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none disabled:bg-slate-100"
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none"
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">Class Fee (₹ - set 0 for Free)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={price}
-                      onChange={(e) => setPrice(Number(e.target.value))}
-                      className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none"
-                    />
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Minimum Students</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={minimumStudents}
+                        onChange={(e) => setMinimumStudents(Number(e.target.value))}
+                        className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Step 4: Classroom Controls */}
+              {/* Step 4: LiveKit Classroom Settings */}
               {step === 4 && (
                 <div className="space-y-3">
-                  <label className="text-xs font-bold text-slate-700 block">Classroom Permissions & Controls</label>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={cameraRequired}
-                        onChange={(e) => setCameraRequired(e.target.checked)}
-                        className="rounded-md"
-                      />
-                      <span>Require Student Camera</span>
-                    </label>
+                  <p className="text-xs text-slate-500 mb-2">Configure in-class learner permissions and devices:</p>
 
-                    <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={micRequired}
-                        onChange={(e) => setMicRequired(e.target.checked)}
-                        className="rounded-md"
-                      />
-                      <span>Require Student Mic</span>
-                    </label>
-
-                    <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={whiteboardAllowed}
-                        onChange={(e) => setWhiteboardAllowed(e.target.checked)}
-                        className="rounded-md"
-                      />
-                      <span>Allow Interactive Whiteboard</span>
-                    </label>
-
-                    <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={screenSharingAllowed}
-                        onChange={(e) => setScreenSharingAllowed(e.target.checked)}
-                        className="rounded-md"
-                      />
-                      <span>Allow Screen Sharing</span>
-                    </label>
+                  <div className="space-y-2">
+                    {[
+                      { key: cameraRequired, set: setCameraRequired, label: "Learner Camera Required" },
+                      { key: micRequired, set: setMicRequired, label: "Learner Microphone Required" },
+                      { key: screenSharingAllowed, set: setScreenSharingAllowed, label: "Learner Screen Sharing Allowed" },
+                      { key: whiteboardAllowed, set: setWhiteboardAllowed, label: "Interactive Whiteboard Collaboration" },
+                      { key: chatAllowed, set: setChatAllowed, label: "Public & Direct Chat Enabled" },
+                      { key: fileSharingAllowed, set: setFileSharingAllowed, label: "In-session File Sharing Allowed" },
+                    ].map((item, idx) => (
+                      <label key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={item.key}
+                          onChange={(e) => item.set(e.target.checked)}
+                          className="h-4 w-4 rounded text-blue-600"
+                        />
+                        <span className="text-xs font-semibold text-slate-700">{item.label}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
               )}
 
-              {/* Step 5: Review */}
+              {/* Step 5: Review & Publish */}
               {step === 5 && (
-                <div className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs">
-                  <h4 className="font-bold text-slate-900 text-sm">Review Slot Details</h4>
-                  <div className="grid grid-cols-2 gap-2 text-slate-700">
-                    <div>
-                      <span className="font-bold">Title:</span> {title}
+                <div className="space-y-4 text-xs">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                      <span className="font-bold text-slate-900 text-sm">{title || "Untitled Live Class"}</span>
+                      <span className="font-mono font-bold text-blue-600">
+                        {price === 0 ? "FREE" : formatCurrency(price)}
+                      </span>
                     </div>
-                    <div>
-                      <span className="font-bold">Subject:</span> {subject}
-                    </div>
-                    <div>
-                      <span className="font-bold">Date:</span> {date}
-                    </div>
-                    <div>
-                      <span className="font-bold">Time:</span> {startTime} - {endTime}
-                    </div>
-                    <div>
-                      <span className="font-bold">Type:</span> {classType} (Max {maxCapacity})
-                    </div>
-                    <div>
-                      <span className="font-bold">Price:</span> {formatCurrency(price)}
+
+                    <div className="grid grid-cols-2 gap-2 text-slate-600 pt-1">
+                      <div>Subject: <strong>{subject}</strong></div>
+                      <div>Level: <strong>{level}</strong></div>
+                      <div>Date: <strong>{date}</strong></div>
+                      <div>Time: <strong>{startTime} - {endTime} (IST)</strong></div>
+                      <div>Capacity: <strong>{maxCapacity} Students</strong></div>
+                      <div>Class Type: <strong>{classType}</strong></div>
                     </div>
                   </div>
+
+                  <p className="text-[11px] text-slate-500">
+                    Once published, this slot appears on the live class catalog for learners to enroll.
+                  </p>
                 </div>
               )}
 
-              {/* Modal Actions Footer */}
+              {/* Modal Navigation Buttons */}
               <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                 {step > 1 ? (
-                  <Button variant="outline" size="sm" onClick={() => setStep(step - 1)}>
+                  <Button variant="secondary" size="sm" onClick={() => setStep(step - 1)}>
                     Back
                   </Button>
                 ) : (
                   <div />
                 )}
 
-                <div className="flex items-center gap-2">
-                  {step < 5 ? (
-                    <Button variant="primary" size="sm" onClick={() => setStep(step + 1)}>
-                      Next Step
-                    </Button>
-                  ) : (
-                    <>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={submitting}
-                        onClick={() => handleCreateSubmit(false)}
-                      >
-                        Save Draft
-                      </Button>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        disabled={submitting}
-                        onClick={() => handleCreateSubmit(true)}
-                      >
-                        {submitting ? "Publishing..." : "Publish Live Class"}
-                      </Button>
-                    </>
-                  )}
-                </div>
+                {step < 5 ? (
+                  <Button variant="primary" size="sm" onClick={() => setStep(step + 1)}>
+                    Next Step
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleCreateSubmit(true)}
+                    isLoading={submitting}
+                  >
+                    Publish Live Class
+                  </Button>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Cancellation Confirmation Modal */}
+        {/* Cancel Slot Confirmation Modal */}
         {cancellingSlot && (
-          <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4">
-              <h3 className="text-lg font-bold text-slate-900">Cancel Live Class</h3>
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+              <h3 className="text-base font-black text-slate-900">Cancel Live Class?</h3>
               <p className="text-xs text-slate-600">
-                Are you sure you want to cancel <span className="font-bold">"{cancellingSlot.title}"</span>? Booked
-                students will be notified.
+                Are you sure you want to cancel <strong>"{cancellingSlot.title}"</strong>? Enrolled learners will be notified.
               </p>
-              <div className="flex items-center justify-end gap-2 pt-4">
-                <Button variant="outline" size="sm" onClick={() => setCancellingSlot(null)}>
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button variant="secondary" size="sm" onClick={() => setCancellingSlot(null)}>
                   Keep Class
                 </Button>
-                <Button variant="outline" size="sm" className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/30" onClick={handleCancelConfirm}>
-                  Confirm Cancellation
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleCancelSlot}
+                  className="bg-rose-600 hover:bg-rose-700 text-white"
+                >
+                  Yes, Cancel
                 </Button>
               </div>
             </div>

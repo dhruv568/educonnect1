@@ -32,6 +32,17 @@ export async function POST(request: NextRequest) {
     const tp = user.teacherProfile;
     const p = user.profile;
 
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch (_) {}
+
+    const accountHolderName = body.accountHolderName ?? tp.accountHolderName;
+    const accountNumber = body.accountNumber ?? tp.accountNumber;
+    const bankName = body.bankName ?? tp.bankName;
+    const ifscCode = (body.ifscCode ?? tp.ifscCode)?.toString()?.toUpperCase()?.trim();
+    const cancelledChequeUrl = body.cancelledChequeUrl ?? tp.cancelledChequeUrl;
+
     // Check email verification status rule
     if (!user.emailVerified) {
       return apiError("Email verification required before submitting teacher application", 400);
@@ -47,6 +58,15 @@ export async function POST(request: NextRequest) {
 
     const hasIdentityDoc = tp.teacherDocuments.some((d) => d.category === "IDENTITY");
     if (!hasIdentityDoc) missingItems.push("Identity Document");
+
+    if (!accountHolderName || !accountNumber || !bankName || !ifscCode) {
+      missingItems.push("Complete Bank Account Details (Account Name, Account Number, Bank Name, IFSC)");
+    }
+
+    const hasCancelledCheque = !!cancelledChequeUrl || tp.teacherDocuments.some((d) => d.category === "CANCELLED_CHEQUE");
+    if (!hasCancelledCheque) {
+      missingItems.push("Cancelled Cheque Document (JPG, PNG, or PDF <= 10MB)");
+    }
 
     if (missingItems.length > 0) {
       return apiError(
@@ -64,6 +84,11 @@ export async function POST(request: NextRequest) {
       data: {
         verificationStatus: "PENDING",
         submittedAt: now,
+        ...(accountHolderName && { accountHolderName }),
+        ...(accountNumber && { accountNumber }),
+        ...(bankName && { bankName }),
+        ...(ifscCode && { ifscCode }),
+        ...(cancelledChequeUrl && { cancelledChequeUrl }),
       },
     });
 
@@ -100,8 +125,12 @@ export async function POST(request: NextRequest) {
       console.error("Failed to send verification submission email notification:", emailErr);
     }
 
+    const confirmationMessage =
+      "Thank You for applying. We shall verify your documents, and if they meet our policy requirements, the next round will proceed. You will be informed through our official email, WhatsApp, or via call.";
+
     return apiSuccess({
-      message: "Application submitted for verification successfully",
+      message: confirmationMessage,
+      confirmationMessage,
       verificationStatus: updatedTp.verificationStatus,
       submittedAt: updatedTp.submittedAt,
     });

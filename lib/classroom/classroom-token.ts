@@ -55,6 +55,17 @@ export async function verifyRoomAccess(
     });
 
     if (slot && slot.status !== "CANCELLED") {
+      const isSlotTeacherVerified =
+        slot.teacher?.verificationStatus === "VERIFIED" ||
+        slot.teacher?.verificationStatus === "APPROVED";
+
+      if (!isSlotTeacherVerified) {
+        return {
+          authorized: false,
+          reason: "Educator verification is required before live classroom sessions can be hosted.",
+        };
+      }
+
       const roomId = `room-${slot.id.substring(0, 8)}`;
       liveSession = await prisma.liveClassSession.create({
         data: {
@@ -95,6 +106,18 @@ export async function verifyRoomAccess(
   // 2. Check Teacher Ownership
   const isTeacher = liveSession.teacher.userId === session.id;
   if (isTeacher) {
+    const isTeacherVerified =
+      liveSession.teacher?.verificationStatus === "VERIFIED" ||
+      liveSession.teacher?.verificationStatus === "APPROVED";
+
+    if (!isTeacherVerified) {
+      return {
+        authorized: false,
+        reason: "Educator verification is required before entering or hosting live sessions.",
+        liveSession,
+      };
+    }
+
     return { authorized: true, isTeacher: true, liveSession };
   }
 

@@ -77,6 +77,13 @@ export async function GET(
           languages: tp.languages ? tp.languages.split(",").map((s) => s.trim()) : ["English"],
           teachingMode: tp.teachingMode || "ONLINE",
         },
+        bankDetails: {
+          accountHolderName: tp.accountHolderName || "",
+          accountNumber: tp.accountNumber || "",
+          bankName: tp.bankName || "",
+          ifscCode: tp.ifscCode || "",
+          cancelledChequeUrl: tp.cancelledChequeUrl || null,
+        },
         verificationStatus: tp.verificationStatus,
         submittedAt: tp.submittedAt,
         verifiedAt: tp.verifiedAt,

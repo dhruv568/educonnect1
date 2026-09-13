@@ -24,6 +24,7 @@ import {
   Calendar,
   BarChart2,
   Loader2,
+  Lock,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
@@ -73,7 +74,7 @@ export default function TeacherDashboardPage() {
     <DashboardLayout role="TEACHER" userName={data.userName}>
       <div className="space-y-8 pb-16">
         {/* Dynamic Verification Status Banner */}
-        {data.verificationStatus === "VERIFIED" && (
+        {data.verificationStatus === "VERIFIED" ? (
           <div className="bg-emerald-600 text-white rounded-3xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-white/10 rounded-2xl">
@@ -97,27 +98,54 @@ export default function TeacherDashboardPage() {
               </Link>
             </div>
           </div>
-        )}
-
-        {data.verificationStatus === "PENDING" && (
+        ) : data.verificationStatus === "PENDING" ? (
           <div className="bg-amber-500 text-white rounded-3xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/10 rounded-2xl">
+              <div className="p-3 bg-white/10 rounded-2xl shrink-0">
                 <Clock className="h-8 w-8 text-white animate-pulse" />
               </div>
-              <div>
+              <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold">Verification Status: Application Pending</h2>
+                  <h2 className="text-xl font-bold">Verification Status: Application Under Review</h2>
                   <StatusBadge status="PENDING" />
                 </div>
-                <p className="text-xs text-amber-100 mt-1">
-                  Your profile has been submitted and is currently being audited by EduConnects administration.
+                <p className="text-xs text-amber-100 font-medium leading-relaxed">
+                  Thank You for applying. We shall verify your documents, and if they meet our policy requirements, the next round will proceed. You will be informed through our official email, WhatsApp, or via call.
                 </p>
               </div>
             </div>
-            <Link href="/teacher/onboarding">
-              <Button variant="secondary" size="sm" rightIcon={<FileCheck className="h-4 w-4" />}>
-                Edit Profile Info
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href="/teacher/onboarding">
+                <Button variant="secondary" size="sm" rightIcon={<FileCheck className="h-4 w-4" />}>
+                  Complete Verification
+                </Button>
+              </Link>
+              <Link href="/teacher/verification">
+                <Button variant="outline" size="sm" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                  View Status
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-3xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-white/10 rounded-2xl shrink-0">
+                <AlertOctagon className="h-8 w-8 text-white" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold">Verification Required: Complete Educator KYC</h2>
+                  <StatusBadge status={data.verificationStatus} />
+                </div>
+                <p className="text-xs text-amber-100 font-medium">
+                  Complete your 5-step educator verification (personal info, qualifications, KYC ID, and bank details) to unlock course creation and live classes.
+                </p>
+              </div>
+            </div>
+            <Link href="/teacher/onboarding" className="shrink-0">
+              <Button variant="secondary" size="sm" rightIcon={<ArrowRight className="h-4 w-4" />}>
+                Complete Verification
               </Button>
             </Link>
           </div>
@@ -222,11 +250,19 @@ export default function TeacherDashboardPage() {
                   Upcoming Classes
                 </h3>
               </div>
-              <Link href="/teacher/live-classes">
-                <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-                  Create Slot
-                </Button>
-              </Link>
+              {data.verificationStatus === "VERIFIED" ? (
+                <Link href="/teacher/live-classes">
+                  <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
+                    Create Slot
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/teacher/onboarding" title="Verification required to create live slots">
+                  <Button variant="outline" size="sm" leftIcon={<Lock className="h-4 w-4 text-amber-600" />} className="bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100">
+                    🔒 Verification required
+                  </Button>
+                </Link>
+              )}
             </div>
 
             {loading ? (
@@ -274,21 +310,51 @@ export default function TeacherDashboardPage() {
 
         {/* Quick Educator Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Link href="/teacher/live-classes">
-            <Card className="p-5 hover:border-blue-500 transition cursor-pointer space-y-2">
-              <Video className="h-6 w-6 text-blue-600" />
-              <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">Create Live Class</h4>
-              <p className="text-xs text-slate-500">Schedule 1-on-1 or group live sessions.</p>
-            </Card>
-          </Link>
+          {data.verificationStatus === "VERIFIED" ? (
+            <Link href="/teacher/live-classes">
+              <Card className="p-5 hover:border-blue-500 transition cursor-pointer space-y-2">
+                <Video className="h-6 w-6 text-blue-600" />
+                <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">Create Live Class</h4>
+                <p className="text-xs text-slate-500">Schedule 1-on-1 or group live sessions.</p>
+              </Card>
+            </Link>
+          ) : (
+            <Link href="/teacher/onboarding">
+              <Card className="p-5 hover:border-amber-400 transition cursor-pointer space-y-2 border-amber-200 bg-amber-50/30">
+                <div className="flex items-center justify-between">
+                  <Video className="h-6 w-6 text-slate-400" />
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 flex items-center gap-1">
+                    <Lock className="h-3 w-3" /> Locked
+                  </span>
+                </div>
+                <h4 className="text-sm font-extrabold text-slate-700">Create Live Class</h4>
+                <p className="text-xs text-amber-700 font-medium">🔒 Verification required to schedule sessions.</p>
+              </Card>
+            </Link>
+          )}
 
-          <Link href="/teacher/courses">
-            <Card className="p-5 hover:border-emerald-500 transition cursor-pointer space-y-2">
-              <BookOpen className="h-6 w-6 text-emerald-600" />
-              <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">Create Course</h4>
-              <p className="text-xs text-slate-500">Upload video lessons & study materials.</p>
-            </Card>
-          </Link>
+          {data.verificationStatus === "VERIFIED" ? (
+            <Link href="/teacher/courses">
+              <Card className="p-5 hover:border-emerald-500 transition cursor-pointer space-y-2">
+                <BookOpen className="h-6 w-6 text-emerald-600" />
+                <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">Create Course</h4>
+                <p className="text-xs text-slate-500">Upload video lessons & study materials.</p>
+              </Card>
+            </Link>
+          ) : (
+            <Link href="/teacher/onboarding">
+              <Card className="p-5 hover:border-amber-400 transition cursor-pointer space-y-2 border-amber-200 bg-amber-50/30">
+                <div className="flex items-center justify-between">
+                  <BookOpen className="h-6 w-6 text-slate-400" />
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 flex items-center gap-1">
+                    <Lock className="h-3 w-3" /> Locked
+                  </span>
+                </div>
+                <h4 className="text-sm font-extrabold text-slate-700">Create Course</h4>
+                <p className="text-xs text-amber-700 font-medium">🔒 Verification required to upload & publish.</p>
+              </Card>
+            </Link>
+          )}
 
           <Link href="/teacher/analytics">
             <Card className="p-5 hover:border-purple-500 transition cursor-pointer space-y-2">

@@ -46,6 +46,10 @@ export function middleware(request: NextRequest) {
   const educatorDomainUrl =
     process.env.NEXT_PUBLIC_EDUCATOR_DOMAIN || "https://educators.educonnects.co.in";
 
+  const isMainDomain =
+    cleanHost === "educonnects.co.in" ||
+    cleanHost === "www.educonnects.co.in";
+
   // Prevent domain crosstalk / accidental page display
   if (isStudentSubdomain && pathname.startsWith("/teacher")) {
     const targetUrl = new URL(pathname, educatorDomainUrl);
@@ -57,17 +61,36 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(targetUrl);
   }
 
-  // Helper for subdomain rewrites on root path '/'
+  // Prevent main domain showing learner/educator dashboards directly
+  if (isMainDomain && pathname.startsWith("/student")) {
+    return NextResponse.redirect(new URL(pathname, studentDomainUrl));
+  }
+
+  if (isMainDomain && pathname.startsWith("/teacher") && pathname !== "/teacher/logout") {
+    return NextResponse.redirect(new URL(pathname, educatorDomainUrl));
+  }
+
+  // Helper for subdomain rewrites
   const getSubdomainRewrite = (): NextResponse | null => {
-    if (pathname === "/") {
-      if (isLiveSubdomain) {
+    if (isLiveSubdomain) {
+      if (pathname === "/") {
         return NextResponse.rewrite(new URL("/live", request.url));
       }
-      if (isStudentSubdomain) {
+    }
+    if (isStudentSubdomain) {
+      if (pathname === "/") {
         return NextResponse.rewrite(new URL("/student", request.url));
       }
-      if (isEducatorSubdomain) {
+      if (!pathname.startsWith("/student") && !pathname.startsWith("/api/")) {
+        return NextResponse.rewrite(new URL(`/student${pathname}`, request.url));
+      }
+    }
+    if (isEducatorSubdomain) {
+      if (pathname === "/") {
         return NextResponse.rewrite(new URL("/teacher", request.url));
+      }
+      if (!pathname.startsWith("/teacher") && !pathname.startsWith("/api/")) {
+        return NextResponse.rewrite(new URL(`/teacher${pathname}`, request.url));
       }
     }
     return null;
@@ -84,6 +107,8 @@ export function middleware(request: NextRequest) {
     pathname === "/teacher/login" ||
     pathname === "/student/register" ||
     pathname === "/teacher/register" ||
+    pathname === "/teacher/logout" ||
+    pathname === "/logout" ||
     pathname === "/login" ||
     pathname === "/staff/login" ||
     pathname.startsWith("/staff/register") ||
@@ -91,6 +116,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/verify-email") ||
+    pathname.startsWith("/verify-otp") ||
     pathname.startsWith("/find-teachers") ||
     pathname.startsWith("/courses") ||
     pathname.startsWith("/pricing") ||

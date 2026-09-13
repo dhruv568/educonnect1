@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       fileBuffer = Buffer.from(base64Clean, "base64");
     }
 
-    const validCategories = ["IDENTITY", "QUALIFICATION", "CERTIFICATE", "EXPERIENCE", "OTHER"];
+    const validCategories = ["IDENTITY", "QUALIFICATION", "CERTIFICATE", "EXPERIENCE", "CANCELLED_CHEQUE", "OTHER"];
     if (!validCategories.includes(category)) {
       return apiError(`Invalid document category. Allowed: ${validCategories.join(", ")}`, 400);
     }
@@ -72,6 +72,15 @@ export async function POST(request: NextRequest) {
         status: "ACTIVE",
       },
     });
+
+    if (category === "CANCELLED_CHEQUE") {
+      await prisma.teacherProfile.update({
+        where: { id: teacher.id },
+        data: {
+          cancelledChequeUrl: `/api/documents/${documentRecord.id}`,
+        },
+      });
+    }
 
     await logAuditEvent(session.id, "DOCUMENT_UPLOADED", {
       documentId: documentRecord.id,

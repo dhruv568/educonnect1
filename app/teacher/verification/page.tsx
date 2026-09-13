@@ -167,9 +167,9 @@ export default function TeacherVerificationStatusPage() {
                   </h2>
                   <StatusBadge status="PENDING" />
                 </div>
-                <p className="text-xs sm:text-sm text-amber-800 leading-relaxed font-medium">
-                  Your teacher verification application has been submitted and is currently being audited by EduConnects Quality Assurance Administrators.
-                </p>
+                <div className="p-4 rounded-xl bg-white border border-amber-200/90 text-sm font-semibold text-amber-950 leading-relaxed shadow-2xs">
+                  Thank You for applying. We shall verify your documents, and if they meet our policy requirements, the next round will proceed. You will be informed through our official email, WhatsApp, or via call.
+                </div>
                 {submittedAt && (
                   <p className="text-xs font-bold text-amber-700">
                     Submitted Date: {new Date(submittedAt).toLocaleDateString()}

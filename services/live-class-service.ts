@@ -62,6 +62,25 @@ export class LiveClassService {
   }
 
   /**
+   * Resolve and enforce verified teacherProfile
+   */
+  static async getVerifiedTeacherProfile(userId: string) {
+    const profile = await prisma.teacherProfile.findUnique({
+      where: { userId },
+    });
+    if (!profile) {
+      throw new Error("TEACHER_NOT_FOUND: Teacher profile not found. Please complete profile onboarding.");
+    }
+    const isVerified =
+      profile.verificationStatus === "VERIFIED" ||
+      profile.verificationStatus === "APPROVED";
+    if (!isVerified) {
+      throw new Error("FORBIDDEN: Educator verification is required before using this feature.");
+    }
+    return profile;
+  }
+
+  /**
    * Get teacher live classes dashboard stats
    */
   static async getLiveClassStats(userId: string) {
@@ -187,7 +206,8 @@ export class LiveClassService {
    * Create a new live class slot
    */
   static async createLiveClass(userId: string, input: CreateLiveClassInput) {
-    const teacherId = await this.getTeacherProfileId(userId);
+    const teacher = await this.getVerifiedTeacherProfile(userId);
+    const teacherId = teacher.id;
 
     const start = new Date(input.startTime);
     const end = new Date(input.endTime);
@@ -415,7 +435,8 @@ export class LiveClassService {
    * Connect live class slot to Module 06 LiveClassSession
    */
   static async startOrGetClassroomSession(userId: string, slotId: string) {
-    const teacherId = await this.getTeacherProfileId(userId);
+    const teacher = await this.getVerifiedTeacherProfile(userId);
+    const teacherId = teacher.id;
 
     const slot = await prisma.liveClassSlot.findFirst({
       where: { id: slotId, teacherId },

@@ -31,12 +31,12 @@ export interface CompanyInfo {
 }
 
 export const OFFICIAL_COMPANY_INFO: CompanyInfo = {
-  brandName: "MyProFunnels Ventures",
-  legalName: "SHRIVASTAVA PROFUNNELS VENTURES PRIVATE LIMITED",
+  brandName: "EduConnect",
+  legalName: "Shrivastava ProFunnels Ventures Pvt Ltd",
   cin: "U85499UP2024PTC212061",
   pan: "ABOCS6783J",
-  founder: "Neeraj Shrivastava",
-  authorizedSignatory: "Neeraj Shrivastava",
+  founder: "Sameer Shrivastava",
+  authorizedSignatory: "Sameer Shrivastava",
   natureOfBusiness:
     "Digital business solutions, digital marketing, automation, online education, training, and technology-enabled business services.",
   registeredAddress:
