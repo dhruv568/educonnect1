@@ -379,7 +379,7 @@ export default function StudentLandingPage() {
         <PromotionalBannerCarousel placement="LEARNERS" />
 
         {/* ========================================================================= */}
-        <section className="relative pt-32 sm:pt-36 lg:pt-44 pb-20 lg:pb-28 overflow-hidden bg-[#F3F6FF]">
+        <section className="relative pt-6 sm:pt-10 lg:pt-12 pb-16 lg:pb-24 overflow-hidden bg-[#F3F6FF]">
           <LearnerHeroSlideshow />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

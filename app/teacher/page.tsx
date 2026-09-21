@@ -228,7 +228,7 @@ export default function TeacherLandingPage() {
         {/* ========================================================================= */}
         {/* 1. HERO SECTION WITH BACKGROUND SLIDESHOW */}
         {/* ========================================================================= */}
-        <section className="relative pt-32 sm:pt-36 lg:pt-44 pb-20 lg:pb-28 overflow-hidden bg-gradient-to-b from-[#F0FAF5] via-white to-[#F0FAF5]/50">
+        <section className="relative pt-6 sm:pt-10 lg:pt-12 pb-16 lg:pb-24 overflow-hidden bg-gradient-to-b from-[#F0FAF5] via-white to-[#F0FAF5]/50">
           {/* 5-Slide Educator Background Slideshow */}
           <EducatorHeroSlideshow />
 

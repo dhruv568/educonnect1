@@ -32,7 +32,7 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative pt-28 sm:pt-36 lg:pt-40 pb-20 lg:pb-28 border-b border-[#DCE5E4] overflow-hidden font-sans">
+    <section className="relative pt-6 sm:pt-10 lg:pt-12 pb-16 lg:pb-24 border-b border-[#DCE5E4] overflow-hidden font-sans">
       {/* Background Slideshow & Overlays */}
       <HeroBackgroundSlideshow />
 
