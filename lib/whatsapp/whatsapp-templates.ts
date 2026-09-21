@@ -128,18 +128,33 @@ export const DEFAULT_WHATSAPP_TEMPLATES: Record<WhatsAppEventType, TemplateDefin
   PAYMENT_SUCCESS: {
     defaultName: "edu_payment_success",
     category: "UTILITY",
-    description: "Sent when a payment is successfully confirmed",
-    defaultVariables: ["learner_name", "item_title", "amount_formatted", "payment_date", "order_id", "support_info"],
+    description: "Sent when a payment is successfully confirmed with branded structure",
+    defaultVariables: ["learner_name", "course_or_educator", "date", "time", "booking_id"],
     buildComponents: (data) => [
       {
         type: "body",
         parameters: [
-          { type: "text", text: String(data.name || "Learner") },
-          { type: "text", text: String(data.title || "EduConnects Purchase") },
-          { type: "text", text: String(data.amount || "₹0") },
-          { type: "text", text: String(data.date || new Date().toLocaleDateString("en-IN")) },
-          { type: "text", text: String(data.orderId || data.transactionId || "N/A") },
-          { type: "text", text: String(data.supportInfo || "support@educonnects.com | +91 9109019090") },
+          { type: "text", text: String(data.learnerName || data.name || "Learner") },
+          { type: "text", text: String(data.courseOrEducator || data.title || data.courseTitle || data.classTitle || "EduConnects Learning") },
+          { type: "text", text: String(data.date || new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })) },
+          { type: "text", text: String(data.time || new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })) },
+          { type: "text", text: String(data.bookingId || data.enrollmentId || data.orderId || data.transactionId || "N/A") },
+        ],
+      },
+      {
+        type: "button",
+        sub_type: "url",
+        index: "0",
+        parameters: [
+          { type: "text", text: "student/dashboard" },
+        ],
+      },
+      {
+        type: "button",
+        sub_type: "url",
+        index: "1",
+        parameters: [
+          { type: "text", text: "contact" },
         ],
       },
     ],
