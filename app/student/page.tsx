@@ -43,6 +43,7 @@ import {
   MessageSquare,
   HelpCircle,
   LayoutDashboard,
+  Info,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { UserRole, UserSession } from "@/types/auth";
@@ -418,6 +419,26 @@ export default function StudentLandingPage() {
                 <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
                   Connect with verified top-tier educators, join interactive live video classrooms with real-time digital whiteboards, and master structured self-paced courses.
                 </p>
+
+                {/* About EduConnects Company Info Block */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-white/95 border border-blue-100 shadow-sm space-y-2 text-left max-w-2xl mx-auto lg:mx-0 backdrop-blur-xs">
+                  <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-blue-700">
+                    <Info className="h-4 w-4 text-blue-600 shrink-0" />
+                    <span>About EduConnects</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                    EduConnects is an education platform that connects learners with verified educators, personalized learning, live classes, and structured courses — helping learners Learn, Grow & Belong.
+                  </p>
+                  <div className="pt-1">
+                    <Link
+                      href="/about"
+                      className="inline-flex items-center gap-1.5 text-xs font-extrabold text-blue-700 hover:text-blue-900 hover:underline transition-all group"
+                    >
+                      <span>See More</span>
+                      <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
 
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">

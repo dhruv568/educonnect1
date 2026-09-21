@@ -12,6 +12,7 @@ import {
   BookOpen,
   Video,
   ShieldCheck,
+  Info,
 } from "lucide-react";
 import { GlassButton } from "@/components/glass/glass-button";
 import { HeroBackgroundSlideshow } from "@/components/homepage/hero-background-slideshow";
@@ -56,6 +57,26 @@ export function HeroSection() {
             <p className="text-base sm:text-lg text-[#5D7373] max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
               Discover experienced educators for school academics, competitive exams, technology, languages, creative skills and professional growth — matched to your goals, schedule and learning style.
             </p>
+
+            {/* About EduConnects Company Info Block */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white/90 border border-[#DCE5E4] shadow-sm space-y-2 text-left max-w-2xl mx-auto lg:mx-0 backdrop-blur-xs">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#0F5C5A]">
+                <Info className="h-4 w-4 text-[#0F5C5A] shrink-0" />
+                <span>About EduConnects</span>
+              </div>
+              <p className="text-xs sm:text-sm text-[#3D5252] leading-relaxed font-normal">
+                EduConnects is an education platform that connects learners with verified educators, personalized learning, live classes, and structured courses — helping learners Learn, Grow & Belong.
+              </p>
+              <div className="pt-1">
+                <Link
+                  href="/about"
+                  className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#0F5C5A] hover:text-[#083F3D] hover:underline transition-all group"
+                >
+                  <span>See More</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </div>
+            </div>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
