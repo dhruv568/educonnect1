@@ -44,6 +44,7 @@ export class WhatsAppService {
               "whatsapp_template_mapping",
               "whatsapp_phone_number_id",
               "whatsapp_business_account_id",
+              "whatsapp_access_token",
             ],
           },
         },
@@ -80,6 +81,7 @@ export class WhatsAppService {
         templateMapping,
         phoneNumberId: configMap.whatsapp_phone_number_id || process.env.WHATSAPP_PHONE_NUMBER_ID || "",
         businessAccountId: configMap.whatsapp_business_account_id || process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || "",
+        accessToken: configMap.whatsapp_access_token || process.env.WHATSAPP_ACCESS_TOKEN || "",
       };
     } catch (err) {
       console.warn("Could not read platform WhatsApp settings from DB, using defaults:", err);
@@ -89,6 +91,7 @@ export class WhatsAppService {
         templateMapping: {},
         phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || "",
         businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || "",
+        accessToken: process.env.WHATSAPP_ACCESS_TOKEN || "",
       };
     }
   }
@@ -225,6 +228,8 @@ export class WhatsAppService {
         templateName,
         languageCode: "en",
         components,
+        accessToken: settings.accessToken,
+        phoneNumberId: settings.phoneNumberId,
       });
 
       // 8. Persist message record in database with accurate status
@@ -325,6 +330,7 @@ export class WhatsAppService {
         data = {};
       }
 
+      const settings = await this.getPlatformWhatsAppSettings();
       const components = templateDef ? templateDef.buildComponents(data) : [];
 
       const apiResult = await WhatsAppClient.sendTemplateMessage({
@@ -332,6 +338,8 @@ export class WhatsAppService {
         templateName: message.templateName,
         languageCode: "en",
         components,
+        accessToken: settings.accessToken,
+        phoneNumberId: settings.phoneNumberId,
       });
 
       const now = new Date();

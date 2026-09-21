@@ -12,6 +12,8 @@ import {
   Sparkles,
   Tag,
   X,
+  MessageSquare,
+  Phone,
 } from "lucide-react";
 import { formatPaise } from "@/lib/currency";
 import { BackButton } from "@/components/ui/back-button";
@@ -35,11 +37,60 @@ function CheckoutContent() {
   const [orderData, setOrderData] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
 
+  // WhatsApp Notification State
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [whatsappError, setWhatsappError] = useState<string | null>(null);
+
   // Coupon / Offer state
   const [inputCode, setInputCode] = useState(urlOffer.toUpperCase());
   const [appliedCode, setAppliedCode] = useState(urlOffer.toUpperCase());
   const [validatingOffer, setValidatingOffer] = useState(false);
   const [offerError, setOfferError] = useState<string | null>(null);
+
+  // Pre-fill WhatsApp number from profile
+  useEffect(() => {
+    async function loadUserProfile() {
+      try {
+        const res = await fetch("/api/profile");
+        const json = await res.json();
+        if (json.success && json.data?.user?.phone) {
+          setWhatsappNumber(json.data.user.phone);
+        }
+      } catch (err) {
+        console.warn("Could not load user profile for WhatsApp pre-fill:", err);
+      }
+    }
+    loadUserProfile();
+  }, []);
+
+  const validateWhatsAppNumber = (num: string): { valid: boolean; formatted?: string; error?: string } => {
+    const trimmed = num.trim();
+    if (!trimmed) {
+      return { valid: false, error: "WhatsApp number is required for notifications before payment." };
+    }
+    if (trimmed.includes("@")) {
+      return { valid: false, error: "Email addresses cannot be used as a WhatsApp number. Please enter a valid mobile number." };
+    }
+    const digitsOnly = trimmed.replace(/\D/g, "");
+    if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+      return { valid: false, error: "Please enter a valid 10 to 15-digit WhatsApp number (e.g. 9876543210)." };
+    }
+    return { valid: true, formatted: trimmed };
+  };
+
+  const saveWhatsAppToProfile = async (num: string): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: num }),
+      });
+      const json = await res.json();
+      return res.ok && json.success;
+    } catch {
+      return false;
+    }
+  };
 
   const fetchOrder = useCallback(
     async (codeToApply?: string) => {
@@ -194,9 +245,21 @@ function CheckoutContent() {
 
   const handlePay = async () => {
     if (!orderData) return;
+    setWhatsappError(null);
+
+    // Validate WhatsApp number before payment
+    const validation = validateWhatsAppNumber(whatsappNumber);
+    if (!validation.valid) {
+      setWhatsappError(validation.error || "Invalid WhatsApp number.");
+      return;
+    }
+
     setProcessing(true);
 
     try {
+      // Save validated WhatsApp number to learner profile
+      await saveWhatsAppToProfile(validation.formatted!);
+
       const isProd = orderData.env === "PRODUCTION";
       const isMockSession = orderData.paymentSessionId?.startsWith("session_mock_");
 
@@ -280,6 +343,42 @@ function CheckoutContent() {
               </div>
               <h1 className="text-2xl font-bold text-white tracking-tight">Complete Checkout</h1>
               <p className="text-xs text-slate-400">Review purchase details and pay securely</p>
+            </div>
+
+            {/* Learner WhatsApp Notification Number Section */}
+            <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                  <MessageSquare className="w-4 h-4 text-emerald-400" /> WhatsApp Number for Notifications
+                </span>
+                <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  Required
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-normal">
+                Payment receipt, booking details, and class reminders will be sent to this WhatsApp number.
+              </p>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Enter 10-digit WhatsApp number (e.g. 9876543210)"
+                  value={whatsappNumber}
+                  onChange={(e) => {
+                    setWhatsappNumber(e.target.value);
+                    setWhatsappError(null);
+                  }}
+                  className={`w-full bg-slate-900 border ${
+                    whatsappError ? "border-red-500/80 focus:border-red-400" : "border-slate-700/80 focus:border-emerald-500"
+                  } rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 font-mono focus:outline-none transition-colors`}
+                />
+              </div>
+
+              {whatsappError && (
+                <p className="text-xs text-red-400 flex items-center gap-1 pt-0.5 font-medium">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {whatsappError}
+                </p>
+              )}
             </div>
 
             {/* Offer / Coupon Section */}

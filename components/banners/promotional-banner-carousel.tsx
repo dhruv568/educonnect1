@@ -287,9 +287,14 @@ export function PromotionalBannerCarousel({
       className={`w-full relative z-20 focus:outline-none ${
         previewMode
           ? "pt-0 pb-0"
+<<<<<<< HEAD
           : "pt-20 sm:pt-24 pb-2 sm:pb-3"
+=======
+          : "pt-16 sm:pt-20 lg:pt-24 pb-0 bg-slate-950"
+>>>>>>> ef77c24 (feat(whatsapp): fix Meta WhatsApp Cloud API integration & add purchase flow WhatsApp validation)
       }`}
     >
+<<<<<<< HEAD
       <div className={previewMode ? "px-0" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"}>
         <div
           ref={containerRef}
@@ -309,6 +314,14 @@ export function PromotionalBannerCarousel({
             previewMode
               ? "max-w-[800px] mx-auto rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-lg aspect-[3/1] sm:aspect-[4/1]"
               : "rounded-2xl sm:rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xl aspect-[16/7] sm:aspect-[2.5/1] md:aspect-[2.8/1] lg:aspect-[3.2/1]"
+=======
+      <div className={previewMode ? "px-0" : "w-full"}>
+        <div
+          className={`relative w-full overflow-hidden bg-slate-950 ${
+            previewMode
+              ? "max-w-[800px] mx-auto rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-lg aspect-[3/1] sm:aspect-[4/1]"
+              : "shadow-2xl aspect-[16/7] sm:aspect-[2.5/1] md:aspect-[3.2/1] lg:aspect-[4/1] xl:aspect-[4.5/1]"
+>>>>>>> ef77c24 (feat(whatsapp): fix Meta WhatsApp Cloud API integration & add purchase flow WhatsApp validation)
           }`}
         >
           {/* Ambient Blurred Backdrop matching Banner Image colors */}
@@ -324,6 +337,7 @@ export function PromotionalBannerCarousel({
             <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
           </div>
 
+<<<<<<< HEAD
           {/* Smooth Fade-Scale Slide Transition */}
           <AnimatePresence mode="wait">
             <motion.div
@@ -332,6 +346,16 @@ export function PromotionalBannerCarousel({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+=======
+          {/* Animated Slide Transition */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentBanner.id || currentIndex}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: "easeInOut" }}
+>>>>>>> ef77c24 (feat(whatsapp): fix Meta WhatsApp Cloud API integration & add purchase flow WhatsApp validation)
               className="relative w-full h-full z-10 flex items-center justify-center"
             >
               {hasImageClick ? (
@@ -348,9 +372,14 @@ export function PromotionalBannerCarousel({
                     alt={currentBanner.title || "Promotional Banner"}
                     fill
                     priority={currentIndex === 0}
+<<<<<<< HEAD
                     loading="eager"
                     sizes="(max-width: 1280px) 100vw, 1280px"
                     className="object-cover w-full h-full"
+=======
+                    sizes="100vw"
+                    className="object-contain w-full h-full"
+>>>>>>> ef77c24 (feat(whatsapp): fix Meta WhatsApp Cloud API integration & add purchase flow WhatsApp validation)
                     unoptimized={true}
                     onError={() => {
                       setImageErrorMap((prev) => ({
@@ -370,9 +399,14 @@ export function PromotionalBannerCarousel({
                     alt={currentBanner.title || "Promotional Banner"}
                     fill
                     priority={currentIndex === 0}
+<<<<<<< HEAD
                     loading="eager"
                     sizes="(max-width: 1280px) 100vw, 1280px"
                     className="object-cover w-full h-full"
+=======
+                    sizes="100vw"
+                    className="object-contain w-full h-full"
+>>>>>>> ef77c24 (feat(whatsapp): fix Meta WhatsApp Cloud API integration & add purchase flow WhatsApp validation)
                     unoptimized={true}
                     onError={() => {
                       setImageErrorMap((prev) => ({
@@ -385,6 +419,73 @@ export function PromotionalBannerCarousel({
               )}
             </motion.div>
           </AnimatePresence>
+<<<<<<< HEAD
+=======
+
+          {/* Navigation Arrows (Only shown when multiple banners exist) */}
+          {total > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  prevSlide();
+                }}
+                aria-label="Previous promotional slide"
+                className={`absolute top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full bg-black/40 hover:bg-black/75 text-white border border-white/20 backdrop-blur-md transition-all duration-200 cursor-pointer shadow-xl focus:outline-none hover:scale-105 active:scale-95 ${
+                  previewMode ? "left-1.5 sm:left-3" : "left-3 sm:left-6 lg:left-8"
+                }`}
+              >
+                <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6" />
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  nextSlide();
+                }}
+                aria-label="Next promotional slide"
+                className={`absolute top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 rounded-full bg-black/40 hover:bg-black/75 text-white border border-white/20 backdrop-blur-md transition-all duration-200 cursor-pointer shadow-xl focus:outline-none hover:scale-105 active:scale-95 ${
+                  previewMode ? "right-1.5 sm:right-3" : "right-3 sm:right-6 lg:right-8"
+                }`}
+              >
+                <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6" />
+              </button>
+            </>
+          )}
+
+          {/* Carousel Indicators / Dots (Only shown when multiple banners exist) */}
+          {total > 1 && (
+            <div
+              className={`absolute left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 shadow-xl ${
+                previewMode ? "bottom-2 sm:bottom-3" : "bottom-3 sm:bottom-4 lg:bottom-6"
+              }`}
+              role="tablist"
+              aria-label="Promotional banner carousel pagination"
+            >
+              {banners.map((b, idx) => (
+                <button
+                  key={b.id || idx}
+                  type="button"
+                  role="tab"
+                  aria-selected={idx === currentIndex}
+                  aria-label={`Go to slide ${idx + 1}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    goToSlide(idx);
+                  }}
+                  className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                    idx === currentIndex ? "w-5 sm:w-8 bg-white" : "w-1.5 sm:w-2 bg-white/40 hover:bg-white/70"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+>>>>>>> ef77c24 (feat(whatsapp): fix Meta WhatsApp Cloud API integration & add purchase flow WhatsApp validation)
         </div>
       </div>
     </section>

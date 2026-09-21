@@ -31,6 +31,8 @@ export interface SendTemplateMessageOptions {
   templateName: string;
   languageCode?: string; // Default: 'en'
   components?: WhatsAppTemplateComponent[];
+  accessToken?: string;
+  phoneNumberId?: string;
 }
 
 export interface SendWhatsAppResult {
@@ -107,12 +109,16 @@ export class WhatsAppClient {
       };
     }
 
-    const { accessToken, phoneNumberId, apiVersion, isConfigured } = this.getCredentials();
+    const envCreds = this.getCredentials();
+    const accessToken = options.accessToken || envCreds.accessToken;
+    const phoneNumberId = options.phoneNumberId || envCreds.phoneNumberId;
+    const apiVersion = envCreds.apiVersion;
+    const isConfigured = Boolean(accessToken && phoneNumberId);
 
-    // If credentials are not set in environment, safely return without crashing
+    // If credentials are not set in environment or settings, safely return without crashing
     if (!isConfigured) {
       const errorMsg =
-        "WhatsApp Cloud API credentials not configured (WHATSAPP_ACCESS_TOKEN or WHATSAPP_PHONE_NUMBER_ID is missing in environment)";
+        "WhatsApp Cloud API credentials not configured (WHATSAPP_ACCESS_TOKEN or WHATSAPP_PHONE_NUMBER_ID is missing in environment/settings)";
       console.warn(`⚠️ [WhatsAppClient]: ${errorMsg}. Message to ${normalizedPhone} was recorded as FAILED.`);
       return {
         success: false,

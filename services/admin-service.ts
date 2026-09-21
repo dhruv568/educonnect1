@@ -1034,9 +1034,10 @@ export class AdminService {
       whatsappEnabled: settings.whatsapp_enabled !== "false",
       whatsappPhoneNumberId: settings.whatsapp_phone_number_id || process.env.WHATSAPP_PHONE_NUMBER_ID || "",
       whatsappBusinessAccountId: settings.whatsapp_business_account_id || process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || "",
+      whatsappAccessToken: settings.whatsapp_access_token || process.env.WHATSAPP_ACCESS_TOKEN || "",
       whatsappNotificationsEnabled: settings.whatsapp_notifications_enabled ? JSON.parse(settings.whatsapp_notifications_enabled) : {},
       whatsappTemplateMapping: settings.whatsapp_template_mapping ? JSON.parse(settings.whatsapp_template_mapping) : {},
-      isWhatsAppApiConfigured: Boolean(process.env.WHATSAPP_ACCESS_TOKEN && (process.env.WHATSAPP_PHONE_NUMBER_ID || settings.whatsapp_phone_number_id)),
+      isWhatsAppApiConfigured: Boolean((process.env.WHATSAPP_ACCESS_TOKEN || settings.whatsapp_access_token) && (process.env.WHATSAPP_PHONE_NUMBER_ID || settings.whatsapp_phone_number_id)),
     };
   }
 
@@ -1049,6 +1050,8 @@ export class AdminService {
         mapped["whatsapp_phone_number_id"] = String(val);
       } else if (key === "whatsappBusinessAccountId") {
         mapped["whatsapp_business_account_id"] = String(val);
+      } else if (key === "whatsappAccessToken") {
+        mapped["whatsapp_access_token"] = String(val);
       } else if (key === "whatsappNotificationsEnabled") {
         mapped["whatsapp_notifications_enabled"] = typeof val === "string" ? val : JSON.stringify(val);
       } else if (key === "whatsappTemplateMapping") {
