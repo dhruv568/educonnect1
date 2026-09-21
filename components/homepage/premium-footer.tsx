@@ -466,19 +466,13 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
                   <li>
                     <Link href="/exam" className="text-blue-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5">
                       <Award className="h-3.5 w-3.5 text-blue-300 shrink-0" />
-                      <span>Take a Free Exam</span>
+                      <span>Take Test</span>
                     </Link>
                   </li>
                   <li>
                     <Link href="/how-it-works" className="text-blue-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5">
                       <Compass className="h-3.5 w-3.5 text-blue-300 shrink-0" />
                       <span>How Learning Works</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/pricing" className="text-blue-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5">
-                      <CreditCard className="h-3.5 w-3.5 text-blue-300 shrink-0" />
-                      <span>Pricing & Guarantee</span>
                     </Link>
                   </li>
                 </>

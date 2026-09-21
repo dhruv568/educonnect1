@@ -340,12 +340,11 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   sizes="(max-width: 640px) 80px, (max-width: 1024px) 100px, 120px"
                 />
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex flex-col justify-center min-w-0 text-left">
                 <span className="text-base sm:text-lg font-black tracking-tight leading-none text-white transition-opacity group-hover:opacity-95">
                   Edu<span className="text-[#35A979]">Connects</span>
                 </span>
-                <span className="text-white/40 font-light text-xs sm:text-sm select-none">|</span>
-                <span className="text-xs sm:text-sm font-bold text-emerald-200 tracking-wide whitespace-nowrap">
+                <span className="text-[10px] sm:text-xs font-bold text-emerald-200 tracking-wide whitespace-nowrap mt-0.5">
                   Educator Portal
                 </span>
               </div>
@@ -368,12 +367,11 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   sizes="(max-width: 640px) 80px, (max-width: 1024px) 100px, 120px"
                 />
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex flex-col justify-center min-w-0 text-left">
                 <span className="text-base sm:text-lg font-black tracking-tight leading-none text-white transition-opacity group-hover:opacity-95">
                   Edu<span className="text-[#667EEA]">Connects</span>
                 </span>
-                <span className="text-white/40 font-light text-xs sm:text-sm select-none">|</span>
-                <span className="text-xs sm:text-sm font-bold text-blue-200 tracking-wide whitespace-nowrap">
+                <span className="text-[10px] sm:text-xs font-bold text-blue-200 tracking-wide whitespace-nowrap mt-0.5">
                   Learner Portal
                 </span>
               </div>
@@ -492,7 +490,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       : "text-blue-100 hover:text-white hover:bg-[#3157D5]/50"
                   }`}
                 >
-                  Take a Free Exam
+                  Take Test
                 </Link>
                 <Link
                   href="/student#benefits"
@@ -1131,7 +1129,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                           : "text-blue-100 hover:bg-[#3157D5]/50 hover:text-white"
                       }`}
                     >
-                      Take a Free Exam
+                      Take Test
                     </Link>
                     <Link
                       href="/student#benefits"

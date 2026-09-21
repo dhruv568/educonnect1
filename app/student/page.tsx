@@ -217,9 +217,9 @@ export default function StudentLandingPage() {
         "Visit the Explore Courses catalog to discover structured curriculums with detailed chapter syllabi, lesson previews, and instructor overviews. Select the course that matches your learning goals to initiate enrollment.",
     },
     {
-      question: "3. What is the Free AI Exam system and how do I take a free exam?",
+      question: "3. What is the Free AI Exam system and how do I take a test?",
       answer:
-        "Click 'Take a Free Exam' in the top navigation to access our interactive diagnostic exam tool. Select any subject, difficulty level, and number of questions (5, 10, or 15). Powered by OpenAI gpt-4o-mini, you receive instant server-side grading, step-by-step explanations, and personalized course and educator recommendations.",
+        "Click 'Take Test' in the top navigation to access our interactive diagnostic exam tool. Select any subject, difficulty level, and number of questions (5, 10, or 15). Powered by OpenAI gpt-4o-mini, you receive instant server-side grading, step-by-step explanations, and personalized course and educator recommendations.",
     },
     {
       question: "4. Are there any limits on how many courses I can enroll in at one time?",
