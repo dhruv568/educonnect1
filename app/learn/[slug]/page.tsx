@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import MuxPlayer from "@mux/mux-player-react";
 import {
   Play,
   PlayCircle,
@@ -49,8 +50,13 @@ export default function LmsClassroomPlayerPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [videoError, setVideoError] = useState(false);
 
-  // Mux signed playback state
-  const [muxPlaybackData, setMuxPlaybackData] = useState<{ playbackId: string; signedToken: string } | null>(null);
+  // Mux & Direct Video playback state
+  const [muxPlaybackData, setMuxPlaybackData] = useState<{
+    playbackId?: string | null;
+    signedToken?: string | null;
+    playbackUrl?: string | null;
+    isMux?: boolean;
+  } | null>(null);
 
   // Review form state
   const [reviewRating, setReviewRating] = useState(5);
@@ -102,7 +108,7 @@ export default function LmsClassroomPlayerPage() {
     setDuration(0);
   }, [activeLesson?.id]);
 
-  // Fetch Mux signed playback token whenever active lesson changes
+  // Fetch video playback details (Mux or Direct) whenever active lesson changes
   useEffect(() => {
     async function loadMuxPlayback() {
       if (!courseData?.courseId || !activeLesson?.id || !activeLesson?.isAccessible) return;
@@ -112,14 +118,16 @@ export default function LmsClassroomPlayerPage() {
       try {
         const res = await fetch(`/api/courses/${courseData.courseId}/lessons/${activeLesson.id}/playback`);
         const data = await res.json();
-        if (data.success && data.data?.isMux && data.data?.playbackId) {
+        if (data.success && data.data) {
           setMuxPlaybackData({
-            playbackId: data.data.playbackId,
-            signedToken: data.data.signedToken,
+            playbackId: data.data.playbackId || null,
+            playbackUrl: data.data.playbackUrl || null,
+            signedToken: data.data.signedToken || null,
+            isMux: Boolean(data.data.isMux),
           });
         }
       } catch (err) {
-        console.warn("Mux playback token fetch issue:", err);
+        console.warn("Video playback token fetch issue:", err);
       }
     }
 
@@ -305,24 +313,9 @@ export default function LmsClassroomPlayerPage() {
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Left Center Content Area (Player & Lesson Details) */}
         <div className="flex-1 flex flex-col overflow-y-auto bg-slate-950">
-          {/* Custom HTML5 Video Player Container */}
+          {/* Video Player Container (Supports Mux & HTML5 Direct Video) */}
           <div className="relative w-full aspect-video bg-black flex items-center justify-center group overflow-hidden">
-            {activeLesson?.videoUrl && !videoError ? (
-              <video
-                ref={videoRef}
-                src={activeLesson.videoUrl}
-                onLoadedMetadata={() => {
-                  if (videoRef.current) {
-                    setDuration(videoRef.current.duration || 0);
-                  }
-                }}
-                onTimeUpdate={handleTimeUpdate}
-                onEnded={handleVideoEnded}
-                onError={() => setVideoError(true)}
-                className="w-full h-full object-contain cursor-pointer"
-                onClick={togglePlay}
-              />
-            ) : videoError ? (
+            {videoError ? (
               <div className="p-8 text-center space-y-3">
                 <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
                 <div className="text-sm font-bold text-slate-200">
@@ -348,6 +341,31 @@ export default function LmsClassroomPlayerPage() {
                   Enroll in this course to unlock protected lessons and resources.
                 </p>
               </div>
+            ) : muxPlaybackData?.isMux && muxPlaybackData?.playbackId ? (
+              <MuxPlayer
+                streamType="on-demand"
+                playbackId={muxPlaybackData.playbackId}
+                tokens={muxPlaybackData.signedToken ? { playback: muxPlaybackData.signedToken } : undefined}
+                autoPlay={false}
+                onEnded={handleVideoEnded}
+                onError={() => setVideoError(true)}
+                className="w-full h-full object-contain"
+              />
+            ) : (muxPlaybackData?.playbackUrl || activeLesson?.videoUrl) ? (
+              <video
+                ref={videoRef}
+                src={muxPlaybackData?.playbackUrl || activeLesson?.videoUrl}
+                onLoadedMetadata={() => {
+                  if (videoRef.current) {
+                    setDuration(videoRef.current.duration || 0);
+                  }
+                }}
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleVideoEnded}
+                onError={() => setVideoError(true)}
+                className="w-full h-full object-contain cursor-pointer"
+                onClick={togglePlay}
+              />
             ) : (
               <div className="p-8 text-center space-y-3">
                 <PlayCircle className="w-12 h-12 text-slate-600 mx-auto" />

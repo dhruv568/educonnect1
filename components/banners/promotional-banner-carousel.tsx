@@ -36,6 +36,13 @@ export function PromotionalBannerCarousel({
   previewMode = false,
 }: PromotionalBannerCarouselProps) {
   const pathname = usePathname() || "/";
+  const [banners, setBanners] = useState<PromotionalBannerItem[]>(initialBanners && initialBanners.length > 0 ? initialBanners : []);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const [loading, setLoading] = useState(!initialBanners || initialBanners.length === 0);
+  const [imageErrorMap, setImageErrorMap] = useState<Record<string, boolean>>({});
 
   // Exclude non-public pages (admin, classroom, auth, live sessions)
   const isExcluded = useMemo(() => {

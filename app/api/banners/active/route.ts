@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     response.headers.set("Access-Control-Allow-Origin", "*");
     response.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
     response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-    response.headers.set("Cache-Control", "public, s-maxage=10, stale-while-revalidate=30");
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     return response;
   } catch (error: any) {
     return handleApiError(error);

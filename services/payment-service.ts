@@ -309,6 +309,50 @@ export class PaymentService {
           },
         });
 
+        const courseItem = await prisma.course.findUnique({ where: { id: refCourseId } });
+        try {
+          if (courseItem) {
+            const { EventService } = require("@/services/event-service");
+            await EventService.emit("payment.captured", {
+              userId,
+              actorId: userId,
+              actorRole: "STUDENT",
+              data: {
+                transactionId: transaction.id,
+                amountPaise: 0,
+                title: courseItem.title,
+                orderId: transaction.providerOrderId,
+                receipt: `rcpt_${internalReference}`,
+                teacherUserId: (
+                  await prisma.teacherProfile.findUnique({ where: { id: courseItem.teacherId } })
+                )?.userId,
+                entityType: "Course",
+                entityId: courseItem.id,
+              },
+              idempotencyKey: `pay-${transaction.id}`,
+            });
+
+            await EventService.emit("course.enrolled", {
+              userId,
+              actorId: userId,
+              actorRole: "STUDENT",
+              data: {
+                courseId: courseItem.id,
+                courseTitle: courseItem.title,
+                courseSlug: courseItem.slug,
+                teacherUserId: (
+                  await prisma.teacherProfile.findUnique({ where: { id: courseItem.teacherId } })
+                )?.userId,
+                entityType: "Course",
+                entityId: courseItem.id,
+              },
+              idempotencyKey: `enroll-${courseItem.id}-${userId}`,
+            });
+          }
+        } catch (evtErr) {
+          console.error("Failed to emit free course payment events:", evtErr);
+        }
+
         return {
           isFree: true,
           amountPaise: 0,
@@ -342,6 +386,50 @@ export class PaymentService {
             capturedAt: new Date(),
           },
         });
+
+        const slotItem = await prisma.liveClassSlot.findUnique({ where: { id: refSlotId } });
+        try {
+          if (slotItem) {
+            const { EventService } = require("@/services/event-service");
+            await EventService.emit("payment.captured", {
+              userId,
+              actorId: userId,
+              actorRole: "STUDENT",
+              data: {
+                transactionId: transaction.id,
+                amountPaise: 0,
+                title: slotItem.title,
+                orderId: transaction.providerOrderId,
+                receipt: `rcpt_${internalReference}`,
+                teacherUserId: (
+                  await prisma.teacherProfile.findUnique({ where: { id: slotItem.teacherId } })
+                )?.userId,
+                entityType: "LiveClassSlot",
+                entityId: slotItem.id,
+              },
+              idempotencyKey: `pay-${transaction.id}`,
+            });
+
+            await EventService.emit("class.booked", {
+              userId,
+              actorId: userId,
+              actorRole: "STUDENT",
+              data: {
+                slotId: slotItem.id,
+                classTitle: slotItem.title,
+                startTime: slotItem.startTime.toISOString(),
+                teacherUserId: (
+                  await prisma.teacherProfile.findUnique({ where: { id: slotItem.teacherId } })
+                )?.userId,
+                entityType: "LiveClassSlot",
+                entityId: slotItem.id,
+              },
+              idempotencyKey: `book-${slotItem.id}-${userId}`,
+            });
+          }
+        } catch (evtErr) {
+          console.error("Failed to emit free class booking payment events:", evtErr);
+        }
 
         return {
           isFree: true,
