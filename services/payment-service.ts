@@ -105,18 +105,6 @@ export class PaymentService {
         throw new Error("DUPLICATE_PURCHASE: You are already enrolled in this course.");
       }
 
-      // Check single course limit across all courses for this learner
-      const otherEnrollmentCount = await prisma.enrollment.count({
-        where: {
-          studentId: userId,
-          status: { in: ["ACTIVE", "COMPLETED"] },
-          NOT: { courseId },
-        },
-      });
-
-      if (otherEnrollmentCount >= 1) {
-        throw new Error("COURSE_LIMIT_REACHED: Learners are limited to enrolling in one course at a time. Please complete your current course before enrolling in another.");
-      }
 
       // Price calculation directly from DB (Integer paise)
       amountPaise = toPaise(course.price);

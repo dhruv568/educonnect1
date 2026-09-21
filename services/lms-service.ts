@@ -1229,18 +1229,6 @@ export class LmsService {
       }
     }
 
-    // Single course limit check: learners are limited to enrolling in ONE course
-    const activeOrCompletedCount = await prisma.enrollment.count({
-      where: {
-        studentId: studentUserId,
-        status: { in: ["ACTIVE", "COMPLETED"] },
-        NOT: { courseId },
-      },
-    });
-
-    if (activeOrCompletedCount >= 1) {
-      throw new Error("COURSE_LIMIT_REACHED: Learners are limited to enrolling in one course at a time. Please complete your existing course before enrolling in another.");
-    }
 
     const initialStatus = course.price === 0 ? "ACTIVE" : "PAYMENT_PENDING";
 

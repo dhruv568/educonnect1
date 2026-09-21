@@ -542,15 +542,14 @@ function LearnerRegistrationFlowContent() {
       if (!res.ok) {
         const errMsg = data.error || "Failed to create payment order.";
         if (
-          errMsg.includes("COURSE_LIMIT_REACHED") ||
-          errMsg.toLowerCase().includes("active course enrollment") ||
-          errMsg.toLowerCase().includes("one course")
+          errMsg.includes("DUPLICATE_PURCHASE") ||
+          errMsg.toLowerCase().includes("already enrolled in this course")
         ) {
           setState((prev) => ({
             ...prev,
             paymentLoading: false,
             activeEnrollmentNotice:
-              "You already have an active course enrollment. Under EduConnects focus policy, learners can be enrolled in one course at a time.",
+              "You are already enrolled in this course.",
           }));
           return;
         }

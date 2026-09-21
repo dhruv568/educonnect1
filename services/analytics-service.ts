@@ -289,8 +289,8 @@ export class AnalyticsService {
     activityList.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     const recentActivity = activityList.slice(0, 5);
 
-    // 7. Enrolled Courses Quick Summary
-    const enrolledCoursesSummary = enrollments.slice(0, 4).map((e) => {
+    // 7. Enrolled Courses Summary (All Purchased Courses)
+    const enrolledCoursesSummary = enrollments.map((e) => {
       const allLessons = e.course.sections.flatMap((s) => s.lessons);
       const totalLessons = allLessons.length;
       const completedCount = e.lessonProgresses.filter((p) => p.completed).length;

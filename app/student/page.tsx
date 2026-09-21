@@ -223,7 +223,7 @@ export default function StudentLandingPage() {
     {
       question: "4. Are there any limits on how many courses I can enroll in at one time?",
       answer:
-        "Yes, to ensure focused learning and mastery, EduConnects limits learners to enrolling in one course at a time. Once you complete your enrolled course, you can easily graduate and enroll in your next chosen curriculum.",
+        "No! EduConnects allows learners to purchase and enroll in multiple courses simultaneously. Each course has its own enrollment, payment receipt, progress tracking, and completion status.",
     },
     {
       question: "5. What payment methods are supported for course enrollments and bookings?",
