@@ -397,7 +397,7 @@ export default function StudentLandingPage() {
                     />
                     <div className="border-l border-blue-100 pl-2.5 text-left">
                       <span className="block text-[10px] font-black text-blue-700 uppercase tracking-wider">
-                        Official Learner Gateway
+                        EduConnects
                       </span>
                       <span className="block text-[11px] font-semibold text-slate-700">
                         Learn • Grow • Belong

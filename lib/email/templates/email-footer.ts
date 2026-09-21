@@ -54,7 +54,7 @@ export function generateEmailFooterHtml(options: EmailFooterOptions = {}): strin
                       </table>
                     </a>
                     <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: #0F5C5A; letter-spacing: 0.8px; text-transform: uppercase;">
-                      ${options.isEducator ? "Teach &bull; Connect &bull; Grow" : "Learn &bull; Grow &bull; Belong"}
+                      Learn &bull; Grow &bull; Belong
                     </p>
                   </td>
                 </tr>

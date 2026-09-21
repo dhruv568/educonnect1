@@ -254,7 +254,7 @@ export default function StudentPaymentReceiptPage() {
                   theme="dark"
                   href={false}
                   showTagline
-                  tagline="Learner Portal"
+                  tagline="Learn • Grow • Belong"
                 />
               </div>
 

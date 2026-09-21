@@ -248,7 +248,7 @@ export default function AdminLoginPage() {
                   roleContext="admin"
                   href="/"
                   showTagline={true}
-                  tagline="Administration Console"
+                  tagline="Learn • Grow • Belong"
                   priority
                 />
                 <div className="flex items-center gap-2 pt-1">

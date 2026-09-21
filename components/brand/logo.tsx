@@ -65,7 +65,7 @@ export function Logo({
   priority = false,
   className = "",
   href,
-  showTagline = false,
+  showTagline = true,
   tagline,
   theme = "auto",
   roleContext = "default",
@@ -80,16 +80,8 @@ export function Logo({
   let fullHeight = height || preset.fullH;
   let fullWidth = width || Math.round(fullHeight * FULL_RATIO);
 
-  // Default tagline by role
-  const resolvedTagline =
-    tagline ||
-    (roleContext === "student"
-      ? "Learner Gateway"
-      : roleContext === "teacher"
-      ? "Educator Network"
-      : roleContext === "admin"
-      ? "Administration Console"
-      : "Learn • Grow • Belong");
+  // Standard platform tagline
+  const resolvedTagline = tagline || "Learn • Grow • Belong";
 
   // Typography color styling based on theme and role
   const isDarkTheme = theme === "dark";

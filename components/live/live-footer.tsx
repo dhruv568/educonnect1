@@ -18,12 +18,9 @@ export function LiveFooter() {
               size="lg"
               theme="dark"
               href={getMainDomain() + "/"}
-              showTagline={false}
+              showTagline
+              tagline="Learn • Grow • Belong"
             />
-
-            <p className="text-sm font-extrabold text-[#FFD700] uppercase tracking-wider">
-              EduConnects • Learn | Grow | Belong
-            </p>
 
             <p className="text-xs text-amber-100/80 leading-relaxed max-w-md">
               Connecting learners and educators across India in real-time live classrooms, structured courses, and interactive live events.

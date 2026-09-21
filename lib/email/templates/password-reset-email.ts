@@ -79,7 +79,7 @@ export function generatePasswordResetEmailHtml(params: PasswordResetEmailParams)
                       EduConnects
                     </h1>
                     <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: 600; color: #bfdbfe; letter-spacing: 0.5px;">
-                      Password Security Gateway
+                      Learn • Grow • Belong
                     </p>
                   </td>
                 </tr>

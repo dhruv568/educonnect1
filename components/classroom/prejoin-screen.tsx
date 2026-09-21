@@ -159,7 +159,7 @@ export function PreJoinScreen({
             size="sm"
             theme="dark"
             href="/"
-            showTagline={false}
+            showTagline
             priority
           />
           <BackButton

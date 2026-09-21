@@ -101,7 +101,7 @@ export function ClassroomHeader({
           size="sm"
           theme="dark"
           href="/"
-          showTagline={false}
+          showTagline
           priority
         />
 

@@ -93,7 +93,7 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
                       EduConnects
                     </h1>
                     <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: 600; color: #A7F3D0; letter-spacing: 0.5px;">
-                      ${isAdminLogin ? "Admin Security Verification Gateway" : "Learn • Grow • Belong"}
+                      Learn • Grow • Belong
                     </p>
                   </td>
                 </tr>

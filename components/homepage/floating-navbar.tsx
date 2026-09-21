@@ -976,12 +976,11 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                     roleContext="default"
                     theme="dark"
                     href={getMainDomain() + "/"}
+                    showTagline
+                    tagline="Learn • Grow • Belong"
                     onClick={() => setMobileOpen(false)}
                     priority
                   />
-                  <span className="text-[10px] font-bold text-teal-200 bg-[#0F5C5A] px-2.5 py-1 rounded-full border border-[#1B6863]">
-                    Official Portal
-                  </span>
                 </div>
               )}
 
