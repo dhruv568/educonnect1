@@ -180,15 +180,13 @@ export default function StudentPaymentReceiptPage() {
             <BackToHomeButton variant="dark" />
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handlePrint}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold rounded-xl border border-slate-800 flex items-center gap-2 shadow-xs transition-all cursor-pointer"
-            >
-              <Printer className="w-4 h-4 text-emerald-400" />
-              <span>Print Receipt</span>
-            </button>
-          </div>
+          <button
+            onClick={handlePrint}
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold rounded-xl border border-slate-800 flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+          >
+            <Printer className="w-4 h-4 text-emerald-400" />
+            <span>Print Receipt</span>
+          </button>
         </div>
 
         {/* Global Feedback Notifications (Hidden in Print) */}
@@ -207,28 +205,14 @@ export default function StudentPaymentReceiptPage() {
           {/* Header Brand & Heading */}
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800/80 print:border-gray-300 pb-6">
-              <div>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center print:border-gray-400">
-                    <Sparkles className="w-4 h-4 text-emerald-400 print:text-black" />
-                  </div>
-                  <span className="text-2xl font-black tracking-tight text-white print:text-black">
-                    EduConnects
-                  </span>
-                </div>
-                <p className="text-[11px] font-semibold text-emerald-400/90 print:text-gray-600 mt-1">
-                  A MyProFunnels Ventures Company
-                </p>
-              </div>
-
-              <div className="text-left sm:text-right space-y-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 print:text-gray-500 block">
-                  Reference Number
-                </span>
-                <span className="font-mono text-xs font-bold text-slate-200 print:text-black bg-slate-950/80 print:bg-gray-100 px-2.5 py-1 rounded-lg border border-slate-800 print:border-gray-300">
-                  {receipt.internalReference}
-                </span>
-              </div>
+              <Logo
+                variant="compact"
+                size="md"
+                theme="dark"
+                href={false}
+                showTagline
+                tagline="A MyProFunnels Ventures Company"
+              />
             </div>
 
             {/* Official Centered Heading */}
@@ -292,9 +276,22 @@ export default function StudentPaymentReceiptPage() {
                 <FileText className="w-3.5 h-3.5 text-emerald-400 print:text-gray-500" />
                 <span>Billed To</span>
               </div>
-              <p className="font-extrabold text-sm text-white print:text-black">
-                {receipt.studentName}
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-extrabold text-sm text-white print:text-black">
+                  {receipt.studentName}
+                </p>
+                <div className="inline-flex items-center gap-1.5 bg-slate-950/80 print:bg-gray-100 px-2.5 py-1 rounded-lg border border-slate-800 print:border-gray-300">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 print:text-gray-500">
+                    Reference Number:
+                  </span>
+                  <span
+                    className="font-mono text-xs font-bold text-slate-200 print:text-black"
+                    title={receipt.internalReference}
+                  >
+                    {formatReferenceNumber(receipt.internalReference)}
+                  </span>
+                </div>
+              </div>
               <div className="space-y-0.5 text-slate-400 print:text-gray-600">
                 <p>{receipt.studentEmail}</p>
                 <p className="text-[11px]">Learner Account ID: {receipt.studentEmail}</p>
@@ -500,15 +497,9 @@ export default function StudentPaymentReceiptPage() {
           </div>
 
           {/* Receipt Footer Notice */}
-          <div className="border-t border-slate-800/70 print:border-gray-300 pt-4 text-center space-y-1">
+          <div className="border-t border-slate-800/70 print:border-gray-300 pt-4 text-center">
             <p className="text-[11px] text-slate-400 print:text-gray-600">
               This is a computer-generated official receipt and serves as valid proof of payment.
-            </p>
-            <p className="text-[10px] text-slate-500 print:text-gray-500">
-              For billing inquiries or disputes, please cite Reference ID:{" "}
-              <span className="font-mono font-bold text-slate-300 print:text-black">
-                {receipt.internalReference}
-              </span>
             </p>
           </div>
         </div>
