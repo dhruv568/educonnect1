@@ -37,6 +37,10 @@ import {
   X,
   Smartphone,
   Monitor,
+  Crop,
+  Move,
+  ZoomIn,
+  RotateCcw,
 } from "lucide-react";
 
 export interface PromotionalBanner {
@@ -99,6 +103,111 @@ export default function AdminPromotionalBannersPage() {
 
   // Live preview settings inside modal
   const [previewTheme, setPreviewTheme] = useState<"MAIN" | "LEARNERS" | "EDUCATORS">("MAIN");
+
+  // Image Cropper Modal State
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string>("");
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropPan, setCropPan] = useState({ x: 0, y: 0 });
+  const [isDraggingCrop, setIsDraggingCrop] = useState(false);
+  const cropStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const cropPanStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const cropViewportRef = useRef<HTMLDivElement>(null);
+  const cropImageRef = useRef<HTMLImageElement>(null);
+
+  const handleOpenCropModal = () => {
+    if (!formImageUrl.trim()) {
+      showToast("No Image Selected", "Upload or enter an image URL first before cropping.", "info");
+      return;
+    }
+    setCropSrc(formImageUrl.trim());
+    setCropZoom(1);
+    setCropPan({ x: 0, y: 0 });
+    setIsCropModalOpen(true);
+  };
+
+  const handleCropMouseDown = (e: React.MouseEvent) => {
+    setIsDraggingCrop(true);
+    cropStartRef.current = { x: e.clientX, y: e.clientY };
+    cropPanStartRef.current = { ...cropPan };
+  };
+
+  const handleCropMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingCrop) return;
+    const dx = e.clientX - cropStartRef.current.x;
+    const dy = e.clientY - cropStartRef.current.y;
+    setCropPan({
+      x: cropPanStartRef.current.x + dx,
+      y: cropPanStartRef.current.y + dy,
+    });
+  };
+
+  const handleCropMouseUp = () => {
+    setIsDraggingCrop(false);
+  };
+
+  const handleCropTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setIsDraggingCrop(true);
+      cropStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      cropPanStartRef.current = { ...cropPan };
+    }
+  };
+
+  const handleCropTouchMove = (e: React.TouchEvent) => {
+    if (!isDraggingCrop || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - cropStartRef.current.x;
+    const dy = e.touches[0].clientY - cropStartRef.current.y;
+    setCropPan({
+      x: cropPanStartRef.current.x + dx,
+      y: cropPanStartRef.current.y + dy,
+    });
+  };
+
+  const handleCropTouchEnd = () => {
+    setIsDraggingCrop(false);
+  };
+
+  const handleApplyCrop = () => {
+    if (!cropSrc) return;
+
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.src = cropSrc;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1280;
+      canvas.height = 400;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.fillStyle = "#090d16";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const viewportWidth = cropViewportRef.current?.offsetWidth || 800;
+      const viewportHeight = cropViewportRef.current?.offsetHeight || 250;
+
+      const scaleToCanvasX = canvas.width / viewportWidth;
+      const scaleToCanvasY = canvas.height / viewportHeight;
+
+      const baseScale = Math.max(viewportWidth / img.width, viewportHeight / img.height);
+      const drawWidth = img.width * baseScale * cropZoom * scaleToCanvasX;
+      const drawHeight = img.height * baseScale * cropZoom * scaleToCanvasY;
+
+      const drawX = (canvas.width - drawWidth) / 2 + cropPan.x * scaleToCanvasX;
+      const drawY = (canvas.height - drawHeight) / 2 + cropPan.y * scaleToCanvasY;
+
+      ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
+      setFormImageUrl(dataUrl);
+      setIsCropModalOpen(false);
+      showToast("Image Cropped", "Banner image cropped to 3.2:1 aspect ratio with 0 side gaps.", "success");
+    };
+    img.onerror = () => {
+      showToast("Crop Error", "Failed to load image for cropping. Please check image URL.", "error");
+    };
+  };
 
   // Fetch banners from API
   const fetchBanners = async () => {
@@ -1096,6 +1205,17 @@ export default function AdminPromotionalBannersPage() {
                             </>
                           )}
                         </button>
+
+                        <button
+                          type="button"
+                          onClick={handleOpenCropModal}
+                          disabled={!formImageUrl.trim()}
+                          className="px-4 py-2 text-xs font-bold rounded-xl bg-teal-700 hover:bg-teal-800 text-white shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                          title="Crop, zoom and position image to fit 3.2:1 banner ratio"
+                        >
+                          <Crop className="h-3.5 w-3.5" />
+                          <span>Crop / Position Image</span>
+                        </button>
                         <span className="text-xs text-slate-400">or enter image path/URL below</span>
                       </div>
 
@@ -1440,6 +1560,146 @@ export default function AdminPromotionalBannersPage() {
                 className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md transition-colors"
               >
                 Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* CROP & POSITION IMAGE MODAL */}
+      {/* ========================================================================= */}
+      {isCropModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-teal-50 text-[#0F5C5A]">
+                  <Crop className="h-5 w-5" />
+                </span>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">
+                    Crop & Position Banner Image
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Drag, zoom and position your image to fit the website's exact 3.2:1 banner ratio with 0 side gaps.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCropModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Interactive Crop Viewport Area */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                <span className="flex items-center gap-1">
+                  <Move className="h-3.5 w-3.5 text-teal-600" />
+                  <span>Drag image to position • Scroll/Slider to zoom</span>
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-teal-50 text-[#0F5C5A] border border-teal-200 text-[11px]">
+                  Aspect Ratio: 3.2 : 1 (1280 × 400px)
+                </span>
+              </div>
+
+              {/* Viewport Frame */}
+              <div
+                ref={cropViewportRef}
+                onMouseDown={handleCropMouseDown}
+                onMouseMove={handleCropMouseMove}
+                onMouseUp={handleCropMouseUp}
+                onMouseLeave={handleCropMouseUp}
+                onTouchStart={handleCropTouchStart}
+                onTouchMove={handleCropTouchMove}
+                onTouchEnd={handleCropTouchEnd}
+                className="relative w-full aspect-[3.2/1] bg-slate-950 overflow-hidden rounded-2xl border-2 border-dashed border-teal-400 shadow-xl cursor-grab active:cursor-grabbing select-none flex items-center justify-center"
+              >
+                {/* Image under transformation */}
+                {cropSrc && (
+                  <img
+                    ref={cropImageRef}
+                    src={cropSrc}
+                    alt="Crop workspace"
+                    draggable={false}
+                    style={{
+                      transform: `translate(${cropPan.x}px, ${cropPan.y}px) scale(${cropZoom})`,
+                      transformOrigin: "center center",
+                    }}
+                    className="max-w-none max-h-none absolute transition-transform duration-75 select-none pointer-events-none"
+                    crossOrigin="anonymous"
+                  />
+                )}
+
+                {/* Crop Alignment Grid Overlay */}
+                <div className="absolute inset-0 border border-white/20 pointer-events-none grid grid-cols-3 grid-rows-3">
+                  <div className="border-r border-b border-white/10" />
+                  <div className="border-r border-b border-white/10" />
+                  <div className="border-b border-white/10" />
+                  <div className="border-r border-b border-white/10" />
+                  <div className="border-r border-b border-white/10" />
+                  <div className="border-b border-white/10" />
+                  <div className="border-r border-white/10" />
+                  <div className="border-r border-white/10" />
+                  <div />
+                </div>
+              </div>
+            </div>
+
+            {/* Controls: Zoom slider & Reset */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1 min-w-[200px]">
+                <ZoomIn className="h-4 w-4 text-slate-500 shrink-0" />
+                <span className="text-xs font-bold text-slate-700 shrink-0">Zoom:</span>
+                <input
+                  type="range"
+                  min="1"
+                  max="3.5"
+                  step="0.05"
+                  value={cropZoom}
+                  onChange={(e) => setCropZoom(parseFloat(e.target.value))}
+                  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#0F5C5A]"
+                />
+                <span className="text-xs font-mono font-bold text-slate-600 shrink-0">
+                  {cropZoom.toFixed(2)}x
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setCropZoom(1);
+                  setCropPan({ x: 0, y: 0 });
+                }}
+                className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-100 flex items-center gap-1 shadow-2xs"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Reset Position</span>
+              </button>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setIsCropModalOpen(false)}
+                className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleApplyCrop}
+                className="px-6 py-2.5 rounded-xl bg-[#0F5C5A] hover:bg-[#0D4E4C] text-white text-xs font-bold shadow-md flex items-center gap-2 transition-all cursor-pointer"
+              >
+                <Check className="h-4 w-4" />
+                <span>Apply Crop & Save Image</span>
               </button>
             </div>
           </div>
