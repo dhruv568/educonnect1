@@ -110,7 +110,7 @@ export default function StudentDashboardPage() {
     <DashboardLayout role="STUDENT" userName={data.userName} userEmail={data.userEmail}>
       <div className="space-y-8 pb-16">
         {/* Welcome Header Banner */}
-        <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-[#3157D5] via-[#243B9B] to-[#1E3185] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
           <div className="flex items-center gap-4 relative z-10">
             {data.avatarUrl ? (
               <img
@@ -187,7 +187,7 @@ export default function StudentDashboardPage() {
             title="Courses Enrolled"
             value={loading ? "..." : data.stats.enrolledCount}
             subtitle={`${data.stats.completedCoursesCount} courses completed`}
-            icon={<BookOpen className="h-5 w-5 text-blue-600" />}
+            icon={<BookOpen className="h-5 w-5 text-[#3157D5]" />}
             variant="blue"
           />
 

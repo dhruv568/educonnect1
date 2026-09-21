@@ -370,7 +370,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-base sm:text-lg font-black tracking-tight leading-none text-white transition-opacity group-hover:opacity-95">
-                  Edu<span className="text-blue-400">Connects</span>
+                  Edu<span className="text-[#667EEA]">Connects</span>
                 </span>
                 <span className="text-white/40 font-light text-xs sm:text-sm select-none">|</span>
                 <span className="text-xs sm:text-sm font-bold text-blue-200 tracking-wide whitespace-nowrap">
@@ -664,7 +664,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   {(userSession.role === "STUDENT" || isLearnerRole(userSession.role)) ? (
                     <Link
                       href={getLearnerSubdomainUrl("/student/dashboard")}
-                      className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+                      className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#3157D5] hover:bg-[#243B9B] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
                     >
                       <LayoutDashboard className="h-4 w-4 text-blue-100" />
                       <span>Learner Portal</span>
@@ -718,7 +718,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       <div
                         className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-white font-black text-xs flex items-center justify-center shadow-2xs ${
                           isLearnerRole(userSession.role)
-                            ? "bg-blue-600"
+                            ? "bg-[#3157D5]"
                             : isEducatorRole(userSession.role)
                             ? "bg-[#16805B]"
                             : "bg-[#0B4F4B]"

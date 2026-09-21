@@ -83,7 +83,7 @@ export default function TeacherDashboardPage() {
       <div className="space-y-8 pb-16">
         {/* Dynamic Verification Status Banner */}
         {data.verificationStatus === "VERIFIED" ? (
-          <div className="bg-emerald-600 text-white rounded-3xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="bg-[#16805B] text-white rounded-3xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-white/10 rounded-2xl">
                 <ShieldCheck className="h-8 w-8 text-white" />
@@ -165,7 +165,7 @@ export default function TeacherDashboardPage() {
             title="Today's Classes"
             value={loading ? "..." : data.metrics.todayClassesCount}
             subtitle={`${data.metrics.upcomingClassesCount} upcoming total`}
-            icon={<Video className="h-5 w-5 text-blue-600" />}
+            icon={<Video className="h-5 w-5 text-[#16805B]" />}
             variant="blue"
           />
 
@@ -173,7 +173,7 @@ export default function TeacherDashboardPage() {
             title="Active Students"
             value={loading ? "..." : data.metrics.activeStudentsCount}
             subtitle="Enrolled in your courses"
-            icon={<Users className="h-5 w-5 text-emerald-600" />}
+            icon={<Users className="h-5 w-5 text-[#16805B]" />}
             variant="emerald"
           />
 
@@ -197,10 +197,10 @@ export default function TeacherDashboardPage() {
         {/* Schedule & Upcoming Sessions Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Today's Schedule */}
-          <Card className="p-6 space-y-4 border-l-4 border-l-blue-600">
+          <Card className="p-6 space-y-4 border-l-4 border-l-[#16805B]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-blue-600" />
+                <Calendar className="h-5 w-5 text-[#16805B]" />
                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   Today's Schedule
                 </h3>

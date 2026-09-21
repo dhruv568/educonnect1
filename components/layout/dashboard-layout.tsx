@@ -466,7 +466,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
               />
               <div className="min-w-0">
                 <h1 className="text-sm font-black text-white tracking-tight">
-                  EDU<span className={isAdminOrStaff ? "text-[#F2C14E]" : isEducatorRole(role) ? "text-[#35A979]" : "text-blue-400"}>CONNECTS</span>
+                  EDU<span className={isAdminOrStaff ? "text-[#F2C14E]" : isEducatorRole(role) ? "text-[#35A979]" : "text-[#667EEA]"}>CONNECTS</span>
                 </h1>
                 <Badge variant={roleColors[role] || "student"} size="sm">
                   {currentRoleTitle}
@@ -566,6 +566,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
                       item.href !== "/student/dashboard" &&
                       pathname.startsWith(item.href));
                   const IconComponent = item.icon || LayoutDashboard;
+                  const isEducator = isEducatorRole(role);
                   return (
                     <Link
                       key={idx}
@@ -573,12 +574,20 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
                       onClick={() => setSidebarOpen(false)}
                       className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
                         isActive
-                          ? "bg-[#0B4F4B] text-white shadow-md border border-[#F2C14E]/30"
+                          ? isEducator
+                            ? "bg-[#16805B] text-white shadow-md border border-[#35A979]/40"
+                            : "bg-[#3157D5] text-white shadow-md border border-[#667EEA]/40"
                           : "text-teal-100/80 hover:bg-[#1B6863]/40 hover:text-white"
                       }`}
                     >
                       <IconComponent
-                        className={`h-4 w-4 ${isActive ? "text-[#F2C14E]" : "text-teal-200/70"}`}
+                        className={`h-4 w-4 ${
+                          isActive
+                            ? isEducator
+                              ? "text-[#35A979]"
+                              : "text-[#667EEA]"
+                            : "text-teal-200/70"
+                        }`}
                       />
                       <span>{item.label}</span>
                     </Link>
