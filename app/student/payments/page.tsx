@@ -2,11 +2,25 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { CreditCard, CheckCircle2, AlertCircle, RefreshCw, Receipt, Search, ArrowRight, ExternalLink, ShieldCheck } from "lucide-react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  CreditCard,
+  CheckCircle2,
+  AlertCircle,
+  Receipt,
+  Search,
+  ArrowRight,
+  ExternalLink,
+  ShieldCheck,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { BackButton } from "@/components/ui/back-button";
 import { BackToHomeButton } from "@/components/ui/back-to-home-button";
-import { Logo } from "@/components/brand/logo";
 
 export default function StudentPaymentsPage() {
   const [payments, setPayments] = useState<any[]>([]);
@@ -21,13 +35,13 @@ export default function StudentPaymentsPage() {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/student/payments");
+      const res = await fetch("/api/student/payments", { cache: "no-store" });
       const data = await res.json();
       if (res.ok) {
-        setPayments(data.data.payments || []);
+        setPayments(data.data?.payments || []);
       }
-    } catch {
-      // Error handling
+    } catch (err) {
+      console.error("Failed to load payments:", err);
     } finally {
       setLoading(false);
     }
@@ -35,168 +49,163 @@ export default function StudentPaymentsPage() {
 
   const filtered = payments.filter((p) => {
     if (filter !== "ALL" && p.status !== filter) return false;
-    if (search) {
+    if (search.trim()) {
       const q = search.toLowerCase();
       return (
-        p.productTitle.toLowerCase().includes(q) ||
-        p.internalReference.toLowerCase().includes(q) ||
-        p.teacherName.toLowerCase().includes(q)
+        (p.productTitle || "").toLowerCase().includes(q) ||
+        (p.internalReference || "").toLowerCase().includes(q) ||
+        (p.teacherName || "").toLowerCase().includes(q)
       );
     }
     return true;
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 space-y-8">
-      {/* EduConnects Brand Header Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/40 border border-slate-800/80 p-4 rounded-3xl backdrop-blur-xl shadow-lg">
-        <div className="flex items-center gap-4">
-          <Logo
-            variant="horizontal"
-            size="md"
-            theme="dark"
-            roleContext="student"
-            href="/student/dashboard"
-            showTagline
-            tagline="Learner Portal"
-            priority
-          />
-          <div className="hidden sm:flex items-center gap-2 pl-4 border-l border-slate-800 text-xs text-slate-400">
-            <ShieldCheck className="w-4 h-4 text-blue-400 shrink-0" />
-            <span className="font-medium text-slate-300">Official Billing & Invoices</span>
+    <DashboardLayout role="STUDENT" userName="Learner">
+      <div className="space-y-6 pb-16">
+        {/* Header Title Banner */}
+        <div className="bg-gradient-to-r from-[#0B4F4B] via-[#073F3C] to-[#042826] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+          <div className="space-y-2 relative z-10">
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-teal-200 border border-white/20 uppercase tracking-wider">
+                Financial Ledger
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-3">
+              <CreditCard className="w-8 h-8 text-teal-300 shrink-0" />
+              Payment Log & Purchase History
+            </h1>
+            <p className="text-xs sm:text-sm text-teal-100 max-w-xl">
+              Complete itemized billing ledger for all course enrollments, live class slot bookings, and Cashfree transactions.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 relative z-10 shrink-0">
+            <BackButton fallbackUrl="/student/dashboard" label="Back to Dashboard" variant="dark" />
+            <BackToHomeButton variant="dark" />
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-          <BackButton
-            fallbackUrl="/student/dashboard"
-            label="Back to Dashboard"
-            variant="dark"
-          />
-          <BackToHomeButton variant="dark" />
-        </div>
-      </div>
+        {/* Filter Toolbar */}
+        <Card className="p-4 border-slate-200 bg-white rounded-3xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search course, class, or reference..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#0B4F4B]"
+            />
+          </div>
 
-      {/* Page Title & Navigation Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800/80 pb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-            <CreditCard className="w-7 h-7 sm:w-8 sm:h-8 text-blue-400" /> Payment & Purchase History
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Track all course enrollments, live class bookings, receipts, and payment statuses.
-          </p>
-        </div>
+          <div className="flex items-center gap-1.5 flex-wrap w-full sm:w-auto">
+            {["ALL", "CAPTURED", "PENDING", "REFUNDED", "FAILED"].map((s) => (
+              <button
+                key={s}
+                onClick={() => setFilter(s)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  filter === s
+                    ? "bg-[#0B4F4B] text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </Card>
 
-        <Link
-          href="/student/courses"
-          className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-all shadow-md shadow-blue-500/20"
-        >
-          My Courses <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-
-      {/* Filters & Search */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-xl">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search by course, class, or ref..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500 transition-colors"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {["ALL", "CAPTURED", "PENDING", "REFUNDED", "FAILED"].map((s) => (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                filter === s
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Payment List Table */}
-      {loading ? (
-        <div className="p-12 text-center text-slate-400 bg-slate-900/40 rounded-3xl border border-slate-800/60">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs">Loading payment history...</p>
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="p-16 text-center text-slate-400 bg-slate-900/40 rounded-3xl border border-slate-800/60 space-y-3">
-          <Receipt className="w-12 h-12 text-slate-600 mx-auto" />
-          <h3 className="text-base font-bold text-slate-200">No payments found</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            You haven&apos;t made any course purchases or live class bookings matching this filter yet.
-          </p>
-        </div>
-      ) : (
-        <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl overflow-hidden backdrop-blur-xl shadow-2xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-950/80 text-slate-400 uppercase font-semibold border-b border-slate-800">
-                <tr>
-                  <th className="px-6 py-4">Item Details</th>
-                  <th className="px-6 py-4">Transaction Ref</th>
-                  <th className="px-6 py-4">Educator</th>
-                  <th className="px-6 py-4">Amount</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4 text-right">Receipt</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {filtered.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-white">
-                      <div className="truncate max-w-[200px]">{p.productTitle}</div>
-                      <div className="text-[10px] font-normal text-slate-400 capitalize">{p.type.replace("_", " ")}</div>
-                    </td>
-                    <td className="px-6 py-4 font-mono text-[11px] text-slate-400">{p.internalReference}</td>
-                    <td className="px-6 py-4 text-slate-300">{p.teacherName}</td>
-                    <td className="px-6 py-4 font-bold text-slate-100">{formatCurrency(p.amount)}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          p.status === "CAPTURED"
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : p.status === "REFUNDED"
-                            ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                            : p.status === "FAILED"
-                            ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                            : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                        }`}
-                      >
-                        {p.status === "CAPTURED" && <CheckCircle2 className="w-3 h-3" />}
-                        {p.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-400">{new Date(p.createdAt).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 text-right">
-                      <Link
-                        href={`/student/payments/${p.id}`}
-                        className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-semibold transition-colors"
-                      >
-                        Receipt <ExternalLink className="w-3 h-3" />
-                      </Link>
-                    </td>
+        {/* Payment List Table */}
+        {loading ? (
+          <Card className="p-12 text-center bg-white border border-slate-200 rounded-3xl">
+            <Loader2 className="h-8 w-8 text-[#0B4F4B] animate-spin mx-auto mb-3" />
+            <p className="text-xs text-slate-500 font-bold">Loading payment transaction records...</p>
+          </Card>
+        ) : filtered.length === 0 ? (
+          <Card className="p-16 text-center space-y-3 bg-white border border-slate-200 rounded-3xl shadow-sm">
+            <Receipt className="w-12 h-12 text-slate-300 mx-auto" />
+            <h3 className="text-base font-bold text-slate-800">No payment logs found</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              You haven&apos;t completed any course purchases or live class bookings matching this filter yet.
+            </p>
+            <Link href="/courses" className="inline-block pt-2">
+              <Button variant="primary" size="sm" className="bg-[#0B4F4B] hover:bg-[#073F3C]">
+                Explore Courses
+              </Button>
+            </Link>
+          </Card>
+        ) : (
+          <Card className="p-0 border-slate-200 overflow-hidden rounded-3xl shadow-xs bg-white">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-100 text-slate-600 font-extrabold uppercase border-b border-slate-200">
+                  <tr>
+                    <th className="p-4">Item Details</th>
+                    <th className="p-4">Transaction Ref</th>
+                    <th className="p-4">Educator</th>
+                    <th className="p-4">Amount</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4">Date</th>
+                    <th className="p-4 text-right">Receipt</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-    </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filtered.map((p) => (
+                    <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="p-4">
+                        <div className="font-extrabold text-slate-900 truncate max-w-[220px]">
+                          {p.productTitle}
+                        </div>
+                        <div className="text-[10px] text-slate-500 capitalize">
+                          {(p.type || "PURCHASE").replace("_", " ")}
+                        </div>
+                      </td>
+                      <td className="p-4 font-mono text-[11px] text-slate-600">
+                        {p.internalReference}
+                      </td>
+                      <td className="p-4 font-medium text-slate-700">{p.teacherName}</td>
+                      <td className="p-4 font-bold text-slate-900">{formatCurrency(p.amount)}</td>
+                      <td className="p-4">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                            p.status === "CAPTURED"
+                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                              : p.status === "REFUNDED"
+                              ? "bg-purple-100 text-purple-800 border border-purple-200"
+                              : p.status === "FAILED"
+                              ? "bg-red-100 text-red-800 border border-red-200"
+                              : "bg-amber-100 text-amber-800 border border-amber-200"
+                          }`}
+                        >
+                          {p.status === "CAPTURED" && <CheckCircle2 className="w-3 h-3" />}
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-slate-500">
+                        {new Date(p.createdAt).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="p-4 text-right">
+                        <Link
+                          href={`/student/payments/${p.id}`}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-teal-50 text-teal-800 hover:bg-teal-100 text-xs font-bold transition-colors border border-teal-200"
+                        >
+                          <span>Receipt</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
+      </div>
+    </DashboardLayout>
   );
 }

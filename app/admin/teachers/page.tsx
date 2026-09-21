@@ -22,6 +22,7 @@ import { formatCurrency } from "@/lib/currency";
 
 export default function AdminTeachersPage() {
   const [teachers, setTeachers] = useState<any[]>([]);
+  const [recommendedIds, setRecommendedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -43,18 +44,43 @@ export default function AdminTeachersPage() {
         limit: "10",
       });
 
-      const res = await fetch(`/api/admin/teachers?${query.toString()}`);
+      const [res, recRes] = await Promise.all([
+        fetch(`/api/admin/teachers?${query.toString()}`),
+        fetch("/api/admin/recommended-educators"),
+      ]);
+
       const json = await res.json();
+      const recJson = await recRes.json();
 
       if (json.data) {
         setTeachers(json.data.teachers || []);
         setTotalPages(json.data.pagination?.totalPages || 1);
         setTotalCount(json.data.pagination?.totalCount || 0);
       }
+      if (recJson.data?.recommendedIds) {
+        setRecommendedIds(recJson.data.recommendedIds);
+      }
     } catch (err) {
       console.error("Failed to fetch teachers:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleRecommended = async (teacherId: string, isCurrentlyRecommended: boolean) => {
+    const nextState = !isCurrentlyRecommended;
+    setRecommendedIds((prev) =>
+      nextState ? [...prev, teacherId] : prev.filter((id) => id !== teacherId)
+    );
+
+    try {
+      await fetch("/api/admin/recommended-educators", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teacherId, isRecommended: nextState }),
+      });
+    } catch (err) {
+      console.error("Failed to toggle recommended educator:", err);
     }
   };
 
@@ -197,12 +223,27 @@ export default function AdminTeachersPage() {
                         <div className="text-[10px]">{t.qualificationCount} Qualifications</div>
                       </td>
                       <td className="p-4 text-right">
-                        <Link href={`/admin/verification/${t.id}`}>
-                          <button className="px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-800 hover:bg-teal-100 text-xs font-bold transition-colors inline-flex items-center gap-1 border border-teal-200 cursor-pointer">
-                            <span>Review Profile</span>
-                            <ArrowRight className="h-3.5 w-3.5" />
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => toggleRecommended(t.id, recommendedIds.includes(t.id))}
+                            title={recommendedIds.includes(t.id) ? "Remove from Learner Dashboard Recommended list" : "Recommend on Learner Dashboard"}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1 border cursor-pointer ${
+                              recommendedIds.includes(t.id)
+                                ? "bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200"
+                                : "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200"
+                            }`}
+                          >
+                            <Sparkles className={`w-3.5 h-3.5 ${recommendedIds.includes(t.id) ? "text-amber-600 fill-amber-500" : "text-slate-400"}`} />
+                            <span>{recommendedIds.includes(t.id) ? "Recommended" : "Recommend"}</span>
                           </button>
-                        </Link>
+
+                          <Link href={`/admin/verification/${t.id}`}>
+                            <button className="px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-800 hover:bg-teal-100 text-xs font-bold transition-colors inline-flex items-center gap-1 border border-teal-200 cursor-pointer">
+                              <span>Review Profile</span>
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </button>
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))

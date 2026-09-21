@@ -354,24 +354,37 @@ export class AnalyticsService {
       take: 4,
     });
 
-    const recommendedEducators = await prisma.teacherProfile.findMany({
-      where: {
-        verificationStatus: "VERIFIED",
-        ...(academicTerms.length > 0
-          ? {
-              OR: academicTerms.slice(0, 5).flatMap((term) => [
-                { subjects: { contains: term, mode: "insensitive" as const } },
-                { headline: { contains: term, mode: "insensitive" as const } },
-                { bio: { contains: term, mode: "insensitive" as const } },
-              ]),
-            }
-          : {}),
-      },
-      include: {
-        user: { include: { profile: true } },
-      },
-      take: 4,
+    // Admin-controlled Recommended Educators selection system
+    const recommendedConfig = await prisma.platformConfig.findUnique({
+      where: { key: "recommended_educators" },
     });
+
+    let selectedTeacherIds: string[] = [];
+    if (recommendedConfig?.value) {
+      try {
+        selectedTeacherIds = JSON.parse(recommendedConfig.value);
+      } catch {
+        selectedTeacherIds = [];
+      }
+    }
+
+    let recommendedEducators: any[] = [];
+    if (Array.isArray(selectedTeacherIds) && selectedTeacherIds.length > 0) {
+      const fetchedProfiles = await prisma.teacherProfile.findMany({
+        where: {
+          id: { in: selectedTeacherIds },
+          verificationStatus: "VERIFIED",
+        },
+        include: {
+          user: { include: { profile: true } },
+        },
+      });
+
+      const profileMap = new Map(fetchedProfiles.map((p) => [p.id, p]));
+      recommendedEducators = selectedTeacherIds
+        .map((id) => profileMap.get(id))
+        .filter(Boolean);
+    }
 
     return {
       userName,

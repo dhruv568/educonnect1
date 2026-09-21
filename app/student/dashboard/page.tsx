@@ -487,49 +487,58 @@ export default function StudentDashboardPage() {
           </Card>
 
           {/* Recommended Educators & Courses based on Academic Profile */}
-          {((data.recommendedEducators && data.recommendedEducators.length > 0) ||
-            (data.recommendedCourses && data.recommendedCourses.length > 0)) && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Recommended Educators */}
-              {data.recommendedEducators && data.recommendedEducators.length > 0 && (
-                <Card className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-[#3157D5]" />
-                        Recommended Educators For You
-                      </h4>
-                      <p className="text-xs text-slate-500">Matching your academic stream and subjects</p>
-                    </div>
-                    <Link href="/student/teachers" className="text-xs font-bold text-[#3157D5] hover:underline flex items-center gap-1">
-                      View All <ArrowRight className="w-3 h-3" />
-                    </Link>
-                  </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recommended Educators */}
+            <Card className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-[#3157D5]" />
+                    Recommended Educators For You
+                  </h4>
+                  <p className="text-xs text-slate-500">Handpicked educators verified by EduConnects</p>
+                </div>
+                <Link href="/student/teachers" className="text-xs font-bold text-[#3157D5] hover:underline flex items-center gap-1">
+                  View All <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {data.recommendedEducators.map((t) => (
-                      <Link
-                        key={t.id}
-                        href={`/teachers/${t.id}`}
-                        className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-blue-50/50 hover:border-blue-200 transition-all flex items-center gap-3 group"
-                      >
-                        {t.avatarUrl ? (
-                          <img src={t.avatarUrl} alt={t.name} className="w-10 h-10 rounded-xl object-cover" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#3157D5] font-bold flex items-center justify-center text-sm">
-                            {t.name.charAt(0)}
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-slate-900 truncate group-hover:text-[#3157D5]">{t.name}</p>
-                          <p className="text-[11px] text-slate-500 truncate">{t.headline || t.subjects?.slice(0, 2).join(", ")}</p>
-                          <p className="text-[10px] font-bold text-emerald-600 mt-0.5">{t.hourlyRateFormatted}/hr</p>
+              {data.recommendedEducators && data.recommendedEducators.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {data.recommendedEducators.map((t) => (
+                    <Link
+                      key={t.id}
+                      href={`/teachers/${t.id}`}
+                      className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-blue-50/50 hover:border-blue-200 transition-all flex items-center gap-3 group"
+                    >
+                      {t.avatarUrl ? (
+                        <img src={t.avatarUrl} alt={t.name} className="w-10 h-10 rounded-xl object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#3157D5] font-bold flex items-center justify-center text-sm">
+                          {t.name.charAt(0)}
                         </div>
-                      </Link>
-                    ))}
-                  </div>
-                </Card>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-900 truncate group-hover:text-[#3157D5]">{t.name}</p>
+                        <p className="text-[11px] text-slate-500 truncate">{t.headline || (Array.isArray(t.subjects) ? t.subjects.slice(0, 2).join(", ") : t.subjects)}</p>
+                        <p className="text-[10px] font-bold text-emerald-600 mt-0.5">{t.hourlyRateFormatted || `₹${t.hourlyRate || 0}`}/hr</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 text-center space-y-2 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                  <Sparkles className="w-6 h-6 text-slate-300 mx-auto" />
+                  <p className="text-xs font-bold text-slate-600">No Recommended Educators Featured</p>
+                  <p className="text-[11px] text-slate-400">Explore all verified teachers to book 1-on-1 live sessions.</p>
+                  <Link href="/student/teachers">
+                    <Button variant="outline" size="sm" className="text-xs mt-1">
+                      Browse Teachers
+                    </Button>
+                  </Link>
+                </div>
               )}
+            </Card>
 
               {/* Recommended Courses */}
               {data.recommendedCourses && data.recommendedCourses.length > 0 && (
@@ -566,7 +575,6 @@ export default function StudentDashboardPage() {
                 </Card>
               )}
             </div>
-          )}
         </div>
 
         {/* Quick Actions & Navigation Shortcuts */}

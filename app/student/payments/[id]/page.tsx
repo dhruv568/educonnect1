@@ -20,10 +20,23 @@ import {
   CreditCard,
   Hash,
   ExternalLink,
+  ArrowLeft,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
-import { BackButton } from "@/components/ui/back-button";
-import { BackToHomeButton } from "@/components/ui/back-to-home-button";
+import Logo from "@/components/brand/logo";
+
+function formatReferenceNumber(ref?: string): string {
+  if (!ref) return "";
+  if (ref.length > 16) {
+    const parts = ref.split("_");
+    const lastPart = parts[parts.length - 1];
+    if (lastPart && lastPart.length >= 4) {
+      return `REF-${lastPart.toUpperCase()}`;
+    }
+    return `${ref.slice(0, 6)}...${ref.slice(-6)}`;
+  }
+  return ref;
+}
 
 export default function StudentPaymentReceiptPage() {
   const params = useParams();

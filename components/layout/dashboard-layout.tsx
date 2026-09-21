@@ -32,6 +32,7 @@ import {
   Sparkles,
   Award,
   MessageSquare,
+  CalendarCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { UserRole } from "@/types/auth";
@@ -240,6 +241,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
     Tag,
     Sparkles,
     MessageSquare,
+    CalendarCheck,
   };
 
   // Structured grouped admin navigation sections
@@ -365,6 +367,9 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
       { label: "Find Educators", icon: TeacherIcon, href: "/student/teachers" },
       { label: "My Live Classes", icon: Video, href: "/student/live-classes" },
       { label: "Enrolled Courses", icon: BookOpen, href: "/student/courses" },
+      { label: "Payment Log", icon: IndianRupee, href: "/student/payments" },
+      { label: "Activity Log", icon: Activity, href: "/student/activity" },
+      { label: "Attendance", icon: CalendarCheck, href: "/student/attendance" },
     ],
   };
 

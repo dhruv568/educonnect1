@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getHomeUrl } from "@/lib/app-url";
+import { getHomeUrl, getLearnerDomain } from "@/lib/app-url";
 
 export interface BackToHomeButtonProps {
   /**
@@ -17,22 +18,40 @@ export interface BackToHomeButtonProps {
   className?: string;
   /** Whether to show compact label on mobile (default: true) */
   compactOnMobile?: boolean;
+  /** Optional custom target URL override */
+  href?: string;
 }
 
 export function BackToHomeButton({
   variant = "default",
   className = "",
   compactOnMobile = true,
+  href,
 }: BackToHomeButtonProps) {
-  const [homeUrl, setHomeUrl] = useState<string>("https://educonnects.co.in/");
+  const pathname = usePathname();
+  const [homeUrl, setHomeUrl] = useState<string>("https://learners.educonnects.co.in");
 
   useEffect(() => {
     try {
-      setHomeUrl(getHomeUrl());
+      if (href) {
+        setHomeUrl(href);
+      } else {
+        const isLearnerPage =
+          typeof window !== "undefined" &&
+          (window.location.hostname.toLowerCase().includes("learners") ||
+            pathname?.startsWith("/student") ||
+            pathname?.startsWith("/learn"));
+
+        if (isLearnerPage) {
+          setHomeUrl(getLearnerDomain());
+        } else {
+          setHomeUrl(getHomeUrl());
+        }
+      }
     } catch {
-      // Fallback
+      setHomeUrl("https://learners.educonnects.co.in");
     }
-  }, []);
+  }, [href, pathname]);
 
   if (variant === "sidebar") {
     return (
