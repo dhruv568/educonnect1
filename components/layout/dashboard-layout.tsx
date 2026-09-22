@@ -407,10 +407,12 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
 
       if (isEducatorRole(role)) {
         window.location.replace("/teacher/logout");
-      } else if (isAdminRole(role)) {
-        window.location.replace("/login");
+      } else if (isAdminRole(role) || role === "STAFF") {
+        window.location.replace("/admin/logout");
+      } else if (isLearnerRole(role)) {
+        window.location.replace("/student/logout");
       } else {
-        window.location.replace("/student/login");
+        window.location.replace("/logout");
       }
     } catch (err: any) {
       setIsLoggingOut(false);

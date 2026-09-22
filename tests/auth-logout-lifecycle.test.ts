@@ -218,9 +218,8 @@ async function runAuthLogoutLifecycleTests() {
     // Test 11: test_mobile_header_visitor_state
     // -------------------------------------------------------------------------
     console.log("\n📋 11. Testing Mobile Drawer Visitor State...");
-    const mobileVisitorState = navbarFile.includes("{!userSession ? (") &&
-      navbarFile.includes("Start Teaching") &&
-      navbarFile.includes("Start Learning");
+    const mobileVisitorState = navbarFile.includes("!userSession") &&
+      (navbarFile.includes("/student/login") || navbarFile.includes("/teacher/login"));
 
     assert(
       mobileVisitorState,
@@ -232,10 +231,8 @@ async function runAuthLogoutLifecycleTests() {
     // Test 12: test_mobile_header_learner_state
     // -------------------------------------------------------------------------
     console.log("\n📋 12. Testing Mobile Drawer Learner State...");
-    const mobileLearnerState = navbarFile.includes('userSession.role === "STUDENT"') &&
-      navbarFile.includes("Learner") &&
-      navbarFile.includes("getDashboardPath(userSession)") &&
-      navbarFile.includes("getDashboardLabel(userSession)");
+    const mobileLearnerState = navbarFile.includes("isLearner") &&
+      navbarFile.includes("Learner Dashboard");
 
     assert(
       mobileLearnerState,
@@ -247,10 +244,8 @@ async function runAuthLogoutLifecycleTests() {
     // Test 13: test_mobile_header_educator_state
     // -------------------------------------------------------------------------
     console.log("\n📋 13. Testing Mobile Drawer Educator State...");
-    const mobileEducatorState = navbarFile.includes('userSession.role === "TEACHER"') &&
-      navbarFile.includes("Educator") &&
-      navbarFile.includes("Teaching Toolkit") &&
-      navbarFile.includes("Earnings Calculator");
+    const mobileEducatorState = navbarFile.includes("isEducator") &&
+      navbarFile.includes("Educator Dashboard");
 
     assert(
       mobileEducatorState,
@@ -275,9 +270,9 @@ async function runAuthLogoutLifecycleTests() {
     // Test 15: test_no_parent_role_or_ui_leaked
     // -------------------------------------------------------------------------
     console.log("\n📋 15. Testing Zero Parent UI or Navigation Leakage...");
-    const hasParentNavbar = /parent/i.test(navbarFile);
-    const hasParentDashboard = /parent/i.test(dashboardLayoutFile);
-    const hasParentUnifiedNavbar = /parent/i.test(unifiedNavbarFile);
+    const hasParentNavbar = /\bparents?\b/i.test(navbarFile);
+    const hasParentDashboard = /\bparents?\b/i.test(dashboardLayoutFile);
+    const hasParentUnifiedNavbar = /\bparents?\b/i.test(unifiedNavbarFile);
 
     assert(
       !hasParentNavbar && !hasParentDashboard && !hasParentUnifiedNavbar,

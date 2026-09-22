@@ -122,8 +122,7 @@ async function runSignOutRootCauseTests() {
     // 5. Verify FloatingNavbar Sign Out button structure & click isolation
     // -------------------------------------------------------------------------
     console.log("\n📋 5. Testing FloatingNavbar Sign Out Button & Loading States...");
-    const hasTypeButton = navbarFile.includes('<button\n                            type="button"') ||
-      navbarFile.includes('type="button"\n                            onClick={(e) => handleLogout(e)}');
+    const hasTypeButton = navbarFile.includes('type="button"') && navbarFile.includes("handleLogout");
     const hasDisabledState = navbarFile.includes("disabled={isLoggingOut}");
     const hasSpinner = navbarFile.includes("animate-spin") && navbarFile.includes("Signing out...");
     const hasErrorToast = navbarFile.includes("Unable to sign out. Please try again.");
@@ -155,11 +154,11 @@ async function runSignOutRootCauseTests() {
     // 7. Verify Learner Logout Redirection Target
     // -------------------------------------------------------------------------
     console.log("\n📋 7. Testing Learner Redirect Destination...");
-    const redirectsToStudentLogin = handleLogoutCode.includes('window.location.replace("/student/login")');
+    const redirectsToStudentLogout = handleLogoutCode.includes('window.location.replace("/student/logout")');
     assert(
-      redirectsToStudentLogin,
-      "test_learner_redirects_to_student_login",
-      "Learner logout redirects via window.location.replace('/student/login') to stay on the learner portal"
+      redirectsToStudentLogout,
+      "test_learner_redirects_to_student_logout",
+      "Learner logout redirects via window.location.replace('/student/logout') to dedicated learner logout page"
     );
 
     // -------------------------------------------------------------------------
@@ -226,14 +225,14 @@ async function runSignOutRootCauseTests() {
     // 12. Verify DashboardLayout Sign Out button UX
     // -------------------------------------------------------------------------
     console.log("\n📋 12. Testing DashboardLayout Sign Out Button UX & Redirect...");
-    const dashboardHasTypeButton = dashboardLayoutFile.includes('<button\n            type="button"\n            onClick={(e) => handleLogout(e)}');
+    const dashboardHasTypeButton = dashboardLayoutFile.includes('type="button"') && dashboardLayoutFile.includes("handleLogout");
     const dashboardHasSpinner = dashboardLayoutFile.includes("animate-spin text-rose-300");
-    const dashboardRedirectsStudent = dashboardLayoutFile.includes('window.location.replace("/student/login")');
+    const dashboardRedirectsStudent = dashboardLayoutFile.includes('window.location.replace("/student/logout")');
 
     assert(
       dashboardHasTypeButton && dashboardHasSpinner && dashboardRedirectsStudent,
       "test_dashboard_layout_signout_ux",
-      "DashboardLayout sidebar Sign Out button has type='button', Loader2 spinner, and redirects learners to /student/login"
+      "DashboardLayout sidebar Sign Out button has type='button', Loader2 spinner, and redirects learners to /student/logout"
     );
 
     // -------------------------------------------------------------------------

@@ -202,15 +202,15 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
         window.dispatchEvent(new Event("educonnect_auth_changed"));
       }
 
-      // 3. Hard redirect to prevent bfcache / memory restoration
-      if (role === "TEACHER") {
+      // 3. Hard redirect to prevent bfcache / memory restoration & show dedicated logout page
+      if (role === "TEACHER" || isEducatorRole(role)) {
         window.location.replace("/teacher/logout");
-      } else if (isEducatorRole(role)) {
-        window.location.replace("/teacher/logout");
-      } else if (isAdminRole(role)) {
-        window.location.replace("/login");
+      } else if (isAdminRole(role) || role === "STAFF") {
+        window.location.replace("/admin/logout");
+      } else if (isLearnerRole(role)) {
+        window.location.replace("/student/logout");
       } else {
-        window.location.replace("/student/login");
+        window.location.replace("/logout");
       }
     } catch (err: any) {
       setIsLoggingOut(false);
