@@ -199,7 +199,7 @@ export function LogoutPage({
 
                 {/* Subtle Floating Tagline Overlay Badge */}
                 <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-md px-3.5 py-1.5 rounded-full flex items-center gap-2 text-xs font-bold text-slate-700">
-                  <Sparkles className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                  <Sparkles className="h-3.5 w-3.5 text-[#16805B] shrink-0" />
                   <span>Your learning journey continues</span>
                 </div>
               </div>
@@ -210,8 +210,8 @@ export function LogoutPage({
           <div className="lg:col-span-6 xl:col-span-6 space-y-6 order-2 lg:order-2 text-left">
             {/* Status Pill Badge */}
             <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs sm:text-sm font-bold shadow-2xs">
-                <CheckCircle2 className="h-4 w-4 text-blue-600 shrink-0" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F0FAF5] border border-[#A7F3D0] text-[#0D5C41] text-xs sm:text-sm font-bold shadow-2xs">
+                <CheckCircle2 className="h-4 w-4 text-[#16805B] shrink-0" />
                 <span>You have been safely signed out</span>
               </div>
             </div>
@@ -233,7 +233,7 @@ export function LogoutPage({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
               <Link
                 href={homeUrl}
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] shadow-md shadow-blue-600/20 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-sm text-white bg-[#16805B] hover:bg-[#0D5C41] active:scale-[0.98] shadow-md shadow-[#16805B]/20 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#16805B]"
               >
                 <Home className="h-4.5 w-4.5" />
                 <span>Back to Home</span>
@@ -241,7 +241,7 @@ export function LogoutPage({
 
               <Link
                 href={loginUrl}
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-sm text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300/90 active:scale-[0.98] shadow-xs transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl font-bold text-sm text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300/90 active:scale-[0.98] shadow-xs transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#16805B]"
               >
                 <LogIn className="h-4.5 w-4.5 text-slate-500" />
                 <span>Login Again</span>

@@ -202,7 +202,7 @@ export default function LoginPage() {
                 />
 
                 <div className="flex items-center justify-between text-xs font-semibold">
-                  <Link href="/forgot-password" className="text-blue-600 hover:underline">
+                  <Link href="/forgot-password" className="text-[#16805B] hover:text-[#0D5C41] hover:underline">
                     Forgot password?
                   </Link>
                   <Link href="/register" className="text-slate-500 hover:text-slate-900">
