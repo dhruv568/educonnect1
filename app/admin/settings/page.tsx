@@ -48,7 +48,8 @@ export default function AdminSettingsPage() {
     },
     templateMapping: {
       PAYMENT_SUCCESS: "edu_payment_success",
-      PAYMENT_FAILED: "edu_payment_failed",
+      PAYMENT_FAILED: "edu_stu_payment_failed",
+      PAYMENT_FAILED_TEACHER: "edu_teacher_payment_failed",
       PAYMENT_RECEIPT: "edu_payment_receipt",
       REFUND_REQUESTED: "edu_refund_requested",
       REFUND_APPROVED: "edu_refund_approved",
@@ -1170,7 +1171,8 @@ export default function AdminSettingsPage() {
                     {[
                       { event: "PAYMENT_SUCCESS", defaultName: "edu_payment_success" },
                       { event: "PAYMENT_RECEIPT", defaultName: "edu_payment_receipt" },
-                      { event: "PAYMENT_FAILED", defaultName: "edu_payment_failed" },
+                      { event: "PAYMENT_FAILED", defaultName: "edu_stu_payment_failed" },
+                      { event: "PAYMENT_FAILED_TEACHER", defaultName: "edu_teacher_payment_failed" },
                       { event: "REFUND_REQUESTED", defaultName: "edu_refund_requested" },
                       { event: "REFUND_APPROVED", defaultName: "edu_refund_approved" },
                       { event: "REFUND_COMPLETED", defaultName: "edu_refund_completed" },

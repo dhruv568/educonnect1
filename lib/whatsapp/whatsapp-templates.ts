@@ -7,6 +7,78 @@
  */
 
 import { WhatsAppTemplateComponent } from "./whatsapp-client";
+import { getMainDomain } from "../app-url";
+
+/**
+ * Normalizes a URL into a Meta-compliant dynamic URL button parameter.
+ * Meta templates require the URL button parameter to be the relative path/query
+ * without domain or leading slashes.
+ */
+export function formatDynamicUrlParameter(url?: string | null): string {
+  if (!url) return "courses";
+  const trimmed = String(url).trim();
+  try {
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      const parsed = new URL(trimmed);
+      const pathWithQuery = (parsed.pathname + parsed.search).replace(/^\/+/, "");
+      return pathWithQuery || "courses";
+    }
+  } catch {
+    // fallback to string manipulation
+  }
+  return trimmed.replace(/^\/+/, "") || "courses";
+}
+
+/**
+ * Builds Meta-approved template components for payment-failed notifications:
+ * - IMAGE Header (/images/whatsapp/payment-failed-header.jpg)
+ * - Body: {{1}} = Name, {{2}} = Course or Service Title
+ * - Dynamic URL Button: retryUrl parameter
+ */
+export function buildPaymentFailedComponents(data: Record<string, any>): WhatsAppTemplateComponent[] {
+  const isTeacher = Boolean(data.isTeacher || data.recipientRole === "TEACHER" || data.role === "TEACHER");
+  const fallbackName = isTeacher ? "Educator" : "Learner";
+  const defaultHeaderImg = `${getMainDomain()}/images/whatsapp/payment-failed-header.jpg`;
+  const headerImageUrl = data.headerImageUrl || defaultHeaderImg;
+
+  return [
+    {
+      type: "header",
+      parameters: [
+        {
+          type: "image",
+          image: { link: String(headerImageUrl) },
+        },
+      ],
+    },
+    {
+      type: "body",
+      parameters: [
+        { type: "text", text: String(data.name || fallbackName) },
+        {
+          type: "text",
+          text: String(
+            data.title ||
+              data.courseName ||
+              data.serviceTitle ||
+              (isTeacher ? "EduConnects Service" : "EduConnects Course")
+          ),
+        },
+      ],
+    },
+    {
+      type: "button",
+      sub_type: "url",
+      index: "0",
+      parameters: [
+        {
+          type: "text",
+          text: formatDynamicUrlParameter(data.retryUrl),
+        },
+      ],
+    },
+  ];
+}
 
 export type WhatsAppEventType =
   | "LEARNER_REGISTRATION"
@@ -180,22 +252,11 @@ export const DEFAULT_WHATSAPP_TEMPLATES: Record<WhatsAppEventType, TemplateDefin
   },
 
   PAYMENT_FAILED: {
-    defaultName: "edu_payment_failed",
+    defaultName: "edu_stu_payment_failed",
     category: "UTILITY",
-    description: "Sent when a payment attempt fails with safe retry link",
-    defaultVariables: ["learner_name", "item_title", "order_reference", "reason", "retry_url"],
-    buildComponents: (data) => [
-      {
-        type: "body",
-        parameters: [
-          { type: "text", text: String(data.name || "Learner") },
-          { type: "text", text: String(data.title || "Learning Item") },
-          { type: "text", text: String(data.orderId || "N/A") },
-          { type: "text", text: String(data.reason || "Payment could not be processed by gateway") },
-          { type: "text", text: String(data.retryUrl || "https://educonnects.in/courses") },
-        ],
-      },
-    ],
+    description: "Sent automatically when a payment attempt fails with branded image header, course/service title, and retry button",
+    defaultVariables: ["name", "course_or_title", "retry_url"],
+    buildComponents: (data) => buildPaymentFailedComponents(data),
   },
 
   REFUND_REQUESTED: {
@@ -348,3 +409,20 @@ export const DEFAULT_WHATSAPP_TEMPLATES: Record<WhatsAppEventType, TemplateDefin
     ],
   },
 };
+
+export const STUDENT_PAYMENT_FAILED_TEMPLATE: TemplateDefinition = {
+  defaultName: "edu_stu_payment_failed",
+  category: "UTILITY",
+  description: "Sent automatically when a student payment attempt fails with branded image header, course title, and retry button",
+  defaultVariables: ["learner_name", "course_name", "retry_url"],
+  buildComponents: (data) => buildPaymentFailedComponents({ ...data, isTeacher: false, recipientRole: "STUDENT" }),
+};
+
+export const EDUCATOR_PAYMENT_FAILED_TEMPLATE: TemplateDefinition = {
+  defaultName: "edu_teacher_payment_failed",
+  category: "UTILITY",
+  description: "Sent automatically when an educator payment attempt fails with branded image header, service title, and retry button",
+  defaultVariables: ["educator_name", "service_title", "retry_url"],
+  buildComponents: (data) => buildPaymentFailedComponents({ ...data, isTeacher: true, recipientRole: "TEACHER" }),
+};
+

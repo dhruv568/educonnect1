@@ -148,25 +148,51 @@ export class WhatsAppService {
         }
       }
 
-      // 3. Resolve recipient phone number
+      // 3. Resolve recipient phone number & user details
       let recipientPhone = explicitPhone;
       let userName = data.name;
+      let userRecord: any = null;
 
-      if ((!recipientPhone || !userName) && userId) {
-        const user = await prisma.user.findUnique({
+      if (userId) {
+        userRecord = await prisma.user.findUnique({
           where: { id: userId },
           include: { profile: true, teacherProfile: true },
         });
 
-        if (user) {
+        if (userRecord && !userName) {
+          userName = userRecord.profile
+            ? `${userRecord.profile.firstName} ${userRecord.profile.lastName}`.trim()
+            : userRecord.email.split("@")[0];
+        }
+      }
+
+      // Check if this is an educator/teacher payment failed or student payment failed
+      const isTeacherPaymentFailed =
+        eventType === "PAYMENT_FAILED" &&
+        Boolean(
+          data.isTeacher ||
+          data.recipientRole === "TEACHER" ||
+          data.role === "TEACHER" ||
+          userRecord?.role === "TEACHER" ||
+          (data.orderId && (data.orderId.startsWith("EDU_TCH_") || data.orderId.startsWith("TCH_")))
+        );
+
+      if (eventType === "PAYMENT_FAILED") {
+        if (isTeacherPaymentFailed) {
+          // EDUCATOR: Must use user.teacherProfile.contactPhone
           if (!recipientPhone) {
-            recipientPhone = user.profile?.phone || user.teacherProfile?.contactPhone || null;
+            recipientPhone = userRecord?.teacherProfile?.contactPhone || null;
           }
-          if (!userName) {
-            userName = user.profile
-              ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
-              : user.email.split("@")[0];
+        } else {
+          // STUDENT: Must use user.profile.phone
+          if (!recipientPhone) {
+            recipientPhone = userRecord?.profile?.phone || null;
           }
+        }
+      } else {
+        // Fallback for other platform events
+        if (!recipientPhone && userRecord) {
+          recipientPhone = userRecord.profile?.phone || userRecord.teacherProfile?.contactPhone || null;
         }
       }
 
@@ -183,18 +209,48 @@ export class WhatsAppService {
 
       // 4. Resolve template name (from Admin settings override or default)
       const settings = await this.getPlatformWhatsAppSettings();
-      const templateName = settings.templateMapping[eventType] || templateDef.defaultName;
+      let templateName = settings.templateMapping[eventType] || templateDef.defaultName;
+
+      if (eventType === "PAYMENT_FAILED") {
+        if (isTeacherPaymentFailed) {
+          templateName =
+            settings.templateMapping["PAYMENT_FAILED_TEACHER"] ||
+            "edu_teacher_payment_failed";
+        } else {
+          const mapped =
+            settings.templateMapping["PAYMENT_FAILED_STUDENT"] ||
+            settings.templateMapping["PAYMENT_FAILED"];
+          templateName =
+            mapped && mapped !== "edu_payment_failed"
+              ? mapped
+              : "edu_stu_payment_failed";
+        }
+      }
 
       const mergedData = {
         ...data,
-        name: userName || data.name || "Learner",
+        isTeacher: isTeacherPaymentFailed,
+        recipientRole: isTeacherPaymentFailed ? "TEACHER" : "STUDENT",
+        name:
+          userName ||
+          data.name ||
+          (isTeacherPaymentFailed ? "Educator" : "Learner"),
       };
 
       // 5. Handle missing/invalid phone number safely
       if (!formattedPhone) {
-        const reason = !recipientPhone
-          ? "No phone number available on user profile"
-          : `Invalid phone number format: "${recipientPhone}"`;
+        let reason = "";
+        if (!recipientPhone) {
+          if (eventType === "PAYMENT_FAILED") {
+            reason = isTeacherPaymentFailed
+              ? "No contact phone available on educator profile (user.teacherProfile.contactPhone)"
+              : "No phone number available on user profile (user.profile.phone)";
+          } else {
+            reason = "No phone number available on user profile";
+          }
+        } else {
+          reason = `Invalid phone number format: "${recipientPhone}"`;
+        }
 
         const failedLog = await prisma.whatsAppMessage.create({
           data: {
