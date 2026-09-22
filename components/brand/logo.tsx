@@ -93,23 +93,15 @@ export function Logo({
 
   const getAccentTextColor = () => {
     if (isDarkTheme) {
-      if (roleContext === "student") return "text-blue-400";
-      if (roleContext === "teacher") return "text-[#35A979]";
-      if (roleContext === "admin") return "text-[#F2C14E]";
-      return "text-[#2A8C84]";
+      return "text-[#35A979]";
     }
-    if (roleContext === "student") return "text-blue-600";
-    if (roleContext === "teacher") return "text-[#16805B]";
-    if (roleContext === "admin") return "text-[#B8860B]";
-    return "text-[#0F5C5A]";
+    return "text-[#16805B]";
   };
 
   const getTaglineTextColor = () => {
     if (isDarkTheme) {
-      if (roleContext === "teacher") return "text-emerald-200/90";
-      return "text-teal-200/80";
+      return "text-emerald-100/90";
     }
-    if (roleContext === "teacher") return "text-[#0D5C41]";
     return "text-slate-500";
   };
 

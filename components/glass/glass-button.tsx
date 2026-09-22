@@ -39,15 +39,15 @@ export const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>
 
     const variants = {
       primary:
-        "bg-[#0F5C5A] text-white shadow-md border border-white/20 hover:bg-[#083F3D] hover:shadow-lg focus-visible:ring-[#0F5C5A]",
+        "bg-[#16805B] text-white shadow-md border border-white/20 hover:bg-[#0D5C41] hover:shadow-lg focus-visible:ring-[#16805B]",
       secondary:
-        "bg-[#F2C14E] text-[#102A2A] border border-[#F2C14E]/60 shadow-sm hover:bg-[#E0B03C] hover:shadow-md font-bold focus-visible:ring-[#F2C14E]",
+        "bg-[#F0FAF5] text-[#0D5C41] border border-[#A7F3D0] shadow-sm hover:bg-[#DCFCE7] hover:shadow-md font-bold focus-visible:ring-[#16805B]",
       ghost:
-        "bg-transparent text-[#102A2A] hover:bg-white/60 hover:text-[#0F5C5A] border border-transparent",
+        "bg-transparent text-[#0F172A] hover:bg-white/60 hover:text-[#16805B] border border-transparent",
       glow:
-        "bg-[#0F5C5A] text-white shadow-[0_0_20px_rgba(15,92,90,0.3)] border border-teal-400/40 hover:bg-[#083F3D] hover:shadow-[0_0_30px_rgba(15,92,90,0.5)] focus-visible:ring-[#0F5C5A]",
+        "bg-[#16805B] text-white shadow-[0_0_20px_rgba(22,128,91,0.35)] border border-emerald-400/40 hover:bg-[#0D5C41] hover:shadow-[0_0_30px_rgba(22,128,91,0.5)] focus-visible:ring-[#16805B]",
       learner:
-        "bg-[#3157D5] text-white shadow-md shadow-blue-500/25 border border-white/25 hover:bg-[#243B9B] hover:shadow-lg hover:shadow-blue-500/35 focus-visible:ring-[#3157D5] font-bold",
+        "bg-[#16805B] text-white shadow-md shadow-emerald-700/25 border border-white/25 hover:bg-[#0D5C41] hover:shadow-lg hover:shadow-emerald-700/35 focus-visible:ring-[#16805B] font-bold",
       educator:
         "bg-[#16805B] text-white shadow-md shadow-emerald-700/25 border border-white/25 hover:bg-[#0D5C41] hover:shadow-lg hover:shadow-emerald-700/35 focus-visible:ring-[#16805B] font-bold",
     };

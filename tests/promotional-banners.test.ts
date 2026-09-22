@@ -1,6 +1,8 @@
 import { prisma } from "../lib/prisma";
 import {
   validateBannerUrl,
+  validateClickUrl,
+  validateBannerImageUrl,
   validateBannerPayload,
   sanitizeText,
 } from "../lib/banners/validation";
@@ -29,33 +31,46 @@ async function runTests() {
     // -------------------------------------------------------------
     console.log("\n--- TEST SUITE 1: URL Validation & Security Sanitation ---");
 
-    // 1.1 Unsafe protocols
+    // 1.1 Unsafe protocols for Click URLs
     const jsUrlTest = validateBannerUrl("javascript:alert('xss')", "Image Click URL");
-    assert(!jsUrlTest.isValid, "Blocks javascript: protocol");
+    assert(!jsUrlTest.isValid, "Blocks javascript: protocol for click URL");
 
-    const dataUrlTest = validateBannerUrl("data:text/html,<script>alert(1)</script>", "CTA URL");
-    assert(!dataUrlTest.isValid, "Blocks data: protocol");
+    const dataUrlTest = validateClickUrl("data:text/html,<script>alert(1)</script>", "CTA URL");
+    assert(!dataUrlTest.isValid, "Blocks data: protocol for click URL");
 
     const vbUrlTest = validateBannerUrl("vbscript:msgbox(1)", "Image Click URL");
-    assert(!vbUrlTest.isValid, "Blocks vbscript: protocol");
+    assert(!vbUrlTest.isValid, "Blocks vbscript: protocol for click URL");
 
-    const protoRelativeTest = validateBannerUrl("//attacker.com/steal", "Image Click URL");
+    const protoRelativeTest = validateClickUrl("//attacker.com/steal", "Image Click URL");
     assert(!protoRelativeTest.isValid, "Blocks protocol-relative URLs (//)");
 
-    // 1.2 Valid internal and external URLs
-    const internalRouteTest = validateBannerUrl("/courses", "CTA URL");
+    // 1.2 Banner Image Storage URL Validation
+    const dataImageTest = validateBannerImageUrl("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==", "Banner Image URL");
+    assert(!dataImageTest.isValid, "Rejects base64 data: URLs for banner image storage URL");
+
+    const validStorageImageTest = validateBannerImageUrl("/api/banners/image/banner_123.png", "Banner Image URL");
+    assert(validStorageImageTest.isValid && validStorageImageTest.cleanUrl === "/api/banners/image/banner_123.png", "Accepts stored image URL path starting with /api/banners/image/");
+
+    const validStaticImageTest = validateBannerImageUrl("/images/educonnects-owner-banner.jpeg", "Banner Image URL");
+    assert(validStaticImageTest.isValid && validStaticImageTest.cleanUrl === "/images/educonnects-owner-banner.jpeg", "Accepts static image path starting with /images/");
+
+    const validHttpsImageTest = validateBannerImageUrl("https://cdn.example.com/banner.jpg", "Banner Image URL");
+    assert(validHttpsImageTest.isValid && validHttpsImageTest.cleanUrl === "https://cdn.example.com/banner.jpg", "Accepts external HTTPS image URL");
+
+    // 1.3 Valid internal and external click URLs
+    const internalRouteTest = validateClickUrl("/courses", "CTA URL");
     assert(internalRouteTest.isValid && internalRouteTest.cleanUrl === "/courses", "Accepts relative internal route /courses");
 
-    const deepInternalRouteTest = validateBannerUrl("/teacher/training/learn", "Image Click URL");
+    const deepInternalRouteTest = validateClickUrl("/teacher/training/learn", "Image Click URL");
     assert(deepInternalRouteTest.isValid && deepInternalRouteTest.cleanUrl === "/teacher/training/learn", "Accepts nested internal route");
 
-    const externalHttpsTest = validateBannerUrl("https://learners.educonnects.co.in/courses", "Image Click URL");
+    const externalHttpsTest = validateClickUrl("https://learners.educonnects.co.in/courses", "Image Click URL");
     assert(externalHttpsTest.isValid && externalHttpsTest.cleanUrl === "https://learners.educonnects.co.in/courses", "Accepts valid HTTPS URL");
 
-    const emptyUrlTest = validateBannerUrl("", "Image Click URL");
+    const emptyUrlTest = validateClickUrl("", "Image Click URL");
     assert(emptyUrlTest.isValid && emptyUrlTest.cleanUrl === undefined, "Accepts empty/null URL as non-clickable");
 
-    // 1.3 Text sanitization
+    // 1.4 Text sanitization
     const dirtyTitle = "<script>alert('hack')</script>Exclusive Learning Deal";
     const cleanTitle = sanitizeText(dirtyTitle);
     assert(cleanTitle === "Exclusive Learning Deal", "Strips dangerous HTML/script tags from text");

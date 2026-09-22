@@ -40,12 +40,12 @@ const UNSAFE_PROTOCOLS = [
 ];
 
 /**
- * Validates a user-supplied URL for safety and validity.
+ * Validates a navigation/click URL for safety and validity.
  * Supports:
  * 1. Internal EduConnects routes: e.g. /courses, /teacher/training
  * 2. Full external URLs: e.g. https://example.com
  */
-export function validateBannerUrl(
+export function validateClickUrl(
   urlInput: string | null | undefined,
   fieldName = "URL"
 ): { isValid: boolean; error?: string; cleanUrl?: string } {
@@ -108,6 +108,80 @@ export function validateBannerUrl(
   return {
     isValid: false,
     error: `${fieldName} must be a valid internal path (e.g., /courses) or full external URL (e.g., https://example.com).`,
+  };
+}
+
+/** Alias for backward compatibility with existing tests and modules */
+export const validateBannerUrl = validateClickUrl;
+
+/**
+ * Validates a banner image storage/source URL.
+ * Requires a relative internal route (e.g., /api/banners/image/..., /images/...)
+ * or a valid external http(s) URL.
+ * Rejects data: URLs, javascript:, and other unsafe protocols.
+ */
+export function validateBannerImageUrl(
+  urlInput: string | null | undefined,
+  fieldName = "Banner Image URL"
+): { isValid: boolean; error?: string; cleanUrl?: string } {
+  if (!urlInput || !urlInput.trim()) {
+    return { isValid: false, error: `${fieldName} is required.` };
+  }
+
+  const trimmed = urlInput.trim();
+  const lower = trimmed.toLowerCase();
+
+  // Block unsafe protocols including data:
+  for (const protocol of UNSAFE_PROTOCOLS) {
+    if (lower.startsWith(protocol)) {
+      return {
+        isValid: false,
+        error: `${fieldName} contains an unsafe protocol (${protocol}). Only http://, https:// or internal routes starting with / are allowed.`,
+      };
+    }
+  }
+
+  // Reject protocol-relative URLs (//example.com)
+  if (trimmed.startsWith("//")) {
+    return {
+      isValid: false,
+      error: `${fieldName} cannot start with '//'. Use 'https://' or a relative path starting with a single '/'.`,
+    };
+  }
+
+  // Internal storage route or static path starting with /
+  if (trimmed.startsWith("/")) {
+    if (/[<>"'`\\^]/.test(trimmed)) {
+      return {
+        isValid: false,
+        error: `${fieldName} contains invalid characters.`,
+      };
+    }
+    return { isValid: true, cleanUrl: trimmed };
+  }
+
+  // Full external URL (must be http:// or https://)
+  if (lower.startsWith("http://") || lower.startsWith("https://")) {
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        return {
+          isValid: false,
+          error: `${fieldName} must use http or https protocol.`,
+        };
+      }
+      return { isValid: true, cleanUrl: trimmed };
+    } catch {
+      return {
+        isValid: false,
+        error: `${fieldName} is not a valid URL format.`,
+      };
+    }
+  }
+
+  return {
+    isValid: false,
+    error: `${fieldName} must be a valid stored image path (e.g., /api/banners/image/...) or full image URL (e.g., https://example.com/image.jpg).`,
   };
 }
 
@@ -202,7 +276,7 @@ export function validateBannerPayload(
   if (!rawImageUrl) {
     return { isValid: false, error: "Banner image is required." };
   }
-  const imageValidation = validateBannerUrl(rawImageUrl, "Banner Image URL");
+  const imageValidation = validateBannerImageUrl(rawImageUrl, "Banner Image URL");
   if (!imageValidation.isValid) {
     return { isValid: false, error: imageValidation.error };
   }
@@ -211,7 +285,7 @@ export function validateBannerPayload(
   // 5. Image Click URL (Optional)
   let imageClickUrl: string | null = null;
   if (payload.imageClickUrl && typeof payload.imageClickUrl === "string" && payload.imageClickUrl.trim()) {
-    const clickValidation = validateBannerUrl(payload.imageClickUrl, "Image Click URL");
+    const clickValidation = validateClickUrl(payload.imageClickUrl, "Image Click URL");
     if (!clickValidation.isValid) {
       return { isValid: false, error: clickValidation.error };
     }
@@ -227,7 +301,7 @@ export function validateBannerPayload(
   let ctaUrl: string | null = null;
 
   if (payload.ctaUrl && typeof payload.ctaUrl === "string" && payload.ctaUrl.trim()) {
-    const ctaValidation = validateBannerUrl(payload.ctaUrl, "CTA URL");
+    const ctaValidation = validateClickUrl(payload.ctaUrl, "CTA URL");
     if (!ctaValidation.isValid) {
       return { isValid: false, error: ctaValidation.error };
     }

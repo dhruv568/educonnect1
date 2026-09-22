@@ -306,15 +306,17 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isLearner
-            ? "bg-[#243B9B] border-b border-[#3157D5]/40 shadow-sm py-2.5 sm:py-3.5"
+            ? scrolled
+              ? "bg-[#0D5C41]/95 backdrop-blur-md border-b border-[#16805B]/50 shadow-md py-2 sm:py-2.5"
+              : "bg-[#0D5C41] border-b border-[#16805B]/30 shadow-xs py-2.5 sm:py-3"
             : isEducator
             ? scrolled
               ? "bg-[#0D5C41]/95 backdrop-blur-md border-b border-[#16805B]/50 shadow-md py-2 sm:py-2.5"
               : "bg-[#0D5C41] border-b border-[#16805B]/30 shadow-xs py-2.5 sm:py-3"
             : isMainWebsite
             ? scrolled
-              ? "bg-[#083F3D] border-b border-[#1B6863]/40 shadow-sm py-2 sm:py-2.5"
-              : "bg-[#083F3D] border-b border-[#1B6863]/25 py-2.5 sm:py-3.5"
+              ? "bg-[#0D5C41]/95 backdrop-blur-md border-b border-[#16805B]/50 shadow-md py-2 sm:py-2.5"
+              : "bg-[#0D5C41] border-b border-[#16805B]/30 shadow-xs py-2.5 sm:py-3.5"
             : scrolled
               ? "bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-sm py-2 sm:py-2.5"
               : "bg-white/90 backdrop-blur-xs border-b border-slate-200/60 py-2.5 sm:py-3.5"
@@ -355,7 +357,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
             <Link
               href="/student"
               onClick={() => setMobileOpen(false)}
-              className="group flex items-center gap-2 sm:gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded-xl select-none shrink-0"
+              className="group flex items-center gap-2 sm:gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded-xl select-none shrink-0"
               aria-label="EduConnects Learner Home"
             >
               <div className="relative h-10 sm:h-11 md:h-12 w-auto aspect-[3/2] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-[1.03]">
@@ -371,9 +373,9 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               </div>
               <div className="flex flex-col justify-center min-w-0 text-left">
                 <span className="text-base sm:text-lg font-black tracking-tight leading-none text-white transition-opacity group-hover:opacity-95">
-                  Edu<span className="text-[#667EEA]">Connects</span>
+                  Edu<span className="text-[#35A979]">Connects</span>
                 </span>
-                <span className="text-[10px] sm:text-xs font-bold text-blue-200 tracking-wide whitespace-nowrap mt-0.5">
+                <span className="text-[10px] sm:text-xs font-bold text-emerald-200 tracking-wide whitespace-nowrap mt-0.5">
                   Learner Portal
                 </span>
               </div>
@@ -448,8 +450,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/student"
                   className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/student" || pathname === "/"
-                      ? "bg-[#3157D5] text-white font-bold shadow-xs"
-                      : "text-blue-100 hover:text-white hover:bg-[#3157D5]/50"
+                      ? "bg-[#16805B] text-white font-bold shadow-xs"
+                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/50"
                   }`}
                 >
                   Home
@@ -458,8 +460,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/about"
                   className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/about"
-                      ? "bg-[#3157D5] text-white font-bold shadow-xs"
-                      : "text-blue-100 hover:text-white hover:bg-[#3157D5]/50"
+                      ? "bg-[#16805B] text-white font-bold shadow-xs"
+                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/50"
                   }`}
                 >
                   About Us
@@ -468,8 +470,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/find-teachers"
                   className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/find-teachers"
-                      ? "bg-[#3157D5] text-white font-bold shadow-xs"
-                      : "text-blue-100 hover:text-white hover:bg-[#3157D5]/50"
+                      ? "bg-[#16805B] text-white font-bold shadow-xs"
+                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/50"
                   }`}
                 >
                   Find Educators
@@ -478,8 +480,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/courses"
                   className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/courses"
-                      ? "bg-[#3157D5] text-white font-bold shadow-xs"
-                      : "text-blue-100 hover:text-white hover:bg-[#3157D5]/50"
+                      ? "bg-[#16805B] text-white font-bold shadow-xs"
+                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/50"
                   }`}
                 >
                   Explore Courses
@@ -488,15 +490,15 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/exam"
                   className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/exam"
-                      ? "bg-[#3157D5] text-white font-bold shadow-xs"
-                      : "text-blue-100 hover:text-white hover:bg-[#3157D5]/50"
+                      ? "bg-[#16805B] text-white font-bold shadow-xs"
+                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/50"
                   }`}
                 >
                   Take Test
                 </Link>
                 <Link
                   href="/student#benefits"
-                  className="px-3.5 py-1.5 rounded-lg text-blue-100 hover:text-white hover:bg-[#3157D5]/50 transition-colors whitespace-nowrap"
+                  className="px-3.5 py-1.5 rounded-lg text-emerald-100 hover:text-white hover:bg-[#16805B]/50 transition-colors whitespace-nowrap"
                 >
                   Why EduConnects?
                 </Link>
@@ -508,8 +510,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/"
                   className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/"
-                      ? "bg-[#0F5C5A] text-white font-bold shadow-xs"
-                      : "text-teal-100 hover:text-white hover:bg-[#0F5C5A]/60"
+                      ? "bg-[#16805B] text-white font-bold shadow-xs"
+                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/60"
                   }`}
                 >
                   Home
@@ -518,8 +520,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/about"
                   className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/about"
-                      ? "bg-[#0F5C5A] text-white font-bold shadow-xs"
-                      : "text-teal-100 hover:text-white hover:bg-[#0F5C5A]/60"
+                      ? "bg-[#16805B] text-white font-bold shadow-xs"
+                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/60"
                   }`}
                 >
                   About Us
@@ -528,7 +530,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="https://learners.educonnects.co.in"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-lg text-teal-100 hover:text-white hover:bg-[#0F5C5A]/60 transition-colors whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-lg text-emerald-100 hover:text-white hover:bg-[#16805B]/60 transition-colors whitespace-nowrap"
                 >
                   For Learners
                 </a>
@@ -536,13 +538,13 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="https://educators.educonnects.co.in"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-lg text-teal-100 hover:text-white hover:bg-[#0F5C5A]/60 transition-colors whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-lg text-emerald-100 hover:text-white hover:bg-[#16805B]/60 transition-colors whitespace-nowrap"
                 >
                   For Educators
                 </a>
                 <Link
                   href="/#success-stories"
-                  className="px-3 py-1.5 rounded-lg text-teal-100 hover:text-white hover:bg-[#0F5C5A]/60 transition-colors whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-lg text-emerald-100 hover:text-white hover:bg-[#16805B]/60 transition-colors whitespace-nowrap"
                 >
                   Success Stories
                 </Link>
@@ -550,8 +552,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/contact"
                   className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/contact"
-                      ? "bg-[#0F5C5A] text-white font-bold shadow-xs"
-                      : "text-teal-100 hover:text-white hover:bg-[#0F5C5A]/60"
+                      ? "bg-[#16805B] text-white font-bold shadow-xs"
+                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/60"
                   }`}
                 >
                   Contact Us
@@ -573,15 +575,15 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                 <div className="flex items-center gap-3">
                   <Link
                     href={getLearnerSubdomainUrl("/student/dashboard")}
-                    className="h-9 px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#3157D5] hover:bg-[#1E3185] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+                    className="h-9 px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
                   >
-                    <LayoutDashboard className="h-4 w-4 text-blue-100" />
+                    <LayoutDashboard className="h-4 w-4 text-emerald-100" />
                     <span>Learner Dashboard</span>
                   </Link>
                   <button
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="text-xs sm:text-sm font-bold text-blue-100 hover:text-white px-3 py-2 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+                    className="text-xs sm:text-sm font-bold text-emerald-100 hover:text-white px-3 py-2 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
                   >
                     Logout
                   </button>
@@ -589,7 +591,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               ) : (
                 <Link
                   href="/student/login"
-                  className="text-xs sm:text-sm font-bold text-white bg-[#3157D5] hover:bg-[#1E3185] px-4 py-2 rounded-xl transition-colors whitespace-nowrap shadow-xs"
+                  className="text-xs sm:text-sm font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] px-4 py-2 rounded-xl transition-colors whitespace-nowrap shadow-xs"
                 >
                   Login
                 </Link>

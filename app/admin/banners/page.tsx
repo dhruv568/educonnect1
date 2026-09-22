@@ -288,8 +288,10 @@ export default function AdminPromotionalBannersPage() {
     setCropPan({ x: 0, y: 0 });
   };
 
+  const [isCropping, setIsCropping] = useState(false);
+
   const handleApplyCrop = () => {
-    if (!cropSrc) return;
+    if (!cropSrc || isCropping) return;
 
     const img = new window.Image();
     img.crossOrigin = "anonymous";
@@ -323,10 +325,37 @@ export default function AdminPromotionalBannersPage() {
 
       ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
 
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
-      setFormImageUrl(dataUrl);
-      setIsCropModalOpen(false);
-      showToast("Image Cropped", "Banner image cropped to 3.2:1 aspect ratio with 0 side gaps.", "success");
+      setIsCropping(true);
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          setIsCropping(false);
+          showToast("Crop Error", "Unable to save the banner image. Please try again.", "error");
+          return;
+        }
+
+        try {
+          const formData = new FormData();
+          formData.append("file", blob, "cropped_banner.jpg");
+
+          const res = await fetch("/api/admin/banners/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          const json = await res.json();
+          if (!res.ok || !json.success || !json.data?.url) {
+            throw new Error(json.error || "Unable to save the banner image. Please try again.");
+          }
+
+          setFormImageUrl(json.data.url);
+          setIsCropModalOpen(false);
+          showToast("Image Cropped", "Banner image cropped to 3.2:1 aspect ratio and saved to storage.", "success");
+        } catch (err: any) {
+          showToast("Crop Upload Error", err.message || "Unable to save the banner image. Please try again.", "error");
+        } finally {
+          setIsCropping(false);
+        }
+      }, "image/jpeg", 0.90);
     };
     img.onerror = () => {
       showToast("Crop Error", "Failed to load image for cropping. Please check image URL.", "error");
@@ -518,12 +547,33 @@ export default function AdminPromotionalBannersPage() {
 
     setSubmitting(true);
     try {
+      let finalImageUrl = formImageUrl.trim();
+
+      // Fallback: If image URL is a raw base64 data URL, upload to storage first
+      if (finalImageUrl.toLowerCase().startsWith("data:")) {
+        const fetchBlob = await fetch(finalImageUrl);
+        const blob = await fetchBlob.blob();
+        const formData = new FormData();
+        formData.append("file", blob, "banner.jpg");
+
+        const uploadRes = await fetch("/api/admin/banners/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const uploadJson = await uploadRes.json();
+        if (!uploadRes.ok || !uploadJson.success || !uploadJson.data?.url) {
+          throw new Error(uploadJson.error || "Unable to save the banner image. Please try again.");
+        }
+        finalImageUrl = uploadJson.data.url;
+        setFormImageUrl(finalImageUrl);
+      }
+
       const payload = {
         title: formTitle.trim(),
         subtitle: formSubtitle.trim() || null,
         description: formDescription.trim() || null,
         bannerType: formBannerType,
-        imageUrl: formImageUrl.trim(),
+        imageUrl: finalImageUrl,
         imageClickUrl: formImageClickUrl.trim() || null,
         imageClickTarget: formImageClickTarget,
         ctaText: formCtaText.trim() || null,
@@ -1841,19 +1891,30 @@ export default function AdminPromotionalBannersPage() {
             <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-200">
               <button
                 type="button"
+                disabled={isCropping}
                 onClick={() => setIsCropModalOpen(false)}
-                className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors"
+                className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
 
               <button
                 type="button"
+                disabled={isCropping}
                 onClick={handleApplyCrop}
-                className="px-6 py-2.5 rounded-xl bg-[#0F5C5A] hover:bg-[#0D4E4C] text-white text-xs font-bold shadow-md flex items-center gap-2 transition-all cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-[#0F5C5A] hover:bg-[#0D4E4C] text-white text-xs font-bold shadow-md flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
               >
-                <Check className="h-4 w-4" />
-                <span>Apply Crop & Save Image</span>
+                {isCropping ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving Cropped Image...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" />
+                    <span>Apply Crop & Save Image</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

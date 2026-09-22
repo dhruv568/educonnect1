@@ -4,23 +4,42 @@
 
 @layer base {
   :root {
-    /* 1. Main Home Experience Theme (Deep Teal) */
-    --home-primary: #0F5C5A;
-    --home-primary-dark: #083F3D;
-    --home-accent: #2A8C84;
-    --home-background: #F2FAF8;
-    --home-tint: #E6F0EF;
-    --home-border: #DCE5E4;
+    /* Centralized EduConnects Design System Tokens */
+    --edu-primary: #16805B;
+    --edu-primary-dark: #0D5C41;
+    --edu-primary-light: #35A979;
+    --edu-primary-soft: #F0FAF5;
 
-    /* 2. Learner Experience Theme (Royal Blue / Indigo) */
-    --learner-primary: #3157D5;
-    --learner-primary-dark: #243B9B;
-    --learner-accent: #667EEA;
-    --learner-background: #F3F6FF;
-    --learner-tint: #EFF6FF;
-    --learner-border: #BFDBFE;
+    --edu-background: #F8FAFC;
+    --edu-surface: #FFFFFF;
+    --edu-surface-secondary: #F1F5F9;
 
-    /* 3. Educator Experience Theme (Emerald / Forest Green) */
+    --edu-text: #0F172A;
+    --edu-text-secondary: #475569;
+
+    --edu-border: #E2E8F0;
+    --edu-muted: #94A3B8;
+
+    --edu-success: #10B981;
+    --edu-warning: #F59E0B;
+    --edu-error: #EF4444;
+    --edu-info: #3B82F6;
+
+    /* Legacy Theme Variables Mapped to EduConnects Brand Tokens */
+    --home-primary: #16805B;
+    --home-primary-dark: #0D5C41;
+    --home-accent: #35A979;
+    --home-background: #F0FAF5;
+    --home-tint: #DCFCE7;
+    --home-border: #A7F3D0;
+
+    --learner-primary: #16805B;
+    --learner-primary-dark: #0D5C41;
+    --learner-accent: #35A979;
+    --learner-background: #F0FAF5;
+    --learner-tint: #DCFCE7;
+    --learner-border: #A7F3D0;
+
     --educator-primary: #16805B;
     --educator-primary-dark: #0D5C41;
     --educator-accent: #35A979;
@@ -29,52 +48,52 @@
     --educator-border: #A7F3D0;
 
     /* Base Fallbacks */
-    --primary: #0F5C5A;
-    --primary-dark: #083F3D;
-    --primary-light: #2A8C84;
+    --primary: #16805B;
+    --primary-dark: #0D5C41;
+    --primary-light: #35A979;
 
-    --accent: #F2C14E;
+    --accent: #35A979;
 
-    --background: #F5F7F8;
-    --cream: #FBF7EE;
+    --background: #F8FAFC;
+    --cream: #F0FAF5;
     --surface: #FFFFFF;
 
-    --text-primary: #102A2A;
-    --text-secondary: #5D7373;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
 
-    --border: #DCE5E4;
-    --radius: 1.25rem;
+    --border: #E2E8F0;
+    --radius: 1rem;
   }
 
   [data-theme="home"] {
-    --theme-primary: var(--home-primary);
-    --theme-primary-dark: var(--home-primary-dark);
-    --theme-accent: var(--home-accent);
-    --theme-background: var(--home-background);
+    --theme-primary: var(--edu-primary);
+    --theme-primary-dark: var(--edu-primary-dark);
+    --theme-accent: var(--edu-primary-light);
+    --theme-background: var(--edu-primary-soft);
     --theme-tint: var(--home-tint);
     --theme-border: var(--home-border);
   }
 
   [data-theme="learner"] {
-    --theme-primary: var(--learner-primary);
-    --theme-primary-dark: var(--learner-primary-dark);
-    --theme-accent: var(--learner-accent);
-    --theme-background: var(--learner-background);
+    --theme-primary: var(--edu-primary);
+    --theme-primary-dark: var(--edu-primary-dark);
+    --theme-accent: var(--edu-primary-light);
+    --theme-background: var(--edu-primary-soft);
     --theme-tint: var(--learner-tint);
     --theme-border: var(--learner-border);
   }
 
   [data-theme="educator"] {
-    --theme-primary: var(--educator-primary);
-    --theme-primary-dark: var(--educator-primary-dark);
-    --theme-accent: var(--educator-accent);
-    --theme-background: var(--educator-background);
+    --theme-primary: var(--edu-primary);
+    --theme-primary-dark: var(--edu-primary-dark);
+    --theme-accent: var(--edu-primary-light);
+    --theme-background: var(--edu-primary-soft);
     --theme-tint: var(--educator-tint);
     --theme-border: var(--educator-border);
   }
 
   body {
-    @apply bg-[#F5F7F8] text-[#102A2A] antialiased selection:bg-[#F2C14E]/30 selection:text-[#0B4F4B];
+    @apply bg-[#F8FAFC] text-[#0F172A] antialiased selection:bg-[#16805B]/20 selection:text-[#0D5C41];
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 

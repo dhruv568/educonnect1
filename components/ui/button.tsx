@@ -11,7 +11,7 @@ function cn(...inputs: any[]) {
 }
 
 export interface ButtonProps extends HTMLMotionProps<"button"> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "teacher" | "student" | "gradient";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "success" | "teacher" | "student" | "gradient";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
@@ -35,16 +35,18 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-bold rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B4F4B] disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer";
+      "inline-flex items-center justify-center font-bold rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16805B] disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer";
 
     const variants = {
-      primary: "bg-[#0B4F4B] text-white hover:bg-[#073F3C] active:bg-[#052C2A] shadow-md shadow-[#0B4F4B]/15",
-      secondary: "bg-[#F2C14E] text-[#102A2A] hover:bg-[#E0B03C] active:bg-[#D4A22F] shadow-sm",
-      outline: "border-2 border-[#DCE5E4] bg-white text-[#102A2A] hover:bg-[#FBF7EE] hover:border-[#B8CBC9]",
-      ghost: "text-[#102A2A] hover:bg-[#F5F7F8] active:bg-[#EBF0F0]",
+      primary: "bg-[#16805B] text-white hover:bg-[#0D5C41] active:bg-[#094732] shadow-md shadow-[#16805B]/20",
+      secondary: "bg-[#F0FAF5] text-[#0D5C41] border border-[#A7F3D0] hover:bg-[#DCFCE7] active:bg-[#A7F3D0] shadow-2xs",
+      outline: "border-2 border-[#E2E8F0] bg-white text-[#0F172A] hover:bg-[#F0FAF5] hover:border-[#16805B]",
+      ghost: "text-[#0F172A] hover:bg-[#F0FAF5] hover:text-[#16805B] active:bg-[#DCFCE7]",
+      danger: "bg-[#EF4444] text-white hover:bg-[#DC2626] active:bg-[#B91C1C] shadow-md shadow-rose-500/20",
+      success: "bg-[#10B981] text-white hover:bg-[#059669] active:bg-[#047857] shadow-md shadow-emerald-500/20",
       teacher: "bg-[#16805B] text-white hover:bg-[#0D5C41] active:bg-[#094732] shadow-md shadow-[#16805B]/20",
-      student: "bg-[#3157D5] text-white hover:bg-[#243B9B] active:bg-[#1A2C7B] shadow-md shadow-[#3157D5]/20",
-      gradient: "bg-gradient-to-r from-[#0B4F4B] via-[#1B6863] to-[#073F3C] text-white hover:opacity-95 shadow-lg shadow-[#0B4F4B]/20",
+      student: "bg-[#16805B] text-white hover:bg-[#0D5C41] active:bg-[#094732] shadow-md shadow-[#16805B]/20",
+      gradient: "bg-gradient-to-r from-[#16805B] to-[#0D5C41] text-white hover:opacity-95 shadow-lg shadow-[#16805B]/20",
     };
 
     const sizes = {

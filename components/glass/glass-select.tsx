@@ -20,20 +20,20 @@ export const GlassSelect = React.forwardRef<HTMLSelectElement, GlassSelectProps>
     return (
       <div className="w-full space-y-1.5">
         {label && (
-          <label className="block text-xs font-bold text-[#102A2A] uppercase tracking-wider">
+          <label className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider">
             {label}
           </label>
         )}
         <div className="relative flex items-center">
           {icon && (
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5D7373] pointer-events-none z-10">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#475569] pointer-events-none z-10">
               {icon}
             </div>
           )}
           <select
             ref={ref}
             className={cn(
-              "w-full h-11 px-4 font-extrabold text-xs text-[#102A2A] rounded-2xl glass-select outline-none transition-all",
+              "w-full h-11 px-4 font-bold text-xs text-[#0F172A] rounded-2xl glass-select outline-none transition-all",
               icon && "pl-10",
               error && "border-rose-400 focus:ring-rose-500/20",
               className
@@ -46,7 +46,7 @@ export const GlassSelect = React.forwardRef<HTMLSelectElement, GlassSelectProps>
         {error ? (
           <p className="text-[11px] font-semibold text-rose-500">{error}</p>
         ) : helperText ? (
-          <p className="text-[11px] text-[#5D7373]">{helperText}</p>
+          <p className="text-[11px] text-[#475569]">{helperText}</p>
         ) : null}
       </div>
     );

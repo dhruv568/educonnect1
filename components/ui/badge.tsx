@@ -15,14 +15,14 @@ export function Badge({ className, variant = "primary", size = "md", children, .
   const base = "inline-flex items-center font-medium rounded-full border";
 
   const variants = {
-    primary: "bg-[#F2FAF8] text-[#0F5C5A] border-[#DCE5E4]",
+    primary: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0]",
     secondary: "bg-slate-100 text-slate-700 border-slate-200",
     success: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0]",
     warning: "bg-amber-50 text-amber-800 border-amber-200",
     error: "bg-rose-50 text-rose-700 border-rose-200",
     teacher: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0]",
-    student: "bg-[#F3F6FF] text-[#243B9B] border-[#BFDBFE]",
-    admin: "bg-[#F0F7F6] text-[#073F3C] border-[#1B6863]/40",
+    student: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0]",
+    admin: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0]",
     outline: "bg-transparent text-slate-600 border-slate-300",
   };
 

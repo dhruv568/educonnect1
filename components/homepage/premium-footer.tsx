@@ -143,35 +143,17 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
 
   return (
     <footer
-      className={`${
-        isEducator
-          ? "bg-[#0D5C41] border-t border-[#16805B]/40"
-          : isLearner
-          ? "bg-[#243B9B] border-t border-[#3157D5]/40"
-          : "bg-[#083F3D] border-t border-[#1B6863]/40"
-      } text-white pt-16 pb-12 relative overflow-hidden font-sans`}
+      className="bg-[#0D5C41] border-t border-[#16805B]/40 text-white pt-16 pb-12 relative overflow-hidden font-sans"
     >
       {/* Background Subtle Accent Glow */}
       <div
-        className={`absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 ${
-          isEducator
-            ? "bg-[#16805B]/25"
-            : isLearner
-            ? "bg-[#3157D5]/20"
-            : "bg-[#2A8C84]/15"
-        } blur-3xl rounded-full pointer-events-none`}
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-[#16805B]/25 blur-3xl rounded-full pointer-events-none"
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-12">
         {/* Main Grid: Brand + 3 Organized Columns */}
         <div
-          className={`grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10 pb-12 border-b ${
-            isEducator
-              ? "border-[#16805B]/40"
-              : isLearner
-              ? "border-[#3157D5]/40"
-              : "border-[#1B6863]/60"
-          }`}
+          className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10 pb-12 border-b border-[#16805B]/40"
         >
           {/* Brand & Legal Info (md:col-span-4) */}
           <div className="space-y-4 md:col-span-4">
