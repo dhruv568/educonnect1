@@ -40,6 +40,7 @@ import {
   Crop,
   Move,
   ZoomIn,
+  Minus,
   RotateCcw,
 } from "lucide-react";
 
@@ -110,10 +111,73 @@ export default function AdminPromotionalBannersPage() {
   const [cropZoom, setCropZoom] = useState(1);
   const [cropPan, setCropPan] = useState({ x: 0, y: 0 });
   const [isDraggingCrop, setIsDraggingCrop] = useState(false);
+  const [cropImageNatDim, setCropImageNatDim] = useState({ width: 0, height: 0 });
+  const [cropViewportDim, setCropViewportDim] = useState({ width: 800, height: 250 });
+
   const cropStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const cropPanStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const pinchDistStartRef = useRef<number>(0);
+  const pinchZoomStartRef = useRef<number>(1);
   const cropViewportRef = useRef<HTMLDivElement>(null);
   const cropImageRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (isCropModalOpen && cropViewportRef.current) {
+      const vpW = cropViewportRef.current.offsetWidth;
+      const vpH = cropViewportRef.current.offsetHeight;
+      if (vpW > 0 && vpH > 0) {
+        setCropViewportDim({ width: vpW, height: vpH });
+      }
+    }
+  }, [isCropModalOpen]);
+
+  const getClampedPan = (newZoom: number, newPan: { x: number; y: number }) => {
+    const vpW = cropViewportDim.width || cropViewportRef.current?.offsetWidth || 800;
+    const vpH = cropViewportDim.height || cropViewportRef.current?.offsetHeight || 250;
+    const imgW = cropImageNatDim.width || cropImageRef.current?.naturalWidth || 800;
+    const imgH = cropImageNatDim.height || cropImageRef.current?.naturalHeight || 800;
+
+    const coverScale = Math.max(vpW / imgW, vpH / imgH);
+    const dispW = imgW * coverScale * newZoom;
+    const dispH = imgH * coverScale * newZoom;
+
+    const maxPanX = Math.max(0, (dispW - vpW) / 2);
+    const maxPanY = Math.max(0, (dispH - vpH) / 2);
+
+    return {
+      x: Math.min(maxPanX, Math.max(-maxPanX, newPan.x)),
+      y: Math.min(maxPanY, Math.max(-maxPanY, newPan.y)),
+    };
+  };
+
+  const cropGeometry = useMemo(() => {
+    const vpW = cropViewportDim.width || 800;
+    const vpH = cropViewportDim.height || 250;
+    const imgW = cropImageNatDim.width || 800;
+    const imgH = cropImageNatDim.height || 800;
+
+    const coverScale = Math.max(vpW / imgW, vpH / imgH);
+    const dispW = imgW * coverScale * cropZoom;
+    const dispH = imgH * coverScale * cropZoom;
+
+    const maxPanX = Math.max(0, (dispW - vpW) / 2);
+    const maxPanY = Math.max(0, (dispH - vpH) / 2);
+
+    const clampedX = Math.min(maxPanX, Math.max(-maxPanX, cropPan.x));
+    const clampedY = Math.min(maxPanY, Math.max(-maxPanY, cropPan.y));
+
+    return { coverScale, dispW, dispH, maxPanX, maxPanY, clampedX, clampedY, vpW, vpH, imgW, imgH };
+  }, [cropViewportDim, cropImageNatDim, cropZoom, cropPan]);
+
+  const handleCropImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    const vpW = cropViewportRef.current?.offsetWidth || 800;
+    const vpH = cropViewportRef.current?.offsetHeight || 250;
+    const nw = img.naturalWidth || img.width || 800;
+    const nh = img.naturalHeight || img.height || 250;
+    setCropImageNatDim({ width: nw, height: nh });
+    setCropViewportDim({ width: vpW, height: vpH });
+  };
 
   const handleOpenCropModal = () => {
     if (!formImageUrl.trim()) {
@@ -136,10 +200,11 @@ export default function AdminPromotionalBannersPage() {
     if (!isDraggingCrop) return;
     const dx = e.clientX - cropStartRef.current.x;
     const dy = e.clientY - cropStartRef.current.y;
-    setCropPan({
+    const newPan = getClampedPan(cropZoom, {
       x: cropPanStartRef.current.x + dx,
       y: cropPanStartRef.current.y + dy,
     });
+    setCropPan(newPan);
   };
 
   const handleCropMouseUp = () => {
@@ -151,21 +216,76 @@ export default function AdminPromotionalBannersPage() {
       setIsDraggingCrop(true);
       cropStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       cropPanStartRef.current = { ...cropPan };
+    } else if (e.touches.length === 2) {
+      setIsDraggingCrop(false);
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      pinchDistStartRef.current = dist;
+      pinchZoomStartRef.current = cropZoom;
     }
   };
 
   const handleCropTouchMove = (e: React.TouchEvent) => {
-    if (!isDraggingCrop || e.touches.length !== 1) return;
-    const dx = e.touches[0].clientX - cropStartRef.current.x;
-    const dy = e.touches[0].clientY - cropStartRef.current.y;
-    setCropPan({
-      x: cropPanStartRef.current.x + dx,
-      y: cropPanStartRef.current.y + dy,
-    });
+    if (e.touches.length === 1 && isDraggingCrop) {
+      const dx = e.touches[0].clientX - cropStartRef.current.x;
+      const dy = e.touches[0].clientY - cropStartRef.current.y;
+      const newPan = getClampedPan(cropZoom, {
+        x: cropPanStartRef.current.x + dx,
+        y: cropPanStartRef.current.y + dy,
+      });
+      setCropPan(newPan);
+    } else if (e.touches.length === 2 && pinchDistStartRef.current > 0) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const scale = dist / pinchDistStartRef.current;
+      const newZoom = Math.min(4.0, Math.max(1.0, parseFloat((pinchZoomStartRef.current * scale).toFixed(2))));
+      const newPan = getClampedPan(newZoom, cropPan);
+      setCropZoom(newZoom);
+      setCropPan(newPan);
+    }
   };
 
   const handleCropTouchEnd = () => {
     setIsDraggingCrop(false);
+    pinchDistStartRef.current = 0;
+  };
+
+  const handleCropWheel = (e: React.WheelEvent) => {
+    const delta = e.deltaY < 0 ? 0.08 : -0.08;
+    const newZoom = Math.min(4.0, Math.max(1.0, parseFloat((cropZoom + delta).toFixed(2))));
+    const newPan = getClampedPan(newZoom, cropPan);
+    setCropZoom(newZoom);
+    setCropPan(newPan);
+  };
+
+  const handleZoomIn = () => {
+    const newZoom = Math.min(4.0, parseFloat((cropZoom + 0.1).toFixed(2)));
+    const newPan = getClampedPan(newZoom, cropPan);
+    setCropZoom(newZoom);
+    setCropPan(newPan);
+  };
+
+  const handleZoomOut = () => {
+    const newZoom = Math.max(1.0, parseFloat((cropZoom - 0.1).toFixed(2)));
+    const newPan = getClampedPan(newZoom, cropPan);
+    setCropZoom(newZoom);
+    setCropPan(newPan);
+  };
+
+  const handleZoomSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newZoom = Math.min(4.0, Math.max(1.0, parseFloat(e.target.value)));
+    const newPan = getClampedPan(newZoom, cropPan);
+    setCropZoom(newZoom);
+    setCropPan(newPan);
+  };
+
+  const handleResetCropPosition = () => {
+    setCropZoom(1);
+    setCropPan({ x: 0, y: 0 });
   };
 
   const handleApplyCrop = () => {
@@ -184,18 +304,22 @@ export default function AdminPromotionalBannersPage() {
       ctx.fillStyle = "#090d16";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const viewportWidth = cropViewportRef.current?.offsetWidth || 800;
-      const viewportHeight = cropViewportRef.current?.offsetHeight || 250;
+      const vpW = cropViewportRef.current?.offsetWidth || 800;
+      const vpH = cropViewportRef.current?.offsetHeight || 250;
+      const imgW = img.naturalWidth || img.width;
+      const imgH = img.naturalHeight || img.height;
 
-      const scaleToCanvasX = canvas.width / viewportWidth;
-      const scaleToCanvasY = canvas.height / viewportHeight;
+      const coverScale = Math.max(vpW / imgW, vpH / imgH);
+      const dispW = imgW * coverScale * cropZoom;
+      const dispH = imgH * coverScale * cropZoom;
 
-      const baseScale = Math.max(viewportWidth / img.width, viewportHeight / img.height);
-      const drawWidth = img.width * baseScale * cropZoom * scaleToCanvasX;
-      const drawHeight = img.height * baseScale * cropZoom * scaleToCanvasY;
+      const scaleCanvas = 1280 / vpW;
 
-      const drawX = (canvas.width - drawWidth) / 2 + cropPan.x * scaleToCanvasX;
-      const drawY = (canvas.height - drawHeight) / 2 + cropPan.y * scaleToCanvasY;
+      const drawWidth = dispW * scaleCanvas;
+      const drawHeight = dispH * scaleCanvas;
+
+      const drawX = (1280 - drawWidth) / 2 + cropGeometry.clampedX * scaleCanvas;
+      const drawY = (400 - drawHeight) / 2 + cropGeometry.clampedY * scaleCanvas;
 
       ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
 
@@ -1618,7 +1742,8 @@ export default function AdminPromotionalBannersPage() {
                 onTouchStart={handleCropTouchStart}
                 onTouchMove={handleCropTouchMove}
                 onTouchEnd={handleCropTouchEnd}
-                className="relative w-full aspect-[3.2/1] bg-slate-950 overflow-hidden rounded-2xl border-2 border-dashed border-teal-400 shadow-xl cursor-grab active:cursor-grabbing select-none flex items-center justify-center"
+                onWheel={handleCropWheel}
+                className="relative w-full aspect-[3.2/1] bg-slate-950 overflow-hidden rounded-2xl border-2 border-dashed border-teal-400 shadow-xl cursor-grab active:cursor-grabbing select-none flex items-center justify-center touch-none"
               >
                 {/* Image under transformation */}
                 {cropSrc && (
@@ -1627,11 +1752,15 @@ export default function AdminPromotionalBannersPage() {
                     src={cropSrc}
                     alt="Crop workspace"
                     draggable={false}
+                    onLoad={handleCropImageLoad}
                     style={{
-                      transform: `translate(${cropPan.x}px, ${cropPan.y}px) scale(${cropZoom})`,
-                      transformOrigin: "center center",
+                      width: cropGeometry.dispW ? `${cropGeometry.dispW}px` : "auto",
+                      height: cropGeometry.dispH ? `${cropGeometry.dispH}px` : "auto",
+                      maxWidth: "none",
+                      maxHeight: "none",
+                      transform: `translate3d(${cropGeometry.clampedX}px, ${cropGeometry.clampedY}px, 0px)`,
                     }}
-                    className="max-w-none max-h-none absolute transition-transform duration-75 select-none pointer-events-none"
+                    className="absolute select-none pointer-events-none transition-transform duration-75"
                     crossOrigin="anonymous"
                   />
                 )}
@@ -1651,32 +1780,57 @@ export default function AdminPromotionalBannersPage() {
               </div>
             </div>
 
-            {/* Controls: Zoom slider & Reset */}
+            {/* Controls: Two-way Zoom slider & Reset Position */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3 flex-1 min-w-[200px]">
-                <ZoomIn className="h-4 w-4 text-slate-500 shrink-0" />
+              <div className="flex items-center gap-2.5 flex-1 min-w-[240px]">
                 <span className="text-xs font-bold text-slate-700 shrink-0">Zoom:</span>
+
+                {/* Zoom Out Button (-) */}
+                <button
+                  type="button"
+                  onClick={handleZoomOut}
+                  disabled={cropZoom <= 1.001}
+                  title="Zoom Out (-)"
+                  aria-label="Zoom Out"
+                  className="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center shadow-2xs transition-colors shrink-0 cursor-pointer"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+
+                {/* Zoom Range Slider */}
                 <input
                   type="range"
                   min="1"
-                  max="3.5"
-                  step="0.05"
+                  max="4"
+                  step="0.02"
                   value={cropZoom}
-                  onChange={(e) => setCropZoom(parseFloat(e.target.value))}
+                  onChange={handleZoomSliderChange}
                   className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#0F5C5A]"
                 />
-                <span className="text-xs font-mono font-bold text-slate-600 shrink-0">
+
+                {/* Zoom In Button (+) */}
+                <button
+                  type="button"
+                  onClick={handleZoomIn}
+                  disabled={cropZoom >= 3.999}
+                  title="Zoom In (+)"
+                  aria-label="Zoom In"
+                  className="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center shadow-2xs transition-colors shrink-0 cursor-pointer"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+
+                {/* Formatted Zoom Readout */}
+                <span className="text-xs font-mono font-bold text-slate-700 shrink-0 w-12 text-right">
                   {cropZoom.toFixed(2)}x
                 </span>
               </div>
 
+              {/* Reset Position Button */}
               <button
                 type="button"
-                onClick={() => {
-                  setCropZoom(1);
-                  setCropPan({ x: 0, y: 0 });
-                }}
-                className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-100 flex items-center gap-1 shadow-2xs"
+                onClick={handleResetCropPosition}
+                className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-100 flex items-center gap-1.5 shadow-2xs transition-colors shrink-0 cursor-pointer"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span>Reset Position</span>
