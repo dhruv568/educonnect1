@@ -203,7 +203,9 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
       }
 
       // 3. Hard redirect to prevent bfcache / memory restoration & show dedicated logout page
-      if (role === "TEACHER" || isEducatorRole(role)) {
+      if (role === "TEACHER") {
+        window.location.replace("/teacher/logout");
+      } else if (isEducatorRole(role)) {
         window.location.replace("/teacher/logout");
       } else if (isAdminRole(role) || role === "STAFF") {
         window.location.replace("/admin/logout");
