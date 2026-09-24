@@ -16,8 +16,7 @@ export function isAiAssistantExcluded(pathname: string): boolean {
   if (
     clean.startsWith("/classroom") ||
     clean.startsWith("/live") ||
-    clean.startsWith("/learn") ||
-    clean.startsWith("/student/live-classes")
+    clean.startsWith("/learn")
   ) {
     return true;
   }

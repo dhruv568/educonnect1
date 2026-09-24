@@ -98,7 +98,11 @@ export async function POST(request: NextRequest) {
       if (orderId) {
         const tx = await prisma.paymentTransaction.findFirst({
           where: { providerOrderId: orderId },
-          include: { course: true, liveClassSlot: true },
+          include: {
+            course: true,
+            liveClassSlot: true,
+            user: { include: { profile: true, teacherProfile: true } },
+          },
         });
 
         await prisma.paymentTransaction.updateMany({
@@ -112,17 +116,36 @@ export async function POST(request: NextRequest) {
 
         if (tx && tx.userId) {
           try {
+            const isEducator =
+              tx.user?.role === "TEACHER" ||
+              Boolean(tx.user?.teacherProfile) ||
+              orderId.startsWith("EDU_TCH_") ||
+              orderId.startsWith("TCH_");
+
             const { EventService } = require("@/services/event-service");
             const { getPublicAppUrl } = require("@/lib/app-url");
+
+            const retryUrl = isEducator
+              ? `${getPublicAppUrl()}/teacher/onboarding`
+              : tx.course
+              ? `${getPublicAppUrl()}/courses/${tx.course.slug}`
+              : `${getPublicAppUrl()}/courses`;
+
+            const defaultTitle = isEducator
+              ? "EduConnects Educator Verification"
+              : tx.course?.title || tx.liveClassSlot?.title || "EduConnects Purchase";
+
             await EventService.emit("payment.failed", {
               userId: tx.userId,
               actorId: tx.userId,
-              actorRole: "STUDENT",
+              actorRole: isEducator ? "TEACHER" : "STUDENT",
               data: {
                 orderId,
-                title: tx.course?.title || tx.liveClassSlot?.title || "EduConnects Purchase",
+                title: defaultTitle,
                 reason: payment.payment_message || "Payment attempt was unsuccessful",
-                retryUrl: tx.course ? `${getPublicAppUrl()}/courses/${tx.course.slug}` : `${getPublicAppUrl()}/courses`,
+                retryUrl,
+                isTeacher: isEducator,
+                recipientRole: isEducator ? "TEACHER" : "STUDENT",
               },
               idempotencyKey: `pay-fail-${orderId}`,
             });

@@ -122,7 +122,7 @@ async function runMultiCoursePurchaseTests() {
     // Complete / verify payment for Course B
     const verifyB = await PaymentService.verifyAndCompletePayment({
       userId: studentUser.id,
-      orderId: orderB.cfOrderId,
+      orderId: orderB.cfOrderId!,
       paymentStatus: "SUCCESS",
     });
     assert(verifyB.status === "CAPTURED", "Payment captured and Course B activated for learner");

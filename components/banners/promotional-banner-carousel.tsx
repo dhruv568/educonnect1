@@ -343,7 +343,7 @@ export function PromotionalBannerCarousel({
                     priority={currentIndex === 0}
                     loading="eager"
                     sizes="(max-width: 1280px) 100vw, 1280px"
-                    className="object-contain w-full h-full"
+                    className="object-cover w-full h-full"
                     unoptimized={true}
                     onError={() => {
                       setImageErrorMap((prev) => ({
@@ -365,7 +365,7 @@ export function PromotionalBannerCarousel({
                     priority={currentIndex === 0}
                     loading="eager"
                     sizes="(max-width: 1280px) 100vw, 1280px"
-                    className="object-contain w-full h-full"
+                    className="object-cover w-full h-full"
                     unoptimized={true}
                     onError={() => {
                       setImageErrorMap((prev) => ({

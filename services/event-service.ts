@@ -486,14 +486,40 @@ export class EventService {
         }
 
         case "payment.failed": {
-          const title = data.title || "EduConnects Purchase";
+          const isEducator =
+            actorRole === "TEACHER" ||
+            user.role === "TEACHER" ||
+            Boolean(data.isTeacher) ||
+            Boolean(data.recipientRole === "TEACHER") ||
+            Boolean(data.orderId?.startsWith("EDU_TCH_")) ||
+            Boolean(data.orderId?.startsWith("TCH_"));
+
+          const title =
+            data.title ||
+            (isEducator ? "EduConnects Educator Verification" : "EduConnects Purchase");
+
+          const retryUrl =
+            data.retryUrl ||
+            (isEducator
+              ? `${getPublicAppUrl()}/teacher/onboarding`
+              : `${getPublicAppUrl()}/courses`);
+
+          // Recipient phone must be user.teacherProfile.contactPhone for educator, user.profile.phone for learner
+          const targetPhone = isEducator
+            ? user.teacherProfile?.contactPhone || null
+            : user.profile?.phone || null;
+
           await NotificationService.create({
             userId,
             type: "PAYMENT_FAILED",
             title: "Payment Incomplete ⚠️",
             message: `Your payment for "${title}" could not be completed.`,
-            actionUrl: data.retryUrl || "/courses",
-            data,
+            actionUrl: retryUrl,
+            data: {
+              ...data,
+              isTeacher: isEducator,
+              recipientRole: isEducator ? "TEACHER" : "STUDENT",
+            },
             idempotencyKey,
           });
 
@@ -501,16 +527,20 @@ export class EventService {
           try {
             await WhatsAppService.sendEventNotification({
               userId,
-              phone: userPhone,
+              phone: targetPhone,
               eventType: "PAYMENT_FAILED",
               data: {
                 name: userName,
                 title,
                 orderId: data.orderId || "N/A",
                 reason: data.reason || "Payment was not completed by gateway",
-                retryUrl: data.retryUrl || `${getPublicAppUrl()}/courses`,
+                retryUrl,
+                isTeacher: isEducator,
+                recipientRole: isEducator ? "TEACHER" : "STUDENT",
               },
-              idempotencyKey: `wa-pay-fail-${data.orderId || userId}-${Date.now()}`,
+              idempotencyKey: idempotencyKey
+                ? `wa-${idempotencyKey}`
+                : `wa-pay-fail-${data.orderId || userId}`,
             });
           } catch (waErr) {
             console.error("WhatsApp payment failed warning:", waErr);

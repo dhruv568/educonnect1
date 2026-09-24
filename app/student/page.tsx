@@ -86,7 +86,15 @@ export default function StudentLandingPage() {
         const res = await fetch(`/api/courses?${queryParams.toString()}`);
         const json = await res.json();
         if (json.success && json.data?.courses) {
-          setCourses(json.data.courses);
+          const filteredCourses = json.data.courses.filter((course: any) => {
+            const title = (course.title || "").trim().toLowerCase();
+            return (
+              title !== "testing" &&
+              !title.startsWith("testing") &&
+              !title.startsWith("advanced calculus & analytical")
+            );
+          });
+          setCourses(filteredCourses);
         }
       } catch (err) {
         console.error("Failed to load courses for student landing page:", err);
