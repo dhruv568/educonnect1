@@ -300,8 +300,8 @@ export function PromotionalBannerCarousel({
           onTouchEnd={handleTouchEnd}
           className={`relative w-full overflow-hidden bg-slate-950 select-none ${
             previewMode
-              ? "max-w-[800px] mx-auto rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-lg aspect-square sm:aspect-[4/1]"
-              : "rounded-2xl sm:rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xl aspect-square sm:aspect-[2.5/1] md:aspect-[2.8/1] lg:aspect-[3.2/1]"
+              ? "max-w-[800px] mx-auto rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-lg sm:aspect-[4/1]"
+              : "rounded-2xl sm:rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xl sm:aspect-[2.5/1] md:aspect-[2.8/1] lg:aspect-[3.2/1]"
           }`}
         >
           {/* Ambient Blurred Backdrop matching Banner Image colors */}
@@ -325,7 +325,7 @@ export function PromotionalBannerCarousel({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
-              className="relative w-full h-full z-10 flex items-center justify-center"
+              className="relative w-full h-auto sm:h-full z-10 flex items-center justify-center"
             >
               {hasImageClick ? (
                 <Link
@@ -334,17 +334,13 @@ export function PromotionalBannerCarousel({
                   rel={clickRel}
                   onClick={handleLinkClick}
                   aria-label={`Promotional banner: ${currentBanner.title || "EduConnects Banner"}`}
-                  className="relative block w-full h-full cursor-pointer focus:outline-none select-none"
+                  className="relative block w-full h-auto sm:h-full cursor-pointer focus:outline-none select-none"
                 >
-                  <Image
+                  <img
                     src={bannerImageSrc}
                     alt={currentBanner.title || "Promotional Banner"}
-                    fill
-                    priority={currentIndex === 0}
                     loading="eager"
-                    sizes="(max-width: 1280px) 100vw, 1280px"
-                    className="object-contain sm:object-cover w-full h-full"
-                    unoptimized={true}
+                    className="w-full h-auto block sm:absolute sm:inset-0 sm:w-full sm:h-full sm:object-cover"
                     onError={() => {
                       setImageErrorMap((prev) => ({
                         ...prev,
@@ -356,17 +352,13 @@ export function PromotionalBannerCarousel({
               ) : (
                 <div
                   aria-label={`Promotional banner: ${currentBanner.title || "EduConnects Banner"}`}
-                  className="relative w-full h-full cursor-default select-none"
+                  className="relative w-full h-auto sm:h-full cursor-default select-none"
                 >
-                  <Image
+                  <img
                     src={bannerImageSrc}
                     alt={currentBanner.title || "Promotional Banner"}
-                    fill
-                    priority={currentIndex === 0}
                     loading="eager"
-                    sizes="(max-width: 1280px) 100vw, 1280px"
-                    className="object-contain sm:object-cover w-full h-full"
-                    unoptimized={true}
+                    className="w-full h-auto block sm:absolute sm:inset-0 sm:w-full sm:h-full sm:object-cover"
                     onError={() => {
                       setImageErrorMap((prev) => ({
                         ...prev,
