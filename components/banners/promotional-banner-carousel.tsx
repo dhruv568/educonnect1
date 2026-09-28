@@ -300,8 +300,8 @@ export function PromotionalBannerCarousel({
           onTouchEnd={handleTouchEnd}
           className={`relative w-full overflow-hidden bg-slate-950 select-none ${
             previewMode
-              ? "max-w-[800px] mx-auto rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-lg aspect-[3/1] sm:aspect-[4/1]"
-              : "rounded-2xl sm:rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xl aspect-[16/7] sm:aspect-[2.5/1] md:aspect-[2.8/1] lg:aspect-[3.2/1]"
+              ? "max-w-[800px] mx-auto rounded-xl sm:rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-lg aspect-square sm:aspect-[4/1]"
+              : "rounded-2xl sm:rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xl aspect-square sm:aspect-[2.5/1] md:aspect-[2.8/1] lg:aspect-[3.2/1]"
           }`}
         >
           {/* Ambient Blurred Backdrop matching Banner Image colors */}
@@ -343,7 +343,7 @@ export function PromotionalBannerCarousel({
                     priority={currentIndex === 0}
                     loading="eager"
                     sizes="(max-width: 1280px) 100vw, 1280px"
-                    className="object-cover w-full h-full"
+                    className="object-contain sm:object-cover w-full h-full"
                     unoptimized={true}
                     onError={() => {
                       setImageErrorMap((prev) => ({
@@ -365,7 +365,7 @@ export function PromotionalBannerCarousel({
                     priority={currentIndex === 0}
                     loading="eager"
                     sizes="(max-width: 1280px) 100vw, 1280px"
-                    className="object-cover w-full h-full"
+                    className="object-contain sm:object-cover w-full h-full"
                     unoptimized={true}
                     onError={() => {
                       setImageErrorMap((prev) => ({
