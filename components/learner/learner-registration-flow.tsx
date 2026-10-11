@@ -194,15 +194,34 @@ function LearnerRegistrationFlowContent() {
       .catch(() => {})
       .finally(() => setLoadingInitial(false));
 
-    setState((prev) => ({
-      ...prev,
-      ...savedState,
-      selectedCourseId: courseId || savedState.selectedCourseId || prev.selectedCourseId,
-      selectedEducatorId: educatorId || savedState.selectedEducatorId || prev.selectedEducatorId,
-      isTrial: trial || savedState.isTrial || prev.isTrial,
-      selectionType: educatorId ? "EDUCATOR" : courseId ? "COURSE" : savedState.selectionType || "COURSE",
-      step: orderId ? 5 : stepParam ? parseInt(stepParam, 10) : savedState.step || prev.step,
-    }));
+    setState((prev) => {
+      let resolvedStep = prev.step;
+      if (orderId) {
+        resolvedStep = 5;
+      } else if (stepParam) {
+        const parsed = parseInt(stepParam, 10);
+        if (parsed >= 1 && parsed <= 4) {
+          resolvedStep = parsed;
+        } else {
+          resolvedStep = savedState.step && savedState.step <= 4 ? savedState.step : (prev.step <= 4 ? prev.step : 3);
+        }
+      } else if (savedState.step) {
+        resolvedStep = savedState.step <= 5 ? savedState.step : 3;
+      }
+      if (resolvedStep >= 6) {
+        resolvedStep = 3;
+      }
+
+      return {
+        ...prev,
+        ...savedState,
+        selectedCourseId: courseId || savedState.selectedCourseId || prev.selectedCourseId,
+        selectedEducatorId: educatorId || savedState.selectedEducatorId || prev.selectedEducatorId,
+        isTrial: trial || savedState.isTrial || prev.isTrial,
+        selectionType: educatorId ? "EDUCATOR" : courseId ? "COURSE" : savedState.selectionType || "COURSE",
+        step: resolvedStep,
+      };
+    });
   }, [searchParams]);
 
   // Persist state changes in sessionStorage
@@ -574,10 +593,8 @@ function LearnerRegistrationFlowContent() {
       const order = data.data;
       setState((prev) => ({ ...prev, orderData: order }));
 
-      const isProd = order.env === "PRODUCTION";
-      const isMockSession = order.paymentSessionId?.startsWith("session_");
-
-      if (order.paymentSessionId && (isProd || !isMockSession)) {
+      if (order.paymentSessionId) {
+        const isProd = order.env === "PRODUCTION";
         const Cashfree = await loadCashfreeSdk();
         const cashfree = Cashfree({ mode: isProd ? "production" : "sandbox" });
         const returnUrl = `${window.location.origin}/student/register?order_id=${encodeURIComponent(order.cfOrderId || order.internalReference)}&step=5`;
@@ -587,8 +604,7 @@ function LearnerRegistrationFlowContent() {
           returnUrl,
         });
       } else {
-        // Dev/Mock verification fallback
-        handleVerifyPayment(order.cfOrderId || order.internalReference);
+        throw new Error("Unable to establish Cashfree payment session. Please try again.");
       }
     } catch (err: any) {
       setState((prev) => ({
@@ -617,14 +633,12 @@ function LearnerRegistrationFlowContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           order_id: orderId,
-          cf_payment_id: `cf_pay_${Date.now()}`,
-          payment_status: "SUCCESS",
         }),
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Server-side payment verification failed.");
+      if (!res.ok || !data.success || data.data?.status !== "CAPTURED") {
+        throw new Error(data.error || "Payment was not completed or verification failed with Cashfree.");
       }
 
       setState((prev) => ({
@@ -634,7 +648,7 @@ function LearnerRegistrationFlowContent() {
         paymentLoading: false,
       }));
 
-      // Auto advance to Step 7 (Ready Screen)
+      // Auto advance to Step 7 (Ready Screen) only after verified capture
       setTimeout(() => {
         setState((prev) => ({ ...prev, step: 7 }));
       }, 1200);
@@ -1515,7 +1529,7 @@ function LearnerRegistrationFlowContent() {
       {/* ========================================================================= */}
       {/* STEP 6: ACCOUNT CREATION & ENROLLMENT FINALIZATION */}
       {/* ========================================================================= */}
-      {state.step === 6 && (
+      {state.step === 6 && (state.transactionData || state.orderData?.isFree) && (
         <GlassCard glowColor="rgba(16, 185, 129, 0.2)" className="p-8 sm:p-12 border border-white/90 shadow-2xl text-center space-y-4">
           <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto animate-bounce">
             <CheckCircle2 className="w-9 h-9" />
@@ -1533,7 +1547,7 @@ function LearnerRegistrationFlowContent() {
       {/* ========================================================================= */}
       {/* STEP 7: READY & DASHBOARD SUCCESS SCREEN */}
       {/* ========================================================================= */}
-      {state.step === 7 && (
+      {state.step === 7 && (state.transactionData || state.orderData?.isFree) && (
         <GlassCard glowColor="rgba(49, 87, 213, 0.2)" className="p-8 sm:p-12 border border-white/90 shadow-2xl text-center space-y-6">
           <div className="w-20 h-20 rounded-3xl bg-[#3157D5]/10 text-[#3157D5] border border-[#3157D5]/30 flex items-center justify-center mx-auto shadow-xl shadow-[#3157D5]/15">
             <Sparkles className="w-10 h-10 text-[#3157D5]" />

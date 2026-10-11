@@ -32,6 +32,7 @@ export interface CashfreeOrderResult {
   order_amount: number;
   order_currency: string;
   customer_details: CashfreeCustomerDetails;
+  order_tags?: Record<string, string>;
   created_at?: string;
 }
 
@@ -174,6 +175,56 @@ export class CashfreeClient {
     };
   }
 
+  private static mockOrders = new Map<
+    string,
+    { order: CashfreeOrderResult; payments: CashfreePaymentEntity[] }
+  >();
+
+  public simulatePaymentSuccess(
+    orderId: string,
+    options?: { cfPaymentId?: string; paymentAmount?: number }
+  ): void {
+    const entry = CashfreeClient.mockOrders.get(orderId);
+    if (entry) {
+      entry.order.order_status = "PAID";
+      const cfPaymentId = options?.cfPaymentId || `cf_pay_sim_${Date.now()}`;
+      const payment: CashfreePaymentEntity = {
+        cf_payment_id: cfPaymentId,
+        order_id: entry.order.order_id,
+        payment_status: "SUCCESS",
+        payment_amount: options?.paymentAmount ?? entry.order.order_amount,
+        payment_currency: entry.order.order_currency,
+        payment_time: new Date().toISOString(),
+        payment_group: "upi",
+      };
+      const existingSuccess = entry.payments.find((p) => p.payment_status === "SUCCESS");
+      if (!existingSuccess) {
+        entry.payments.push(payment);
+      }
+    }
+  }
+
+  public simulatePaymentFailure(
+    orderId: string,
+    status: "FAILED" | "USER_DROPPED" | "CANCELLED" = "FAILED",
+    message: string = "Payment failed"
+  ): void {
+    const entry = CashfreeClient.mockOrders.get(orderId);
+    if (entry) {
+      entry.order.order_status = "ACTIVE";
+      const payment: CashfreePaymentEntity = {
+        cf_payment_id: `cf_pay_fail_${Date.now()}`,
+        order_id: entry.order.order_id,
+        payment_status: status,
+        payment_amount: entry.order.order_amount,
+        payment_currency: entry.order.order_currency,
+        payment_message: message,
+        payment_time: new Date().toISOString(),
+      };
+      entry.payments.push(payment);
+    }
+  }
+
   /**
    * Create Cashfree PG Order
    */
@@ -197,7 +248,7 @@ export class CashfreeClient {
     if (this.isTestMode() && this.isMockCredentials()) {
       const mockSessionId = `session_mock_${crypto.randomBytes(16).toString("hex")}`;
       const mockCfOrderId = `cf_ord_${Date.now()}`;
-      return {
+      const mockResult: CashfreeOrderResult = {
         order_id: options.orderId,
         cf_order_id: mockCfOrderId,
         payment_session_id: mockSessionId,
@@ -205,8 +256,12 @@ export class CashfreeClient {
         order_amount: payload.order_amount,
         order_currency: payload.order_currency,
         customer_details: payload.customer_details,
+        order_tags: payload.order_tags,
         created_at: new Date().toISOString(),
       };
+      CashfreeClient.mockOrders.set(options.orderId, { order: mockResult, payments: [] });
+      CashfreeClient.mockOrders.set(mockCfOrderId, { order: mockResult, payments: [] });
+      return mockResult;
     }
 
     try {
@@ -230,13 +285,14 @@ export class CashfreeClient {
         order_amount: data.order_amount,
         order_currency: data.order_currency,
         customer_details: data.customer_details,
+        order_tags: data.order_tags || payload.order_tags,
         created_at: data.created_at,
       };
     } catch (err: any) {
       if (this.isTestMode() && this.isMockCredentials()) {
         const mockSessionId = `session_mock_${crypto.randomBytes(16).toString("hex")}`;
         const mockCfOrderId = `cf_ord_${Date.now()}`;
-        return {
+        const mockResult: CashfreeOrderResult = {
           order_id: options.orderId,
           cf_order_id: mockCfOrderId,
           payment_session_id: mockSessionId,
@@ -244,8 +300,12 @@ export class CashfreeClient {
           order_amount: payload.order_amount,
           order_currency: payload.order_currency,
           customer_details: payload.customer_details,
+          order_tags: payload.order_tags,
           created_at: new Date().toISOString(),
         };
+        CashfreeClient.mockOrders.set(options.orderId, { order: mockResult, payments: [] });
+        CashfreeClient.mockOrders.set(mockCfOrderId, { order: mockResult, payments: [] });
+        return mockResult;
       }
       throw err;
     }
@@ -256,11 +316,15 @@ export class CashfreeClient {
    */
   public async fetchOrder(orderId: string): Promise<CashfreeOrderResult> {
     if (this.isTestMode() && (this.isMockCredentials() || orderId.startsWith("order_mock_"))) {
+      const stored = CashfreeClient.mockOrders.get(orderId);
+      if (stored) {
+        return { ...stored.order };
+      }
       return {
         order_id: orderId,
         cf_order_id: `cf_${orderId}`,
         payment_session_id: `session_mock_${Date.now()}`,
-        order_status: "PAID",
+        order_status: "ACTIVE",
         order_amount: orderId.startsWith("EDU_TCH_REG_") ? 99 : 799,
         order_currency: DEFAULT_CURRENCY,
         customer_details: {
@@ -288,17 +352,11 @@ export class CashfreeClient {
    */
   public async fetchOrderPayments(orderId: string): Promise<CashfreePaymentEntity[]> {
     if (this.isTestMode() && (this.isMockCredentials() || orderId.startsWith("order_mock_"))) {
-      return [
-        {
-          cf_payment_id: `cf_pay_mock_${Date.now()}`,
-          order_id: orderId,
-          payment_status: "SUCCESS",
-          payment_amount: orderId.startsWith("EDU_TCH_REG_") ? 99 : 799,
-          payment_currency: DEFAULT_CURRENCY,
-          payment_time: new Date().toISOString(),
-          payment_group: "upi",
-        },
-      ];
+      const stored = CashfreeClient.mockOrders.get(orderId);
+      if (stored) {
+        return [...stored.payments];
+      }
+      return [];
     }
 
     const response = await fetch(`${this.baseUrl}/orders/${encodeURIComponent(orderId)}/payments`, {

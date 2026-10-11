@@ -582,62 +582,162 @@ export class PaymentService {
       throw new Error("NOT_FOUND: Payment transaction record not found.");
     }
 
-    // Return if already captured
+    // Return if already captured (Idempotency protection)
     if (transaction.status === "CAPTURED") {
       return {
+        success: true,
         alreadyProcessed: true,
         transactionId: transaction.id,
         status: "CAPTURED",
         courseId: transaction.courseId,
         liveClassSlotId: transaction.liveClassSlotId,
+        enrollmentId: transaction.enrollmentId,
+        bookingId: transaction.bookingId,
       };
     }
 
-    // 2. Verify with Cashfree PG
-    let verifiedPaymentId = cfPaymentId || razorpayPaymentId || `cf_pay_${Date.now()}`;
-    let isSuccess = paymentStatus === "SUCCESS" || Boolean(cfPaymentId) || Boolean(razorpayPaymentId);
+    // 2. Authoritative Verification with Payment Gateway
+    let isSuccess = false;
+    let verifiedPaymentId = "";
+    let failureReason = "";
 
-    // If in live / sandbox mode, query Cashfree for order status if not explicitly flagged
-    if (!cashfreeClient.isTestMode() || (transaction.providerOrderId && !cfPaymentId)) {
+    const targetGatewayOrderId = transaction.providerOrderId || transaction.order?.providerOrderId || queryOrderId;
+
+    if (transaction.provider === "RAZORPAY" || razorpayOrderId) {
+      if (razorpayOrderId && razorpayPaymentId) {
+        const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
+        if (razorpaySecret && params.razorpaySignature) {
+          const expectedSig = crypto
+            .createHmac("sha256", razorpaySecret)
+            .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+            .digest("hex");
+          if (expectedSig !== params.razorpaySignature) {
+            throw new Error("SECURITY_ERROR: Invalid Razorpay signature.");
+          }
+          isSuccess = true;
+          verifiedPaymentId = razorpayPaymentId;
+        } else {
+          throw new Error("SECURITY_ERROR: Razorpay signature verification failed.");
+        }
+      } else {
+        throw new Error("BAD_REQUEST: Missing Razorpay payment credentials.");
+      }
+    } else {
+      // CASHFREE Verification
+      if (!targetGatewayOrderId) {
+        throw new Error("BAD_REQUEST: Missing payment gateway order identifier.");
+      }
+
       try {
-        const orderData = await cashfreeClient.fetchOrder(transaction.providerOrderId || queryOrderId);
+        const orderData = await cashfreeClient.fetchOrder(targetGatewayOrderId);
+
+        // Validate Gateway Order ID
+        if (orderData.order_id && orderData.order_id !== targetGatewayOrderId) {
+          throw new Error("SECURITY_ERROR: Order ID mismatch between database and payment gateway.");
+        }
+
+        // Validate Currency
+        if (
+          orderData.order_currency &&
+          orderData.order_currency.toUpperCase() !== transaction.currency.toUpperCase()
+        ) {
+          throw new Error(
+            `SECURITY_ERROR: Currency mismatch. Expected ${transaction.currency}, gateway reported ${orderData.order_currency}.`
+          );
+        }
+
+        // Validate Amount (gateway order_amount in Rupees, transaction.amountPaise in integer Paise)
+        const gatewayAmountPaise = toPaise(orderData.order_amount);
+        if (Math.abs(gatewayAmountPaise - transaction.amountPaise) > 1) {
+          throw new Error(
+            `SECURITY_ERROR: Amount mismatch. Expected ${transaction.amountPaise} paise, gateway reported ${gatewayAmountPaise} paise.`
+          );
+        }
+
+        // Validate User Association
+        const gatewayUserId = orderData.customer_details?.customer_id || orderData.order_tags?.userId;
+        if (gatewayUserId && gatewayUserId !== transaction.userId) {
+          throw new Error("SECURITY_ERROR: Payment order does not belong to the authenticated user.");
+        }
+
+        // Check Gateway Status
         if (orderData.order_status === "PAID") {
           isSuccess = true;
-          const payments = await cashfreeClient.fetchOrderPayments(transaction.providerOrderId || queryOrderId);
-          const successfulPayment = payments.find((p) => p.payment_status === "SUCCESS");
-          if (successfulPayment) {
-            verifiedPaymentId = String(successfulPayment.cf_payment_id);
+          try {
+            const payments = await cashfreeClient.fetchOrderPayments(targetGatewayOrderId);
+            const successfulPayment = payments.find((p) => p.payment_status === "SUCCESS");
+            if (successfulPayment) {
+              verifiedPaymentId = String(successfulPayment.cf_payment_id);
+            } else {
+              verifiedPaymentId = String(orderData.cf_order_id || targetGatewayOrderId);
+            }
+          } catch {
+            verifiedPaymentId = String(orderData.cf_order_id || targetGatewayOrderId);
           }
+        } else if (orderData.order_status === "ACTIVE") {
+          try {
+            const payments = await cashfreeClient.fetchOrderPayments(targetGatewayOrderId);
+            const successfulPayment = payments.find((p) => p.payment_status === "SUCCESS");
+            if (successfulPayment) {
+              isSuccess = true;
+              verifiedPaymentId = String(successfulPayment.cf_payment_id);
+            } else {
+              const failedPayment = payments.find(
+                (p) =>
+                  p.payment_status === "FAILED" ||
+                  p.payment_status === "USER_DROPPED" ||
+                  p.payment_status === "CANCELLED"
+              );
+              if (failedPayment) {
+                failureReason = `Payment ${failedPayment.payment_status.toLowerCase()} on Cashfree`;
+              } else {
+                failureReason = "Payment is pending or incomplete on Cashfree";
+              }
+            }
+          } catch {
+            failureReason = "Payment is pending or incomplete on Cashfree";
+          }
+        } else {
+          failureReason = `Cashfree order status is ${orderData.order_status}`;
         }
       } catch (err: any) {
-        // Fallback for test mode
-        if (!cashfreeClient.isTestMode()) {
-          console.error("Failed to verify Cashfree order with gateway:", err);
+        if (err.message?.startsWith("SECURITY_ERROR")) {
+          throw err;
         }
+        failureReason = err.message || "Failed to communicate with payment gateway";
       }
     }
 
     if (!isSuccess) {
-      await prisma.paymentTransaction.update({
-        where: { id: transaction.id },
-        data: {
-          status: "FAILED",
-          failedAt: new Date(),
-          failureReason: "Payment not successful with Cashfree",
-        },
-      });
+      const isDefinitiveFailure =
+        failureReason.includes("failed") ||
+        failureReason.includes("dropped") ||
+        failureReason.includes("cancelled") ||
+        failureReason.includes("EXPIRED") ||
+        failureReason.includes("TERMINATED");
 
-      if (transaction.liveClassSlotId) {
-        await prisma.liveClassSlot.update({
-          where: { id: transaction.liveClassSlotId },
+      if (isDefinitiveFailure) {
+        await prisma.paymentTransaction.update({
+          where: { id: transaction.id },
           data: {
-            status: "OPEN",
-            lockedUntil: null,
+            status: "FAILED",
+            failedAt: new Date(),
+            failureReason,
           },
         });
+
+        if (transaction.liveClassSlotId) {
+          await prisma.liveClassSlot.update({
+            where: { id: transaction.liveClassSlotId },
+            data: {
+              status: "OPEN",
+              lockedUntil: null,
+            },
+          });
+        }
       }
 
-      throw new Error("SECURITY_ERROR: Payment status verification failed.");
+      throw new Error(`PAYMENT_VERIFICATION_FAILED: ${failureReason || "Payment status verification failed."}`);
     }
 
     // 3. Atomically update transaction to CAPTURED
