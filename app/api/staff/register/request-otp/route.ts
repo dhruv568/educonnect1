@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
       userName: firstName,
       otp,
       expiresInMinutes: 10,
+      role: "STAFF",
     });
 
     return apiSuccess(

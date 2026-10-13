@@ -111,7 +111,9 @@ export async function POST(request: NextRequest) {
       user.id,
       user.email,
       displayName,
-      isAdmin
+      isAdmin,
+      user.role,
+      rawHost
     );
 
     await logAuditEvent(user.id, "LOGIN_OTP_DISPATCHED", { role: user.role });

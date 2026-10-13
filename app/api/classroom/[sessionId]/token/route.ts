@@ -23,13 +23,14 @@ export async function POST(
 
     const liveSession = accessCheck.liveSession;
     const isTeacher = accessCheck.isTeacher || false;
+    const currentUserId = session.userId || session.id;
     const userName = `${session.firstName || ""} ${session.lastName || ""}`.trim() || session.email;
     const roomName = `edu-session-${liveSession.id}`;
 
     const token = await generateLiveKitRoomToken({
       sessionId: liveSession.id,
       roomId: liveSession.roomId,
-      userId: session.id,
+      userId: currentUserId,
       userName,
       userRole: session.role,
       isTeacher,
@@ -43,7 +44,7 @@ export async function POST(
       roomName,
       roomId: liveSession.roomId,
       sessionId: liveSession.id,
-      userId: session.id,
+      userId: currentUserId,
       userName,
       isTeacher,
       status: liveSession.status,

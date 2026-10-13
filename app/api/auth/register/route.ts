@@ -19,9 +19,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const rawHost =
+      request.headers.get("x-forwarded-host") ||
+      request.headers.get("x-original-host") ||
+      request.headers.get("host") ||
+      undefined;
+
     const validatedData = RegisterSchema.parse(body);
 
-    const user = await AuthService.registerUser(validatedData);
+    const user = await AuthService.registerUser(validatedData, rawHost);
 
     return apiSuccess(
       {

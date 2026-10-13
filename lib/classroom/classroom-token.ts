@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { UserSession } from "@/types/auth";
 import { ClassroomTokenPayload } from "@/types/classroom";
+import { isLearnerRole, isEducatorRole } from "@/lib/auth/roles";
 import crypto from "crypto";
 
 const TOKEN_SECRET = process.env.CLASSROOM_TOKEN_SECRET || "educonnects_classroom_secret_key_2026";
@@ -18,14 +19,24 @@ export async function verifyRoomAccess(
   isTeacher?: boolean;
   liveSession?: any;
 }> {
-  if (!session || !session.id) {
+  const sanitizedId = typeof sessionId === "string" ? decodeURIComponent(sessionId).trim() : "";
+  if (!sanitizedId) {
+    return { authorized: false, reason: "Classroom session not found." };
+  }
+
+  const currentUserId = session?.userId || session?.id;
+  if (!session || !currentUserId) {
     return { authorized: false, reason: "Unauthenticated. Please log in." };
   }
 
-  // 1. Fetch session and slot details (support lookup by session ID or slot ID)
+  // 1. Fetch session and slot details (support lookup by session ID, slot ID, or room ID)
   let liveSession = await prisma.liveClassSession.findFirst({
     where: {
-      OR: [{ id: sessionId }, { liveClassSlotId: sessionId }],
+      OR: [
+        { id: sanitizedId },
+        { liveClassSlotId: sanitizedId },
+        { roomId: sanitizedId },
+      ],
     },
     include: {
       liveClassSlot: true,
@@ -41,8 +52,13 @@ export async function verifyRoomAccess(
 
   // If session record does not exist yet but valid slot exists, auto-create it
   if (!liveSession) {
-    const slot = await prisma.liveClassSlot.findUnique({
-      where: { id: sessionId },
+    const slot = await prisma.liveClassSlot.findFirst({
+      where: {
+        OR: [
+          { id: sanitizedId },
+          { session: { roomId: sanitizedId } },
+        ],
+      },
       include: {
         teacher: {
           include: {
@@ -111,7 +127,9 @@ export async function verifyRoomAccess(
   }
 
   // 2. Check Teacher Ownership
-  const isTeacher = liveSession.teacher.userId === session.id;
+  const isTeacher =
+    liveSession.teacher.userId === currentUserId ||
+    liveSession.teacher.userId === session.id;
   if (isTeacher) {
     if (liveSession.teacher?.isSeededProfile) {
       return {
@@ -137,7 +155,7 @@ export async function verifyRoomAccess(
   }
 
   // 3. Check Student Booking Access
-  if (session.role === "STUDENT") {
+  if (isLearnerRole(session.role)) {
     const isTeacherVerified =
       liveSession.teacher?.verificationStatus === "VERIFIED" ||
       liveSession.teacher?.verificationStatus === "APPROVED";
@@ -153,8 +171,8 @@ export async function verifyRoomAccess(
     let booking = await prisma.booking.findFirst({
       where: {
         liveClassSlotId: liveSession.liveClassSlotId,
-        studentId: session.id,
-        status: { in: ["CONFIRMED", "ATTENDED"] },
+        studentId: currentUserId,
+        status: { notIn: ["CANCELLED", "cancelled"] },
       },
     });
 
@@ -165,8 +183,8 @@ export async function verifyRoomAccess(
         const otherBooking = await prisma.booking.findFirst({
           where: {
             liveClassSlotId: slot.id,
-            status: { in: ["CONFIRMED", "ATTENDED"] },
-            studentId: { not: session.id },
+            status: { notIn: ["CANCELLED", "cancelled"] },
+            studentId: { not: currentUserId },
           },
         });
         if (otherBooking) {
@@ -183,7 +201,7 @@ export async function verifyRoomAccess(
         const totalBookings = await prisma.booking.count({
           where: {
             liveClassSlotId: slot.id,
-            status: { in: ["CONFIRMED", "ATTENDED"] },
+            status: { notIn: ["CANCELLED", "cancelled"] },
           },
         });
         if (totalBookings >= slot.maxCapacity) {
@@ -194,12 +212,13 @@ export async function verifyRoomAccess(
           };
         }
 
-        // 3. If class is free (price === 0), auto-create confirmed booking for this authenticated student
-        if (slot.price === 0) {
+        // 3. If class is free (price === 0 or null), auto-create confirmed booking for this authenticated student
+        const slotPrice = Number(slot.price ?? 0);
+        if (slotPrice <= 0) {
           booking = await prisma.booking.create({
             data: {
               liveClassSlotId: slot.id,
-              studentId: session.id,
+              studentId: currentUserId,
               status: "CONFIRMED",
             },
           });

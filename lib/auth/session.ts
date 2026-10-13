@@ -21,6 +21,7 @@ export function decodeSession(token: string): UserSession | null {
     const payload = JSON.parse(jsonStr) as UserSession;
     if (payload) {
       payload.userId = payload.userId || payload.id;
+      payload.id = payload.id || payload.userId;
     }
     return payload;
   } catch {

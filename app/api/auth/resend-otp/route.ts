@@ -17,10 +17,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const rawHost =
+      request.headers.get("x-forwarded-host") ||
+      request.headers.get("x-original-host") ||
+      request.headers.get("host") ||
+      undefined;
+
     const body = await request.json();
     const validated = ResendVerificationSchema.parse(body);
 
-    const result = await AuthService.resendVerification(validated.email);
+    const result = await AuthService.resendVerification(validated.email, rawHost);
 
     return apiSuccess(result, result.message);
   } catch (error: any) {

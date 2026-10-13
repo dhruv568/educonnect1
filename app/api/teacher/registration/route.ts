@@ -199,6 +199,8 @@ export async function POST(request: NextRequest) {
         otp,
         verificationUrl: `https://educators.educonnects.co.in/register?email=${encodeURIComponent(normalizedEmail)}`,
         expiresInMinutes: 15,
+        role: "TEACHER",
+        theme: "educator",
       });
 
       return apiSuccess({
@@ -237,6 +239,8 @@ export async function POST(request: NextRequest) {
         otp,
         verificationUrl: `https://educators.educonnects.co.in/register?email=${encodeURIComponent(email)}`,
         expiresInMinutes: 15,
+        role: "TEACHER",
+        theme: "educator",
       });
 
       return apiSuccess({ message: "Verification code resent." });

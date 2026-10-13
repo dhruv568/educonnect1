@@ -11,6 +11,7 @@ import { generateNotificationEmailHtml, NotificationEmailParams } from "./templa
 import { generatePasswordResetEmailHtml, PasswordResetEmailParams } from "./templates/password-reset-email";
 import { generateCertificateEmailHtml, CertificateEmailParams } from "./templates/certificate-email";
 import { getPublicAppUrl } from "../app-url";
+import { EmailThemeType, resolveEmailTheme } from "./email-theme";
 
 export interface SendEmailPayload {
   to: string;
@@ -53,12 +54,18 @@ export class ConsoleEmailProvider implements IEmailProvider {
 
   async sendVerificationEmail(payload: SendEmailPayload): Promise<boolean> {
     const { to, templateParams } = payload;
+    const resolvedTheme = resolveEmailTheme({
+      theme: templateParams.theme,
+      role: templateParams.role,
+      host: templateParams.originHost || templateParams.appUrl,
+    });
 
     console.log("\n==================================================");
     console.log("✉️ [EMAIL SERVICE: VERIFICATION DISPATCH]");
     console.log(`To: ${to}`);
     console.log(`Subject: ${payload.subject || "Your EduConnects Verification Code 🎓"}`);
     console.log(`Recipient: ${templateParams.firstName || "User"}`);
+    console.log(`🎨 Theme:      ${resolvedTheme.name.toUpperCase()} (${resolvedTheme.portalLabel})`);
     console.log(`🔑 6-Digit OTP: [REDACTED FOR SECURITY]`);
     console.log(`⏱️ Expiry:      ${templateParams.expiresInMinutes || 10} minutes`);
     console.log("==================================================\n");
@@ -321,6 +328,9 @@ export class EmailService {
     isAdminLogin?: boolean;
     subject?: string;
     from?: string;
+    theme?: EmailThemeType;
+    role?: string;
+    originHost?: string;
   }): Promise<boolean> {
     const provider = getEmailProvider();
     const isLogin = !!params.isAdminLogin;
@@ -350,6 +360,9 @@ export class EmailService {
             expiresInMinutes: params.expiresInMinutes || Number(process.env.OTP_EXPIRY_MINUTES) || 10,
             appUrl: getPublicAppUrl(),
             isAdminLogin: isLogin,
+            theme: params.theme,
+            role: params.role,
+            originHost: params.originHost,
           },
         }),
         timeoutPromise,

@@ -19,19 +19,23 @@ export class AuthService {
    * Registers a new user by storing registration info in temporary pending_registrations storage
    * with an OTP and expiration time. The user account is NOT created in the main database until OTP is verified.
    */
-  static async registerUser(input: RegisterInput & {
-    headline?: string;
-    subjects?: string;
-    experienceYears?: number;
-    hourlyRate?: number;
-    qualifications?: string;
-    languages?: string;
-    teachingMode?: string;
-    gradeLevel?: string;
-    interests?: string;
-    learningPreferences?: string;
-    emergencyContact?: string;
-  }) {
+  static async registerUser(
+    input: RegisterInput & {
+      headline?: string;
+      subjects?: string;
+      experienceYears?: number;
+      hourlyRate?: number;
+      qualifications?: string;
+      languages?: string;
+      teachingMode?: string;
+      gradeLevel?: string;
+      interests?: string;
+      learningPreferences?: string;
+      emergencyContact?: string;
+      originHost?: string;
+    },
+    originHost?: string
+  ) {
     const normalizedEmail = input.email.toLowerCase().trim();
 
     // 1. Check if user already exists in the main users database
@@ -128,6 +132,8 @@ export class AuthService {
       otp,
       verificationUrl,
       expiresInMinutes: expiryMinutes,
+      role: pending.role,
+      originHost: originHost || (input as any).originHost,
     });
 
 
@@ -146,7 +152,14 @@ export class AuthService {
    * Generates OTP/Token, invalidates prior active OTPs so ONLY the newest OTP is valid,
    * stores hashes in DB, and dispatches email via Resend / EmailService.
    */
-  static async createAndSendVerification(userId: string, email: string, firstName: string, isAdminLogin: boolean = false) {
+  static async createAndSendVerification(
+    userId: string,
+    email: string,
+    firstName: string,
+    isAdminLogin: boolean = false,
+    role?: string,
+    originHost?: string
+  ) {
     const expiryMinutes = getOtpExpiryMinutes();
 
     // Invalidate all previous unverified OTP records for this user (Single Active OTP requirement)
@@ -185,6 +198,8 @@ export class AuthService {
       verificationUrl,
       expiresInMinutes: expiryMinutes,
       isAdminLogin,
+      role,
+      originHost,
     });
 
     if (!sent) {
@@ -199,15 +214,15 @@ export class AuthService {
   /**
    * Sends or resends verification email enforcing rate-limiting cooldown and account checks.
    */
-  static async sendVerification(email: string) {
-    return this.resendVerification(email);
+  static async sendVerification(email: string, originHost?: string) {
+    return this.resendVerification(email, originHost);
   }
 
   /**
    * Resends verification email enforcing rate-limiting cooldown.
    * Handles both pending registrations and existing users (e.g. login OTP).
    */
-  static async resendVerification(email: string) {
+  static async resendVerification(email: string, originHost?: string) {
     const normalizedEmail = email.toLowerCase().trim();
     const cooldownSeconds = getResendCooldownSeconds();
     const expiryMinutes = getOtpExpiryMinutes();
@@ -248,6 +263,8 @@ export class AuthService {
         otp,
         verificationUrl,
         expiresInMinutes: expiryMinutes,
+        role: pending.role,
+        originHost,
       });
 
       return {
@@ -302,8 +319,10 @@ export class AuthService {
     await this.createAndSendVerification(
       user.id,
       user.email,
-      user.profile?.firstName || (isAdmin ? "System Administrator" : "Learner"),
-      isAdmin
+      user.profile?.firstName || (isAdmin ? "System Administrator" : isEducatorRole(user.role) ? "Educator" : "Learner"),
+      isAdmin,
+      user.role,
+      originHost
     );
 
     return {
@@ -1163,7 +1182,7 @@ export class AuthService {
    * For ADMIN account (educonnects.com@gmail.com): verifies admin role and dispatches dynamic OTP via Resend.
    * Session cookie is NOT created until OTP is verified.
    */
-  static async loginUser(input: LoginInput) {
+  static async loginUser(input: LoginInput, originHost?: string) {
     const normalizedEmail = input.email.toLowerCase().trim();
 
     if (!input.password) {
@@ -1200,7 +1219,9 @@ export class AuthService {
       user.id,
       user.email,
       displayName,
-      isAdmin
+      isAdmin,
+      user.role,
+      originHost
     );
 
     await logAuditEvent(user.id, "LOGIN_OTP_DISPATCHED", { role: user.role });

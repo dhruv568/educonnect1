@@ -1,6 +1,7 @@
 import { getPublicAppUrl } from "../../app-url";
 import { OFFICIAL_COMPANY_INFO } from "../../company";
 import { generateEmailFooterHtml } from "./email-footer";
+import { resolveEmailTheme, EmailThemeType } from "../email-theme";
 
 export interface EmailTemplateParams {
   recipientEmail: string;
@@ -10,14 +11,29 @@ export interface EmailTemplateParams {
   expiresInMinutes?: number;
   appUrl?: string;
   isAdminLogin?: boolean;
+  theme?: EmailThemeType;
+  role?: string;
+  originHost?: string;
 }
 
 /**
  * Generates a modern, professional, mobile-responsive & Gmail-friendly HTML template
- * for EduConnects Email OTP Verification (Learner, Educator & Admin verification).
+ * for EduConnects Email OTP Verification (Learner, Educator & Main/Admin verification)
+ * with dedicated, role-based color themes:
+ * - Main Website: Emerald Green (#16805B)
+ * - Learner Portal: Blue (#2563EB)
+ * - Educator Portal: Teal (#0F766E)
  */
 export function generateVerificationEmailHtml(params: EmailTemplateParams): string {
   const { firstName, otp, expiresInMinutes = 10, appUrl, isAdminLogin } = params;
+
+  // Resolve trusted server-side theme palette
+  const theme = resolveEmailTheme({
+    theme: params.theme,
+    role: params.role,
+    host: params.originHost || appUrl,
+    originUrl: appUrl,
+  });
 
   const recipientName = firstName && firstName.trim() ? firstName.trim() : "there";
   const baseUrl = appUrl || getPublicAppUrl();
@@ -27,7 +43,11 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
 
   const emailSubjectTitle = isAdminLogin
     ? "EduConnects Admin Security Verification"
-    : "Your EduConnects Verification Code 🎓";
+    : `${theme.portalLabel} Verification Code 🎓`;
+
+  const verificationCtaUrl = params.verificationUrl || (isAdminLogin
+    ? `${baseUrl}/verify-email?email=${encodeURIComponent(params.recipientEmail)}&redirectTo=/admin`
+    : `${baseUrl}/verify-otp?email=${encodeURIComponent(params.recipientEmail)}`);
 
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -75,7 +95,7 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
           
           <!-- Header Banner -->
           <tr>
-            <td class="header-padding" align="center" style="background: linear-gradient(135deg, #083F3D 0%, #0F5C5A 50%, #2A8C84 100%); padding: 36px 32px; text-align: center;">
+            <td class="header-padding" align="center" style="background: ${theme.headerGradient}; padding: 36px 32px; text-align: center;">
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                   <td align="center">
@@ -90,10 +110,10 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
 
                     <!-- Brand Name & Subtitle -->
                     <h1 style="margin: 0; font-size: 26px; font-weight: 900; color: #ffffff; letter-spacing: -0.2px; text-transform: none;">
-                      EduConnects
+                      ${theme.portalLabel}
                     </h1>
-                    <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: 600; color: #A7F3D0; letter-spacing: 0.5px;">
-                      Learn • Grow • Belong
+                    <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: 600; color: ${theme.light}; letter-spacing: 0.5px;">
+                      ${theme.portalSubtitle}
                     </p>
                   </td>
                 </tr>
@@ -121,7 +141,7 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
                   Hello ${recipientName}! 👋
                 </h2>
                 <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #475569;">
-                  Thank you for using EduConnects. Your one-time verification code is below. Enter this code to verify your account and complete your login:
+                  Thank you for using EduConnects. Your one-time verification code is below. Enter this code to verify your account and complete your access:
                 </p>
               `
               }
@@ -129,15 +149,15 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
               <!-- OTP Container Box -->
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0;">
                 <tr>
-                  <td align="center" style="background: linear-gradient(135deg, #f0fdf4 0%, #e6f0ef 100%); border: 2px solid #a7f3d0; border-radius: 20px; padding: 24px 16px; text-align: center;">
-                    <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #0f5c5a; margin-bottom: 8px;">
+                  <td align="center" style="background: ${theme.otpBoxBg}; border: 2px solid ${theme.otpBoxBorder}; border-radius: 20px; padding: 24px 16px; text-align: center;">
+                    <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: ${theme.otpHeaderColor}; margin-bottom: 8px;">
                       ${isAdminLogin ? "ADMIN PASSCODE" : "ONE-TIME VERIFICATION CODE"}
                     </div>
-                    <div class="otp-code" style="font-size: 36px; font-weight: 900; color: #083f3d; letter-spacing: 8px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; margin: 6px 0; user-select: all; -webkit-user-select: all;">
+                    <div class="otp-code" style="font-size: 36px; font-weight: 900; color: ${theme.otpCodeColor}; letter-spacing: 8px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; margin: 6px 0; user-select: all; -webkit-user-select: all;">
                       ${formattedOtp}
                     </div>
                     <div style="margin-top: 10px;">
-                      <span style="display: inline-block; font-size: 11px; font-weight: 700; color: #0f5c5a; background-color: #ffffff; padding: 5px 14px; border-radius: 9999px; border: 1px solid #a7f3d0;">
+                      <span style="display: inline-block; font-size: 11px; font-weight: 700; color: ${theme.badgeText}; background-color: ${theme.badgeBg}; padding: 5px 14px; border-radius: 9999px; border: 1px solid ${theme.badgeBorder};">
                         ⏱️ Valid for ${expiresInMinutes} minutes
                       </span>
                     </div>
@@ -145,16 +165,16 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
                 </tr>
               </table>
 
-              <!-- Explicit Verification Note Callout (User Requirement) -->
-              <div style="margin: 24px 0; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; border-radius: 12px; padding: 14px 18px; text-align: left;">
-                <p style="margin: 0; font-size: 13px; line-height: 1.55; color: #166534; font-weight: 500;">
-                  Someone visited our official website <a href="https://www.educonnects.co.in" style="color: #15803d; font-weight: 700; text-decoration: underline;" target="_blank">www.educonnects.co.in</a> and requested this verification email. If you did not request it, please ignore this email. Thank you!
+              <!-- Explicit Verification Note Callout (Theme Consistent) -->
+              <div style="margin: 24px 0; background-color: ${theme.noticeBg}; border: 1px solid ${theme.noticeBorder}; border-left: 4px solid ${theme.noticeAccentBar}; border-radius: 12px; padding: 14px 18px; text-align: left;">
+                <p style="margin: 0; font-size: 13px; line-height: 1.55; color: ${theme.noticeText}; font-weight: 500;">
+                  Someone visited our official portal <a href="${theme.domainUrl}" style="color: ${theme.noticeLink}; font-weight: 700; text-decoration: underline;" target="_blank">${theme.displayDomain}</a> and requested this verification email. If you did not request it, please ignore this email. Thank you!
                 </p>
               </div>
 
               <!-- CTA Button -->
               <div style="margin: 28px 0 12px 0;">
-                <a href="${baseUrl}/${isAdminLogin ? "verify-email?email=" + encodeURIComponent(params.recipientEmail) + "&redirectTo=/admin" : "verify-otp?email=" + encodeURIComponent(params.recipientEmail)}" class="cta-button" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #0f5c5a 0%, #083f3d 100%); color: #ffffff !important; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 36px; border-radius: 14px; box-shadow: 0 10px 20px rgba(15, 92, 90, 0.25); text-align: center;">
+                <a href="${verificationCtaUrl}" class="cta-button" target="_blank" style="display: inline-block; background: ${theme.ctaGradient}; color: #ffffff !important; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 36px; border-radius: 14px; box-shadow: 0 10px 20px ${theme.ctaShadow}; text-align: center;">
                   ${isAdminLogin ? "Open Admin Portal" : "Verify Email Now"} &rarr;
                 </a>
               </div>
@@ -163,7 +183,7 @@ export function generateVerificationEmailHtml(params: EmailTemplateParams): stri
           </tr>
 
           <!-- Standardized EduConnects Redesigned Footer -->
-          ${generateEmailFooterHtml({ baseUrl })}
+          ${generateEmailFooterHtml({ baseUrl, theme: theme.name })}
 
         </table>
 

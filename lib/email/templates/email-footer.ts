@@ -16,14 +16,21 @@
 
 import { getPublicAppUrl } from "../../app-url";
 import { OFFICIAL_COMPANY_INFO } from "../../company";
+import { EmailThemeType, resolveEmailTheme } from "../email-theme";
 
 export interface EmailFooterOptions {
   baseUrl?: string;
   isEducator?: boolean;
+  theme?: EmailThemeType;
 }
 
 export function generateEmailFooterHtml(options: EmailFooterOptions = {}): string {
   const baseUrl = options.baseUrl ? options.baseUrl.replace(/\/+$/, "") : getPublicAppUrl();
+  const themePalette = resolveEmailTheme({
+    theme: options.theme,
+    role: options.isEducator ? "TEACHER" : undefined,
+    originUrl: options.baseUrl,
+  });
 
   const socialLinks = {
     instagram: "https://instagram.com/myprofunnels",
@@ -48,13 +55,13 @@ export function generateEmailFooterHtml(options: EmailFooterOptions = {}): strin
                             <img src="${baseUrl}/images/favicon.png" alt="EduConnects Logo" width="32" height="32" style="display: block; width: 32px; height: 32px; border: 0; outline: none; border-radius: 8px;" />
                           </td>
                           <td align="left" valign="middle">
-                            <span style="font-size: 18px; font-weight: 900; color: #083F3D; letter-spacing: -0.3px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">EduConnects</span>
+                            <span style="font-size: 18px; font-weight: 900; color: ${themePalette.dark}; letter-spacing: -0.3px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">EduConnects</span>
                           </td>
                         </tr>
                       </table>
                     </a>
-                    <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: #0F5C5A; letter-spacing: 0.8px; text-transform: uppercase;">
-                      Learn &bull; Grow &bull; Belong
+                    <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: 700; color: ${themePalette.primary}; letter-spacing: 0.8px; text-transform: uppercase;">
+                      ${themePalette.portalSubtitle}
                     </p>
                   </td>
                 </tr>

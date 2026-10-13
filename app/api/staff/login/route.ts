@@ -88,10 +88,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Step 1: Credentials valid, dispatch OTP
+    const rawHost =
+      request.headers.get("x-forwarded-host") ||
+      request.headers.get("x-original-host") ||
+      request.headers.get("host") ||
+      undefined;
+
     await AuthService.createAndSendVerification(
       user.id,
       user.email,
-      user.profile?.firstName || "Staff"
+      user.profile?.firstName || "Staff",
+      user.role === "ADMIN",
+      user.role,
+      rawHost
     );
 
     await logAuditEvent(user.id, "STAFF_LOGIN_OTP_DISPATCHED", { role: user.role });
