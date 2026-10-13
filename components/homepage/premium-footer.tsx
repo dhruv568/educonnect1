@@ -206,6 +206,14 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
               variant="compact"
               size="lg"
               roleContext={isEducator ? "teacher" : isLearner ? "student" : "default"}
+              portal={isEducator ? "educator" : isLearner ? "learner" : "main"}
+              alt={
+                isEducator
+                  ? "EduConnects Educator Portal Logo"
+                  : isLearner
+                  ? "EduConnects Learner Portal Logo"
+                  : "EduConnects Main Logo"
+              }
               theme="dark"
               href={isEducator ? "/teacher" : isLearner ? "/student" : "/"}
               showTagline

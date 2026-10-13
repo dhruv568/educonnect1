@@ -488,6 +488,14 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
                 variant="mark"
                 size="md"
                 roleContext={isEducator ? "teacher" : isAdminOrStaff ? "admin" : "student"}
+                portal={isEducator ? "educator" : isAdminOrStaff ? "main" : "learner"}
+                alt={
+                  isEducator
+                    ? "EduConnects Educator Portal Logo"
+                    : isAdminOrStaff
+                    ? "EduConnects Main Logo"
+                    : "EduConnects Learner Portal Logo"
+                }
                 href={false}
                 priority
               />

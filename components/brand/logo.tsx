@@ -3,18 +3,24 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import officialLogo from "@/logo for educonnect.co.in.png";
+import { usePathname } from "next/navigation";
+import mainLogo from "@/educonnects.co.in.png";
+import learnerLogo from "@/learmers.educonnects.co.in.png";
+import educatorLogo from "@/educators.educonnects.co.in.png";
+
+export { mainLogo, learnerLogo, educatorLogo };
 
 export type LogoVariant = "full" | "mark" | "horizontal" | "compact";
 export type LogoSize = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 export type LogoTheme = "light" | "dark" | "auto";
 export type LogoRoleContext = "student" | "teacher" | "admin" | "default";
+export type LogoPortal = "main" | "learner" | "educator";
 
 export interface LogoProps {
   /**
    * Visual variant:
-   * - "full": complete stacked artwork with emblem, wordmark, and tagline pill (from logo-transparent.png)
-   * - "mark": standalone official crest mark (EC monogram + graduation cap + open book)
+   * - "full": complete stacked artwork with emblem, wordmark, and tagline pill
+   * - "mark": standalone official crest mark
    * - "horizontal" | "compact": mark alongside crisp typography and optional subtitle
    */
   variant?: LogoVariant;
@@ -38,13 +44,16 @@ export interface LogoProps {
   theme?: LogoTheme;
   /** Role context for portal-specific color accents */
   roleContext?: LogoRoleContext;
+  /** Target portal website: main (emerald green), learner (blue), or educator (teal) */
+  portal?: LogoPortal;
+  /** Custom image alt text */
+  alt?: string;
   /** Click handler */
   onClick?: () => void;
 }
 
 // Aspect ratio constants derived directly from the official logo files
-// logo-transparent.png: 1355 x 1161 (ratio ~ 1.167)
-// logo-mark.png: 1185 x 635 (ratio ~ 1.866)
+// All 3 domain logos are 1536 x 1024 (exact 3:2 ratio ~ 1.5)
 const MARK_RATIO = 1185 / 635;
 const FULL_RATIO = 1355 / 1161;
 
@@ -69,16 +78,84 @@ export function Logo({
   tagline,
   theme = "auto",
   roleContext = "default",
+  portal,
+  alt,
   onClick,
 }: LogoProps) {
+  const pathname = usePathname();
   const preset = SIZE_PRESETS[size] || SIZE_PRESETS.md;
 
-  // Calculate dimensions
-  let markHeight = height || preset.markH;
-  let markWidth = width || Math.round(markHeight * MARK_RATIO);
+  // Resolve which portal website we are on:
+  // 1) Explicit portal prop
+  // 2) Explicit roleContext prop
+  // 3) Current route pathname
+  // 4) Current browser hostname
+  const resolvePortal = (): "main" | "learner" | "educator" => {
+    if (portal) return portal;
+    if (roleContext === "teacher") return "educator";
+    if (roleContext === "student") return "learner";
 
-  let fullHeight = height || preset.fullH;
-  let fullWidth = width || Math.round(fullHeight * FULL_RATIO);
+    if (pathname) {
+      if (
+        pathname === "/teacher" ||
+        pathname.startsWith("/teacher/") ||
+        pathname === "/register/teacher"
+      ) {
+        return "educator";
+      }
+      if (
+        pathname === "/student" ||
+        pathname.startsWith("/student/") ||
+        pathname === "/exam" ||
+        pathname.startsWith("/exam/") ||
+        pathname === "/register/student"
+      ) {
+        return "learner";
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname.toLowerCase();
+      if (
+        host.startsWith("educators.") ||
+        host.startsWith("educator.") ||
+        host.startsWith("teachers.") ||
+        host.startsWith("teacher.")
+      ) {
+        return "educator";
+      }
+      if (
+        host.startsWith("learners.") ||
+        host.startsWith("learner.") ||
+        host.startsWith("students.") ||
+        host.startsWith("student.")
+      ) {
+        return "learner";
+      }
+    }
+
+    return "main";
+  };
+
+  const currentPortal = resolvePortal();
+
+  // Domain-specific logo image asset mapping
+  const resolvedImage =
+    currentPortal === "learner"
+      ? learnerLogo
+      : currentPortal === "educator"
+      ? educatorLogo
+      : mainLogo;
+
+  // Domain-specific alt text
+  const defaultAlt =
+    currentPortal === "learner"
+      ? "EduConnects Learner Portal Logo"
+      : currentPortal === "educator"
+      ? "EduConnects Educator Portal Logo"
+      : "EduConnects Main Logo";
+
+  const resolvedAlt = alt || defaultAlt;
 
   // Standard platform tagline
   const resolvedTagline = tagline || "Learn • Grow • Belong";
@@ -91,7 +168,17 @@ export function Logo({
     return "text-slate-900";
   };
 
+  // Preserved portal themes:
+  // Main: Emerald Green (#16805B / #35A979)
+  // Learner: Blue (#2563EB / #60A5FA)
+  // Educator: Teal (#0F766E / #2DD4BF)
   const getAccentTextColor = () => {
+    if (currentPortal === "learner") {
+      return isDarkTheme ? "text-[#60A5FA]" : "text-[#2563EB]";
+    }
+    if (currentPortal === "educator") {
+      return isDarkTheme ? "text-[#2DD4BF]" : "text-[#0F766E]";
+    }
     if (isDarkTheme) {
       return "text-[#35A979]";
     }
@@ -99,17 +186,25 @@ export function Logo({
   };
 
   const getTaglineTextColor = () => {
+    if (currentPortal === "learner") {
+      return isDarkTheme ? "text-blue-200/90" : "text-blue-600/80";
+    }
+    if (currentPortal === "educator") {
+      return isDarkTheme ? "text-teal-200/90" : "text-teal-600/80";
+    }
     if (isDarkTheme) {
       return "text-emerald-100/90";
     }
     return "text-slate-500";
   };
 
-  // Render content based on variant & roleContext
-  let content: React.ReactNode;
+  const getFocusRingColor = () => {
+    if (currentPortal === "learner") return "focus-visible:ring-blue-500";
+    if (currentPortal === "educator") return "focus-visible:ring-teal-500";
+    return "focus-visible:ring-emerald-500";
+  };
 
-  // Official EduConnects brand asset (logo for educonnect.co.in.png)
-  // Applied consistently across main and educator websites with slightly increased visibility and exact 3:2 ratio
+  // Responsive image dimensions with 3:2 ratio
   const MAIN_IMAGE_SIZE_CLASSES: Record<LogoSize, string> = {
     xs: "h-8 sm:h-9",
     sm: "h-9 sm:h-10.5",
@@ -135,8 +230,8 @@ export function Logo({
       }`}
     >
       <Image
-        src={officialLogo}
-        alt="EduConnects"
+        src={resolvedImage}
+        alt={resolvedAlt}
         width={1536}
         height={1024}
         priority={priority}
@@ -145,6 +240,8 @@ export function Logo({
       />
     </div>
   );
+
+  let content: React.ReactNode;
 
   if (variant === "mark") {
     content = (
@@ -180,7 +277,7 @@ export function Logo({
       <Link
         href={href}
         onClick={onClick}
-        className="group inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl"
+        className={`group inline-flex items-center focus:outline-none focus-visible:ring-2 ${getFocusRingColor()} rounded-xl`}
       >
         <div className="group-hover:opacity-95 transition-opacity">{content}</div>
       </Link>
@@ -192,7 +289,7 @@ export function Logo({
       <button
         type="button"
         onClick={onClick}
-        className="group inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl cursor-pointer"
+        className={`group inline-flex items-center focus:outline-none focus-visible:ring-2 ${getFocusRingColor()} rounded-xl cursor-pointer`}
       >
         <div className="group-hover:opacity-95 transition-opacity">{content}</div>
       </button>

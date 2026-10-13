@@ -42,7 +42,9 @@ import { NotificationPopover } from "@/components/layout/notification-popover";
 import { useToast } from "@/components/ui/toast";
 import { Logo } from "@/components/brand/logo";
 import Image from "next/image";
-import officialLogo from "@/logo for educonnect.co.in.png";
+import mainLogo from "@/educonnects.co.in.png";
+import learnerLogo from "@/learmers.educonnects.co.in.png";
+import educatorLogo from "@/educators.educonnects.co.in.png";
 
 export interface FloatingNavbarProps {
   variant?: "default" | "student" | "teacher";
@@ -335,8 +337,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
             >
               <div className="relative h-10 sm:h-11 md:h-12 w-auto aspect-[3/2] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-[1.03]">
                 <Image
-                  src={officialLogo}
-                  alt="EduConnects"
+                  src={educatorLogo}
+                  alt="EduConnects Educator Portal Logo"
                   width={1536}
                   height={1024}
                   priority
@@ -362,8 +364,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
             >
               <div className="relative h-10 sm:h-11 md:h-12 w-auto aspect-[3/2] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-[1.03]">
                 <Image
-                  src={officialLogo}
-                  alt="EduConnects"
+                  src={learnerLogo}
+                  alt="EduConnects Learner Portal Logo"
                   width={1536}
                   height={1024}
                   priority
@@ -386,6 +388,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                 variant="compact"
                 size="md"
                 roleContext="default"
+                portal="main"
+                alt="EduConnects Main Logo"
                 theme={isMainWebsite ? "dark" : "auto"}
                 href={getMainDomain() + "/"}
                 showTagline
@@ -954,8 +958,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   >
                     <div className="relative h-9 w-auto aspect-[3/2] flex items-center justify-center select-none shrink-0">
                       <Image
-                        src={officialLogo}
-                        alt="EduConnects"
+                        src={educatorLogo}
+                        alt="EduConnects Educator Portal Logo"
                         width={1536}
                         height={1024}
                         priority
@@ -983,8 +987,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   >
                     <div className="relative h-9 w-auto aspect-[3/2] flex items-center justify-center select-none shrink-0">
                       <Image
-                        src={officialLogo}
-                        alt="EduConnects"
+                        src={learnerLogo}
+                        alt="EduConnects Learner Portal Logo"
                         width={1536}
                         height={1024}
                         priority
@@ -1007,6 +1011,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   <Logo
                     size="md"
                     roleContext="default"
+                    portal="main"
+                    alt="EduConnects Main Logo"
                     theme="dark"
                     href={getMainDomain() + "/"}
                     showTagline
