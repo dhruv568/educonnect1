@@ -32,7 +32,10 @@ import {
   ShieldAlert,
   ArrowRight,
   CalendarDays,
+  Share2,
+  Copy,
 } from "lucide-react";
+import { getLearnerClassroomUrl } from "@/lib/app-url";
 
 const TIMEZONE = "Asia/Kolkata";
 
@@ -119,6 +122,31 @@ export default function TeacherLiveClassesPage() {
 
   // Cancel Modal
   const [cancellingSlot, setCancellingSlot] = useState<any>(null);
+
+  // Shareable Link Copied State
+  const [copiedSlotId, setCopiedSlotId] = useState<string | null>(null);
+
+  const handleCopyLearnerLink = (slot: any) => {
+    const link = slot?.shareableUrl || (slot?.id ? getLearnerClassroomUrl(slot.id) : "");
+    if (!link) return;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link);
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = link;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
+
+    setCopiedSlotId(slot.id);
+    showToast("Link Copied! 📋", "Learner classroom link copied to clipboard. Share it with your students.", "success");
+    setTimeout(() => {
+      setCopiedSlotId(null);
+    }, 2500);
+  };
 
   const fetchLiveClassesData = async () => {
     setLoading(true);
@@ -624,18 +652,36 @@ export default function TeacherLiveClassesPage() {
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
-                      <Link href={`/teacher/live-classes/${slot.id}`} className="flex-1">
+                    <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                      <Link href={`/teacher/live-classes/${slot.id}`} className="flex-1 min-w-[100px]">
                         <Button variant="outline" size="sm" className="w-full">
                           <Eye className="h-3.5 w-3.5 mr-1" /> View Details
                         </Button>
                       </Link>
 
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCopyLearnerLink(slot)}
+                        className="border-teal-200 text-[#0F766E] hover:bg-teal-50"
+                        title="Copy permanent shareable link for learners"
+                      >
+                        {copiedSlotId === slot.id ? (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3.5 w-3.5 mr-1 text-[#0F766E]" /> Copy Learner Link
+                          </>
+                        )}
+                      </Button>
+
                       {!isCompleted && !isCancelled && (
                         verificationStatus === "VERIFIED" ? (
                           <Button
                             onClick={() => handleStartClassroom(slot.id)}
-                            variant="primary"
+                            variant="teacher"
                             size="sm"
                             leftIcon={<Play className="h-3.5 w-3.5" />}
                           >
@@ -809,7 +855,24 @@ export default function TeacherLiveClassesPage() {
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2 self-end sm:self-center">
+                              <div className="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleCopyLearnerLink(slot)}
+                                  className="border-teal-200 text-[#0F766E] hover:bg-teal-50 font-medium"
+                                  title="Copy permanent shareable link for learners"
+                                >
+                                  {copiedSlotId === slot.id ? (
+                                    <>
+                                      <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Copied
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="h-3.5 w-3.5 mr-1 text-[#0F766E]" /> Copy Learner Link
+                                    </>
+                                  )}
+                                </Button>
                                 <Link href={`/teacher/live-classes/${slot.id}`}>
                                   <Button variant="outline" size="sm">
                                     View Details

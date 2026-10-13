@@ -80,6 +80,11 @@ export default function VirtualClassroomPage() {
       try {
         setLoading(true);
         const res = await fetch(`/api/classroom/${sessionId}`);
+        if (res.status === 401) {
+          const returnDestination = `/classroom/${sessionId}`;
+          window.location.replace(`/student/login?returnTo=${encodeURIComponent(returnDestination)}&redirectTo=${encodeURIComponent(returnDestination)}`);
+          return;
+        }
         const data = await res.json();
 
         if (!data.success) {
@@ -229,11 +234,11 @@ export default function VirtualClassroomPage() {
     }, 4000);
   };
 
-  const updateRoster = () => {
+  const updateRoster = async () => {
     if (!sessionDetails) return;
     const me: ClassroomParticipant = {
       userId: currentUserId,
-      name: currentUserName || "User",
+      name: currentUserName || (isTeacher ? "Teacher" : "Student"),
       role: isTeacher ? "TEACHER" : "STUDENT",
       isCameraOn: isVideoOn,
       isMicOn: isAudioOn,
@@ -245,11 +250,51 @@ export default function VirtualClassroomPage() {
       joinedAt: new Date().toISOString(),
     };
 
-    setParticipants((prev) => {
-      const exists = prev.some((p) => p.userId === currentUserId);
-      if (!exists) return [me, ...prev];
-      return prev.map((p) => (p.userId === currentUserId ? me : p));
-    });
+    const peerParticipants: ClassroomParticipant[] = [];
+
+    // If current participant is student, include the educator in roster
+    if (!isTeacher && sessionDetails.teacherId) {
+      peerParticipants.push({
+        userId: sessionDetails.teacherId,
+        name: sessionDetails.teacherName || "Teacher",
+        role: "TEACHER",
+        isCameraOn: true,
+        isMicOn: true,
+        isScreenSharing: false,
+        isMutedByTeacher: false,
+        isSpotlighted: false,
+        canDrawOnWhiteboard: true,
+        connectionQuality: "CONNECTED",
+        joinedAt: sessionDetails.scheduledStartAt,
+      });
+    }
+
+    // Fetch active student attendance records
+    try {
+      const attRes = await fetch(`/api/classroom/${sessionId}/attendance`);
+      const attData = await attRes.json();
+      if (attData.success && Array.isArray(attData.data?.attendances)) {
+        attData.data.attendances.forEach((att: any) => {
+          if (att.studentId && att.studentId !== currentUserId) {
+            peerParticipants.push({
+              userId: att.studentId,
+              name: att.studentName || "Student",
+              role: "STUDENT",
+              isCameraOn: true,
+              isMicOn: true,
+              isScreenSharing: false,
+              isMutedByTeacher: false,
+              isSpotlighted: false,
+              canDrawOnWhiteboard: studentCanDraw,
+              connectionQuality: "CONNECTED",
+              joinedAt: att.joinedAt,
+            });
+          }
+        });
+      }
+    } catch {}
+
+    setParticipants([me, ...peerParticipants]);
   };
 
   // Fetch Chat
