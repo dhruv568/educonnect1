@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
     return apiSuccess({
       message: "Live class slot created successfully!",
       slot,
+      shareableUrl: (slot as any).shareableUrl,
     }, 201);
   } catch (error: any) {
     return handleApiError(error);
