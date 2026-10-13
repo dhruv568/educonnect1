@@ -10,8 +10,9 @@ export interface WhatsAppTemplateComponent {
   sub_type?: "quick_reply" | "url";
   index?: string | number;
   parameters: Array<{
-    type: "text" | "currency" | "date_time" | "image" | "document" | "video";
+    type: "text" | "currency" | "date_time" | "image" | "document" | "video" | "payload";
     text?: string;
+    payload?: string;
     currency?: {
       fallback_value: string;
       code: string;
@@ -99,7 +100,12 @@ export class WhatsAppClient {
    * Send an approved Meta WhatsApp Template message
    */
   static async sendTemplateMessage(options: SendTemplateMessageOptions): Promise<SendWhatsAppResult> {
-    const { to, templateName, languageCode = "en", components = [] } = options;
+    const {
+      to,
+      templateName,
+      languageCode = templateName === "teachers_profile" ? "en_US" : "en",
+      components = [],
+    } = options;
 
     const normalizedPhone = this.formatWhatsAppPhoneNumber(to);
     if (!normalizedPhone) {

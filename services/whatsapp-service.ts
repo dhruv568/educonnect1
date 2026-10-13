@@ -19,6 +19,7 @@ export interface SendWhatsAppNotificationOptions {
   eventType: WhatsAppEventType;
   data: Record<string, any>;
   idempotencyKey?: string;
+  languageCode?: string;
 }
 
 export interface WhatsAppNotificationResult {
@@ -211,6 +212,18 @@ export class WhatsAppService {
       const settings = await this.getPlatformWhatsAppSettings();
       let templateName = settings.templateMapping[eventType] || templateDef.defaultName;
 
+      // Handle educator registration/profile template
+      if (eventType === "EDUCATOR_REGISTRATION") {
+        const mapped = settings.templateMapping["EDUCATOR_REGISTRATION"];
+        templateName = mapped && mapped !== "edu_teacher_welcome" ? mapped : "teachers_profile";
+      }
+
+      // Safety check (Requirement 3): Do not use teachers_profile for payments, receipts, bookings, or unrelated notifications
+      if (templateName === "teachers_profile" && eventType !== "EDUCATOR_REGISTRATION") {
+        console.warn(`⚠️ [WhatsAppService] Disallowing 'teachers_profile' template for non-profile event '${eventType}'. Reverting to default template.`);
+        templateName = templateDef.defaultName;
+      }
+
       if (eventType === "PAYMENT_FAILED") {
         if (isTeacherPaymentFailed) {
           templateName =
@@ -278,11 +291,17 @@ export class WhatsAppService {
       // 6. Build components and parameters for Meta Template
       const components = templateDef.buildComponents(mergedData);
 
+      // Resolve language code: options > template definition > en_US for teachers_profile > en
+      const languageCode =
+        options.languageCode ||
+        templateDef.languageCode ||
+        (templateName === "teachers_profile" ? "en_US" : "en");
+
       // 7. Dispatch via Meta WhatsApp Cloud API
       const apiResult = await WhatsAppClient.sendTemplateMessage({
         to: formattedPhone,
         templateName,
-        languageCode: "en",
+        languageCode,
         components,
         accessToken: settings.accessToken,
         phoneNumberId: settings.phoneNumberId,
@@ -389,10 +408,14 @@ export class WhatsAppService {
       const settings = await this.getPlatformWhatsAppSettings();
       const components = templateDef ? templateDef.buildComponents(data) : [];
 
+      const languageCode =
+        templateDef?.languageCode ||
+        (message.templateName === "teachers_profile" ? "en_US" : "en");
+
       const apiResult = await WhatsAppClient.sendTemplateMessage({
         to: formattedPhone,
         templateName: message.templateName,
-        languageCode: "en",
+        languageCode,
         components,
         accessToken: settings.accessToken,
         phoneNumberId: settings.phoneNumberId,

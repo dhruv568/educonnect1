@@ -8,6 +8,7 @@
 
 import { WhatsAppTemplateComponent } from "./whatsapp-client";
 import { getMainDomain } from "../app-url";
+import { OFFICIAL_COMPANY_INFO } from "../company";
 
 /**
  * Normalizes a URL into a Meta-compliant dynamic URL button parameter.
@@ -103,6 +104,7 @@ export interface TemplateDefinition {
   category: "AUTHENTICATION" | "MARKETING" | "UTILITY";
   description: string;
   defaultVariables: string[];
+  languageCode?: string;
   buildComponents: (data: Record<string, any>) => WhatsAppTemplateComponent[];
 }
 
@@ -125,17 +127,26 @@ export const DEFAULT_WHATSAPP_TEMPLATES: Record<WhatsAppEventType, TemplateDefin
   },
 
   EDUCATOR_REGISTRATION: {
-    defaultName: "edu_teacher_welcome",
+    defaultName: "teachers_profile",
     category: "UTILITY",
-    description: "Sent to educator when registration and email verification succeeds",
-    defaultVariables: ["educator_name", "platform_name", "onboarding_url"],
+    description: "Sent to educator when profile is created / onboarding initiated",
+    defaultVariables: ["educator_name", "support_whatsapp_number"],
+    languageCode: "en_US",
     buildComponents: (data) => [
       {
         type: "body",
         parameters: [
-          { type: "text", text: String(data.name || "Educator") },
-          { type: "text", text: "EduConnects" },
-          { type: "text", text: String(data.onboardingUrl || "https://educonnects.in/teacher/onboarding") },
+          { type: "text", text: String(data.name || "Educator").trim() },
+          {
+            type: "text",
+            text: String(
+              data.supportWhatsApp ||
+                data.supportNumber ||
+                data.supportPhone ||
+                OFFICIAL_COMPANY_INFO.whatsappNumber ||
+                "+91 9109019090"
+            ).trim(),
+          },
         ],
       },
     ],

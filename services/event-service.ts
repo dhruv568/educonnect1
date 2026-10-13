@@ -5,6 +5,7 @@ import { getEmailProvider } from "@/lib/email/email-service";
 import { prisma } from "@/lib/prisma";
 import { formatPaise } from "@/lib/currency";
 import { getPublicAppUrl } from "@/lib/app-url";
+import { OFFICIAL_COMPANY_INFO } from "@/lib/company";
 import { WhatsAppService } from "./whatsapp-service";
 
 export type EventType =
@@ -86,6 +87,7 @@ export class EventService {
                 eventType: "EDUCATOR_REGISTRATION",
                 data: {
                   name: userName,
+                  supportWhatsApp: OFFICIAL_COMPANY_INFO.whatsappNumber,
                   onboardingUrl: `${getPublicAppUrl()}/teacher/onboarding`,
                 },
                 idempotencyKey: `wa-reg-teacher-${userId}`,
