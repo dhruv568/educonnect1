@@ -912,6 +912,7 @@ export class LiveClassService {
         sessionId: slot.session?.id || null,
         roomId: slot.session?.roomId || null,
         meetingUrl: `/classroom/${slot.session?.id || slot.id}`,
+        shareableUrl: getLearnerClassroomUrl(slot.id),
         title: slot.title,
         description: slot.description,
         subject: slot.subject,
