@@ -90,28 +90,28 @@ export function LearnerHeroSlideshow() {
         })}
 
         {/* Soft edge blend on the left of the image container to transition into the hero background */}
-        <div className="absolute inset-y-0 left-0 w-28 sm:w-36 lg:w-48 bg-gradient-to-r from-[#F3F6FF] to-transparent pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-28 sm:w-36 lg:w-48 bg-gradient-to-r from-[#F0FAF5] to-transparent pointer-events-none" />
 
         {/* Soft bottom edge blend to seamlessly fade out bottom image details */}
-        <div className="absolute bottom-0 inset-x-0 h-24 sm:h-32 lg:h-40 bg-gradient-to-t from-[#F3F6FF] via-[#F3F6FF]/70 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 inset-x-0 h-24 sm:h-32 lg:h-40 bg-gradient-to-t from-[#F0FAF5] via-[#F0FAF5]/70 to-transparent pointer-events-none" />
 
         {/* Soft top edge blend under navbar */}
-        <div className="absolute top-0 inset-x-0 h-20 sm:h-28 bg-gradient-to-b from-[#F3F6FF] to-transparent pointer-events-none" />
+        <div className="absolute top-0 inset-x-0 h-20 sm:h-28 bg-gradient-to-b from-[#F0FAF5] to-transparent pointer-events-none" />
       </div>
 
       {/* 2. OVERLAY LAYERS (Protects hero copy contrast and smoothly blends edges) */}
-      {/* Horizontal overlay: solid #F3F6FF on the left where hero text lives, softly tapering to transparent on the right */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#F3F6FF] via-[#F3F6FF]/85 to-transparent sm:via-[#F3F6FF]/70 lg:via-[#F3F6FF]/50" />
+      {/* Horizontal overlay: solid #F0FAF5 on the left where hero text lives, softly tapering to transparent on the right */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#F0FAF5] via-[#F0FAF5]/85 to-transparent sm:via-[#F0FAF5]/70 lg:via-[#F0FAF5]/50" />
 
       {/* Mobile-specific overlay: adds soft contrast over mobile centered text */}
-      <div className="absolute inset-0 bg-[#F3F6FF]/35 sm:bg-transparent" />
+      <div className="absolute inset-0 bg-[#F0FAF5]/35 sm:bg-transparent" />
 
       {/* Vertical overlay: blends smoothly into top navbar and bottom section */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#F3F6FF]/80 via-transparent to-[#F3F6FF]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#F0FAF5]/80 via-transparent to-[#F0FAF5]" />
 
-      {/* 3. Subtle Brand Accent Glows (#3157D5 and #667EEA) */}
-      <div className="absolute -top-20 left-1/4 w-[600px] h-[400px] bg-[#3157D5]/8 rounded-full blur-3xl" />
-      <div className="absolute top-1/3 right-10 w-[500px] h-[350px] bg-[#667EEA]/8 rounded-full blur-3xl" />
+      {/* 3. Subtle Brand Accent Glows (#16805B and #35A979) */}
+      <div className="absolute -top-20 left-1/4 w-[600px] h-[400px] bg-[#16805B]/8 rounded-full blur-3xl" />
+      <div className="absolute top-1/3 right-10 w-[500px] h-[350px] bg-[#35A979]/8 rounded-full blur-3xl" />
     </div>
   );
 }

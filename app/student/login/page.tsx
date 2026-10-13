@@ -112,15 +112,15 @@ export default function StudentLoginPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
           {/* Left Column: Student Highlights & Social Proof */}
           <div className="lg:col-span-6 space-y-6 hidden lg:block">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#3157D5]/10 border border-[#3157D5]/20 text-[#3157D5] text-xs font-bold uppercase tracking-wider">
-              <BookOpen className="h-3.5 w-3.5 text-[#3157D5]" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#16805B]/10 border border-[#16805B]/20 text-[#16805B] text-xs font-bold uppercase tracking-wider">
+              <BookOpen className="h-3.5 w-3.5 text-[#16805B]" />
               <span>Learner Portal</span>
             </div>
 
             <div className="space-y-3">
               <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-tight">
                 Resume Your <br />
-                <span className="bg-gradient-to-r from-[#3157D5] via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#16805B] via-[#0D5C41] to-[#0A4732] bg-clip-text text-transparent">
                   Learning Journey
                 </span>
               </h1>
@@ -132,13 +132,13 @@ export default function StudentLoginPage() {
             {/* Feature Bullets */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-3 text-xs font-semibold text-slate-700">
-                <div className="p-2 rounded-xl bg-blue-100 text-[#3157D5]">
+                <div className="p-2 rounded-xl bg-emerald-100 text-[#16805B]">
                   <Video className="h-4 w-4" />
                 </div>
                 <span>Live interactive classrooms with whiteboard & live code sandbox</span>
               </div>
               <div className="flex items-center gap-3 text-xs font-semibold text-slate-700">
-                <div className="p-2 rounded-xl bg-indigo-100 text-indigo-700">
+                <div className="p-2 rounded-xl bg-teal-100 text-teal-800">
                   <CheckCircle2 className="h-4 w-4" />
                 </div>
                 <span>Direct 1-on-1 messaging & trial bookings with top verified educators</span>
@@ -157,7 +157,7 @@ export default function StudentLoginPage() {
                 <img
                   src="/images/educators/educator_04.jpg"
                   alt="Learner"
-                  className="w-9 h-9 rounded-full object-cover ring-2 ring-[#3157D5]/30"
+                  className="w-9 h-9 rounded-full object-cover ring-2 ring-[#16805B]/30"
                 />
                 <div>
                   <div className="text-xs font-bold text-slate-900">Ananya Verma</div>
@@ -185,7 +185,7 @@ export default function StudentLoginPage() {
             </div>
 
             <GlassCard
-              glowColor="rgba(49, 87, 213, 0.15)"
+              glowColor="rgba(22, 128, 91, 0.15)"
               className="p-7 sm:p-8 border border-white/90 shadow-xl space-y-6"
             >
               <form onSubmit={handleLogin} className="space-y-4">
@@ -196,7 +196,7 @@ export default function StudentLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  leftIcon={<Mail className="h-4 w-4 text-[#3157D5]" />}
+                  leftIcon={<Mail className="h-4 w-4 text-[#16805B]" />}
                 />
 
                 <Input
@@ -206,14 +206,14 @@ export default function StudentLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  leftIcon={<Lock className="h-4 w-4 text-[#3157D5]" />}
+                  leftIcon={<Lock className="h-4 w-4 text-[#16805B]" />}
                 />
 
                 <div className="flex items-center justify-between text-xs font-semibold">
-                  <Link href="/forgot-password" className="text-[#3157D5] hover:underline">
+                  <Link href="/forgot-password" className="text-[#16805B] hover:underline">
                     Forgot password?
                   </Link>
-                  <Link href="/student/register" className="text-slate-600 hover:text-[#3157D5]">
+                  <Link href="/student/register" className="text-slate-600 hover:text-[#16805B]">
                     Need an account?
                   </Link>
                 </div>
@@ -221,7 +221,7 @@ export default function StudentLoginPage() {
                 <GlassButton
                   type="submit"
                   variant="primary"
-                  className="w-full mt-2 bg-[#3157D5] hover:bg-[#243B9B] border-[#3157D5] shadow-[#3157D5]/20 text-white"
+                  className="w-full mt-2 bg-[#16805B] hover:bg-[#0D5C41] border-[#16805B] shadow-[#16805B]/20 text-white"
                   isLoading={loading}
                   rightIcon={<ArrowRight className="h-4 w-4" />}
                 >

@@ -28,17 +28,17 @@ export function WhyEduConnectsSection() {
   ];
 
   return (
-    <section className="py-20 lg:py-28 bg-[#F5F7F8] border-b border-[#DCE5E4] font-sans">
+    <section className="py-20 lg:py-28 bg-[#F8FAFC] border-b border-[#E2E8F0] font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="text-xs font-black text-[#0F5C5A] uppercase tracking-widest px-3 py-1 rounded-full bg-[#E6F0EF]">
+          <span className="text-xs font-black text-[#16805B] uppercase tracking-widest px-3 py-1 rounded-full bg-[#F0FAF5]">
             REAL VALUE & FLEXIBILITY
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#102A2A] tracking-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0F172A] tracking-tight">
             Why choose EduConnects?
           </h2>
-          <p className="text-sm sm:text-base text-[#5D7373]">
+          <p className="text-sm sm:text-base text-[#64748B]">
             Designed with clarity, flexibility, and learner-first values at its core.
           </p>
         </div>
@@ -50,16 +50,16 @@ export function WhyEduConnectsSection() {
             return (
               <div
                 key={idx}
-                className="p-7 rounded-3xl bg-white border border-[#DCE5E4] hover:border-[#0F5C5A]/40 hover:shadow-xl transition-all space-y-4 flex flex-col justify-between group"
+                className="p-7 rounded-3xl bg-white border border-[#E2E8F0] hover:border-[#16805B]/40 hover:shadow-xl transition-all space-y-4 flex flex-col justify-between group"
               >
                 <div className="space-y-3">
-                  <div className="p-3.5 rounded-2xl bg-[#E6F0EF] text-[#0F5C5A] w-fit group-hover:bg-[#0F5C5A] group-hover:text-white transition-colors">
+                  <div className="p-3.5 rounded-2xl bg-[#F0FAF5] text-[#16805B] w-fit group-hover:bg-[#16805B] group-hover:text-white transition-colors">
                     <IconComp className="h-6 w-6" />
                   </div>
-                  <h3 className="text-lg font-black text-[#102A2A]">
+                  <h3 className="text-lg font-black text-[#0F172A]">
                     {b.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-[#5D7373] leading-relaxed">
+                  <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
                     {b.desc}
                   </p>
                 </div>

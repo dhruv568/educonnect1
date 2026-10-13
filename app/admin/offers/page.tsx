@@ -845,7 +845,7 @@ export default function AdminOffersPage() {
                       previewTab === "MAIN"
                         ? "bg-gradient-to-br from-[#083F3D] to-[#0F5C5A] border-[#1B6863]/50"
                         : previewTab === "LEARNERS"
-                        ? "bg-gradient-to-br from-[#1E3185] to-[#3157D5] border-[#BFDBFE]/30"
+                        ? "bg-gradient-to-br from-[#0D5C41] to-[#16805B] border-[#A7F3D0]/30"
                         : "bg-gradient-to-br from-[#0D5C41] to-[#16805B] border-[#A7F3D0]/30"
                     }`}
                   >
@@ -855,7 +855,7 @@ export default function AdminOffersPage() {
                           previewTab === "MAIN"
                             ? "bg-[#F2C14E] text-[#083F3D]"
                             : previewTab === "LEARNERS"
-                            ? "bg-blue-200 text-[#1E3185]"
+                            ? "bg-emerald-200 text-[#0D5C41]"
                             : "bg-emerald-200 text-[#0D5C41]"
                         }`}
                       >
@@ -886,7 +886,7 @@ export default function AdminOffersPage() {
                           previewTab === "MAIN"
                             ? "bg-[#F2C14E] text-[#083F3D]"
                             : previewTab === "LEARNERS"
-                            ? "bg-white text-[#243B9B]"
+                            ? "bg-white text-[#0D5C41]"
                             : "bg-white text-[#0D5C41]"
                         }`}
                       >
@@ -966,22 +966,22 @@ export default function AdminOffersPage() {
                 </div>
 
                 {/* 2. Learner Website */}
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1E3185] to-[#3157D5] border border-[#BFDBFE]/30 text-white shadow-md">
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0D5C41] to-[#16805B] border border-[#A7F3D0]/30 text-white shadow-md">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-100 text-[#1E3185]">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-[#0D5C41]">
                       {previewOffer.discountText || "LEARNER THEME"}
                     </span>
-                    <span className="text-[10px] text-blue-200 font-mono">learners.educonnects.co.in</span>
+                    <span className="text-[10px] text-emerald-200 font-mono">learners.educonnects.co.in</span>
                   </div>
                   <div className="font-bold text-sm">{previewOffer.title}</div>
                   {previewOffer.description && (
-                    <div className="text-xs text-blue-100/90 mt-1">{previewOffer.description}</div>
+                    <div className="text-xs text-emerald-100/90 mt-1">{previewOffer.description}</div>
                   )}
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="text-[10px] text-blue-200/80">
+                    <span className="text-[10px] text-emerald-200/80">
                       {previewOffer.endDate ? `Valid until ${new Date(previewOffer.endDate).toLocaleDateString()}` : "Active"}
                     </span>
-                    <span className="text-xs font-bold px-3 py-1 rounded-xl bg-white text-[#243B9B] shadow-xs flex items-center gap-1">
+                    <span className="text-xs font-bold px-3 py-1 rounded-xl bg-white text-[#0D5C41] shadow-xs flex items-center gap-1">
                       <span>{previewOffer.ctaText || "Claim Offer"}</span>
                       <ArrowRight className="h-3 w-3" />
                     </span>

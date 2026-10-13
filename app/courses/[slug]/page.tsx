@@ -155,7 +155,7 @@ export default function CourseDetailPage() {
         <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-32 text-center">
           <h2 className="text-2xl font-bold text-slate-200">Course Not Found</h2>
           <p className="text-sm text-slate-400 mt-2">The course you are looking for does not exist or has been removed.</p>
-          <Link href="/courses" className="mt-6 inline-block px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold">
+          <Link href="/courses" className="mt-6 inline-block px-5 py-2.5 rounded-xl bg-[#16805B] text-white font-semibold hover:bg-[#0D5C41]">
             Browse All Courses
           </Link>
         </div>
@@ -165,7 +165,7 @@ export default function CourseDetailPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-[#16805B] selection:text-white">
       <Navbar />
 
       {/* Hero Header */}
@@ -182,7 +182,7 @@ export default function CourseDetailPage() {
                   className="mb-4"
                 />
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 uppercase tracking-wider">
+                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-[#16805B]/20 text-emerald-400 border border-[#16805B]/30 uppercase tracking-wider">
                     {course.subject}
                   </span>
                   <span className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-800 text-slate-300 border border-slate-700 uppercase tracking-wider">
@@ -214,12 +214,12 @@ export default function CourseDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-1.5 text-slate-300">
-                  <Users className="w-4 h-4 text-blue-400" />
+                  <Users className="w-4 h-4 text-emerald-400" />
                   <span>{course.enrollmentCount} Enrolled Students</span>
                 </div>
 
                 <div className="flex items-center gap-1.5 text-slate-300">
-                  <BookOpen className="w-4 h-4 text-indigo-400" />
+                  <BookOpen className="w-4 h-4 text-teal-400" />
                   <span>{course.lessonCount} Lessons</span>
                 </div>
 
@@ -248,7 +248,7 @@ export default function CourseDetailPage() {
                   <div className="text-sm font-bold text-slate-100 flex items-center gap-1">
                     {course.teacher.name}
                     {course.teacher.isVerified && (
-                      <span title="Verified Instructor"><CheckCircle2 className="w-4 h-4 text-blue-400 fill-blue-400/20" /></span>
+                      <span title="Verified Instructor"><CheckCircle2 className="w-4 h-4 text-emerald-400 fill-emerald-400/20" /></span>
                     )}
                   </div>
                 </div>
@@ -257,7 +257,7 @@ export default function CourseDetailPage() {
 
             {/* Right Sticky Desktop Enrollment Card */}
             <div className="lg:col-span-1">
-              <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl shadow-blue-500/10 space-y-6 sticky top-28">
+              <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl shadow-emerald-500/10 space-y-6 sticky top-28">
                 <div className="relative aspect-video max-h-44 sm:max-h-48 w-full rounded-xl overflow-hidden bg-slate-950">
                   <img
                     src={course.thumbnailUrl || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80"}
@@ -265,7 +265,7 @@ export default function CourseDetailPage() {
                     className="w-full h-full object-cover"
                   />
                   <Link href={`/courses/${slug}/preview`} className="absolute inset-0 bg-slate-950/40 flex items-center justify-center group">
-                    <div className="w-12 h-12 rounded-full bg-blue-600/90 text-white flex items-center justify-center backdrop-blur-md shadow-lg group-hover:scale-110 transition">
+                    <div className="w-12 h-12 rounded-full bg-[#16805B]/90 text-white flex items-center justify-center backdrop-blur-md shadow-lg group-hover:scale-110 transition">
                       <PlayCircle className="w-6 h-6 ml-0.5" />
                     </div>
                   </Link>
@@ -282,7 +282,7 @@ export default function CourseDetailPage() {
                 </div>
 
                 {enrollMsg && (
-                  <div className="p-3 text-xs rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  <div className="p-3 text-xs rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                     {enrollMsg}
                   </div>
                 )}
@@ -292,13 +292,13 @@ export default function CourseDetailPage() {
                     href={`/courses/${slug}/preview`}
                     className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-center flex items-center justify-center gap-2 border border-slate-700 transition"
                   >
-                    <Eye className="w-4 h-4 text-blue-400" /> Preview Course
+                    <Eye className="w-4 h-4 text-emerald-400" /> Preview Course
                   </Link>
 
                   {course.isEnrolled ? (
                     <Link
                       href={`/learn/${slug}`}
-                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-center block shadow-lg shadow-blue-600/30 hover:scale-[1.02] transition"
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#16805B] to-[#0D5C41] text-white font-bold text-center block shadow-lg shadow-[#16805B]/30 hover:scale-[1.02] transition"
                     >
                       Continue Learning
                     </Link>
@@ -306,7 +306,7 @@ export default function CourseDetailPage() {
                     <button
                       onClick={handleEnroll}
                       disabled={enrolling}
-                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-center shadow-lg shadow-blue-600/30 hover:scale-[1.02] transition disabled:opacity-50"
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#16805B] to-[#0D5C41] text-white font-bold text-center shadow-lg shadow-[#16805B]/30 hover:scale-[1.02] transition disabled:opacity-50"
                     >
                       {enrolling ? "Enrolling..." : course.price === 0 ? "Enroll Now Free" : "Enroll Now"}
                     </button>
@@ -341,7 +341,7 @@ export default function CourseDetailPage() {
             {course.learningOutcomes && course.learningOutcomes.length > 0 && (
               <div className="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
                 <h3 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-blue-400" /> What You'll Learn
+                  <Sparkles className="w-5 h-5 text-emerald-400" /> What You'll Learn
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   {course.learningOutcomes.map((item: string, idx: number) => (
@@ -358,7 +358,7 @@ export default function CourseDetailPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-indigo-400" /> Course Curriculum
+                  <BookOpen className="w-5 h-5 text-teal-400" /> Course Curriculum
                 </h3>
                 <span className="text-xs font-semibold text-slate-400">
                   {course.sections.length} Sections • {course.lessonCount} Lessons
@@ -387,7 +387,7 @@ export default function CourseDetailPage() {
                             <div key={les.id} className="p-3.5 flex items-center justify-between hover:bg-slate-900/40 transition">
                               <div className="flex items-center gap-3">
                                 {les.isPreview ? (
-                                  <PlayCircle className="w-4 h-4 text-blue-400 shrink-0" />
+                                  <PlayCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                                 ) : (
                                   <Lock className="w-4 h-4 text-slate-500 shrink-0" />
                                 )}
@@ -398,7 +398,7 @@ export default function CourseDetailPage() {
                                 {les.isPreview && (
                                   <button
                                     onClick={() => handleOpenLessonPreview(les)}
-                                    className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30"
+                                    className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-[#16805B]/20 text-emerald-400 border border-[#16805B]/30 hover:bg-[#16805B]/30"
                                   >
                                     Preview
                                   </button>
@@ -428,7 +428,7 @@ export default function CourseDetailPage() {
           <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl space-y-4 p-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-800">
               <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                <PlayCircle className="w-4 h-4 text-blue-400" /> Preview: {previewTitle}
+                <PlayCircle className="w-4 h-4 text-emerald-400" /> Preview: {previewTitle}
               </h4>
               <button
                 onClick={() => {
@@ -444,7 +444,7 @@ export default function CourseDetailPage() {
             <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-950 flex items-center justify-center">
               {loadingPlayback ? (
                 <div className="flex flex-col items-center space-y-2 p-4 text-center">
-                  <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                  <Loader2 className="w-8 h-8 text-[#16805B] animate-spin" />
                   <span className="text-xs text-slate-400">Loading video stream...</span>
                 </div>
               ) : playbackError ? (

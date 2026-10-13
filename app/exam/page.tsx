@@ -225,7 +225,7 @@ export default function FreeExamPage() {
   const answeredCount = Object.keys(userAnswers).length;
 
   return (
-    <div data-theme="learner" className="min-h-screen flex flex-col bg-[#F3F6FF]/40 relative overflow-hidden font-sans text-slate-900">
+    <div data-theme="learner" className="min-h-screen flex flex-col bg-[#F0FAF5]/40 relative overflow-hidden font-sans text-slate-900">
       <FloatingNavbar variant="student" />
 
       <main className="flex-1 pt-32 sm:pt-36 pb-24 max-w-4xl mx-auto px-4 sm:px-6 w-full">
@@ -236,8 +236,8 @@ export default function FreeExamPage() {
           <div className="space-y-8 animate-in fade-in duration-300">
             {/* Header */}
             <div className="text-center max-w-2xl mx-auto space-y-3">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black uppercase tracking-wider">
-                <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-black uppercase tracking-wider">
+                <Sparkles className="h-3.5 w-3.5 text-[#16805B]" />
                 <span>EduConnects Free Skill Test</span>
               </div>
               <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
@@ -254,14 +254,14 @@ export default function FreeExamPage() {
               <div className="space-y-3">
                 <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between">
                   <span>1. Choose Subject</span>
-                  <span className="text-[11px] text-blue-600 font-normal">
+                  <span className="text-[11px] text-[#16805B] font-normal">
                     {subjects.length} Subjects Available
                   </span>
                 </label>
 
                 {loadingSubjects ? (
                   <div className="p-6 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                    <Loader2 className="h-4 w-4 animate-spin text-[#16805B]" />
                     <span>Loading platform subjects...</span>
                   </div>
                 ) : (
@@ -275,7 +275,7 @@ export default function FreeExamPage() {
                           onClick={() => setSelectedSubject(sub.name)}
                           className={`p-3.5 rounded-2xl border text-left transition-all ${
                             isSelected
-                              ? "bg-blue-50/90 border-blue-600 text-blue-900 shadow-sm ring-1 ring-blue-600"
+                              ? "bg-emerald-50/90 border-[#16805B] text-emerald-950 shadow-sm ring-1 ring-[#16805B]"
                               : "bg-slate-50/60 border-slate-200 hover:border-slate-300 text-slate-800"
                           }`}
                         >
@@ -295,7 +295,7 @@ export default function FreeExamPage() {
               {/* Academic Target / Syllabus Selection */}
               <div className="space-y-3 pt-2 border-t border-slate-100">
                 <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <GraduationCap className="w-4 h-4 text-[#3157D5]" /> 2. Academic Focus (Optional)
+                  <GraduationCap className="w-4 h-4 text-[#16805B]" /> 2. Academic Focus (Optional)
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -309,7 +309,7 @@ export default function FreeExamPage() {
                       onClick={() => setAcademicLevel(lvl.id as any)}
                       className={`py-2 px-2.5 rounded-xl border text-xs font-bold text-center transition-all ${
                         academicLevel === lvl.id
-                          ? "bg-blue-50 border-blue-600 text-[#3157D5] ring-1 ring-blue-600"
+                          ? "bg-emerald-50 border-[#16805B] text-[#16805B] ring-1 ring-[#16805B]"
                           : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
                       }`}
                     >
@@ -397,7 +397,7 @@ export default function FreeExamPage() {
                         onClick={() => setDifficulty(lvl)}
                         className={`py-2.5 px-3 rounded-xl border text-xs font-bold text-center transition-all ${
                           isSelected
-                            ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                            ? "bg-[#16805B] text-white border-[#16805B] shadow-xs"
                             : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
                         }`}
                       >
@@ -423,7 +423,7 @@ export default function FreeExamPage() {
                         onClick={() => setQuestionCount(num)}
                         className={`py-2 px-3 rounded-xl border text-xs font-bold text-center transition-all ${
                           isSelected
-                            ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                            ? "bg-[#16805B] text-white border-[#16805B] shadow-xs"
                             : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
                         }`}
                       >
@@ -440,7 +440,7 @@ export default function FreeExamPage() {
                   type="button"
                   onClick={handleStartExam}
                   disabled={generating || !selectedSubject}
-                  className="w-full h-12 bg-[#3157D5] hover:bg-[#243B9B] text-white text-sm font-black rounded-2xl shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full h-12 bg-[#16805B] hover:bg-[#0D5C41] text-white text-sm font-black rounded-2xl shadow-lg shadow-[#16805B]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {generating ? (
                     <>
@@ -470,7 +470,7 @@ export default function FreeExamPage() {
             {/* Top Toolbar */}
             <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm flex items-center justify-between gap-4">
               <div>
-                <span className="text-[10px] font-black uppercase text-blue-600 tracking-wider">
+                <span className="text-[10px] font-black uppercase text-[#16805B] tracking-wider">
                   {selectedSubject} • {difficulty}
                 </span>
                 <div className="text-sm font-black text-slate-900">
@@ -479,7 +479,7 @@ export default function FreeExamPage() {
               </div>
 
               <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
-                <Target className="h-4 w-4 text-blue-600" />
+                <Target className="h-4 w-4 text-[#16805B]" />
                 <span>
                   {answeredCount}/{questions.length} Answered
                 </span>
@@ -489,7 +489,7 @@ export default function FreeExamPage() {
             {/* Progress Bar */}
             <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-blue-600 transition-all duration-300 rounded-full"
+                className="h-full bg-[#16805B] transition-all duration-300 rounded-full"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -506,9 +506,9 @@ export default function FreeExamPage() {
                     onClick={() => setCurrentQuestionIndex(idx)}
                     className={`w-8 h-8 rounded-xl text-xs font-bold transition-all ${
                       isCurrent
-                        ? "bg-[#3157D5] text-white shadow-sm ring-2 ring-blue-400"
+                        ? "bg-[#16805B] text-white shadow-sm ring-2 ring-emerald-400"
                         : isAnswered
-                        ? "bg-blue-100 text-blue-800 border border-blue-200"
+                        ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                         : "bg-white text-slate-700 border border-slate-200 hover:border-slate-300"
                     }`}
                   >
@@ -540,14 +540,14 @@ export default function FreeExamPage() {
                       onClick={() => handleSelectAnswer(opt.key)}
                       className={`w-full p-4 rounded-2xl border text-left transition-all flex items-center gap-3.5 cursor-pointer ${
                         isSelected
-                          ? "bg-blue-50/90 border-[#3157D5] shadow-xs ring-1 ring-[#3157D5]"
+                          ? "bg-emerald-50/90 border-[#16805B] shadow-xs ring-1 ring-[#16805B]"
                           : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
                       }`}
                     >
                       <div
                         className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 transition-colors ${
                           isSelected
-                            ? "bg-[#3157D5] text-white"
+                            ? "bg-[#16805B] text-white"
                             : "bg-slate-100 text-slate-600"
                         }`}
                       >
@@ -577,7 +577,7 @@ export default function FreeExamPage() {
                   <button
                     type="button"
                     onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
-                    className="px-5 py-2.5 rounded-xl bg-[#3157D5] hover:bg-[#243B9B] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+                    className="px-5 py-2.5 rounded-xl bg-[#16805B] hover:bg-[#0D5C41] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
                   >
                     <span>Next Question</span>
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -587,7 +587,7 @@ export default function FreeExamPage() {
                     type="button"
                     onClick={handleSubmitExam}
                     disabled={submitting}
-                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5"
+                    className="px-6 py-2.5 rounded-xl bg-[#16805B] hover:bg-[#0D5C41] text-white text-xs font-black transition-all shadow-md shadow-[#16805B]/20 flex items-center gap-1.5"
                   >
                     {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                     <span>Submit Exam</span>
@@ -605,12 +605,12 @@ export default function FreeExamPage() {
           <div className="space-y-8 animate-in fade-in duration-300">
             {/* Score Banner Card */}
             <div className="p-8 sm:p-10 rounded-3xl bg-white border border-slate-200/90 shadow-xl space-y-6 text-center">
-              <div className="w-16 h-16 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center mx-auto text-blue-600 shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto text-[#16805B] shadow-sm">
                 <Award className="h-8 w-8" />
               </div>
 
               <div className="space-y-2">
-                <span className="text-xs font-black uppercase text-blue-600 tracking-wider">
+                <span className="text-xs font-black uppercase text-[#16805B] tracking-wider">
                   Test Results • {result.subject}
                 </span>
                 <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight">
@@ -638,9 +638,9 @@ export default function FreeExamPage() {
               </div>
 
               {/* Recommended Next Step Box */}
-              <div className="p-5 rounded-2xl bg-blue-50/80 border border-blue-200/80 text-left space-y-3">
-                <div className="flex items-center gap-2 text-xs font-black text-blue-800 uppercase tracking-wider">
-                  <GraduationCap className="h-4 w-4 text-blue-600" />
+              <div className="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 text-left space-y-3">
+                <div className="flex items-center gap-2 text-xs font-black text-emerald-950 uppercase tracking-wider">
+                  <GraduationCap className="h-4 w-4 text-[#16805B]" />
                   <span>Recommended Next Step</span>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
@@ -649,7 +649,7 @@ export default function FreeExamPage() {
                 <div>
                   <Link
                     href={result.findTeachersUrl}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#3157D5] hover:bg-[#243B9B] text-white text-xs font-black rounded-xl shadow-sm transition-all"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#16805B] hover:bg-[#0D5C41] text-white text-xs font-black rounded-xl shadow-sm transition-all"
                   >
                     <span>Find Verified {result.subject} Educators</span>
                     <ArrowRight className="h-3.5 w-3.5" />

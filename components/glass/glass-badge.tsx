@@ -7,23 +7,24 @@ function cn(...inputs: any[]) {
 }
 
 export interface GlassBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: "blue" | "indigo" | "emerald" | "amber" | "rose" | "dark" | "outline" | "learner" | "educator";
+  variant?: "primary" | "emerald" | "blue" | "indigo" | "amber" | "rose" | "dark" | "outline" | "learner" | "educator";
   size?: "sm" | "md";
 }
 
-export function GlassBadge({ className, variant = "blue", size = "md", children, ...props }: GlassBadgeProps) {
+export function GlassBadge({ className, variant = "primary", size = "md", children, ...props }: GlassBadgeProps) {
   const base =
     "inline-flex items-center font-semibold rounded-full backdrop-blur-md border shadow-xs transition-all";
 
   const variants = {
+    primary: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0] font-bold",
+    emerald: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0] font-bold",
     blue: "bg-blue-500/10 text-blue-700 border-blue-400/30",
     indigo: "bg-indigo-500/10 text-indigo-700 border-indigo-400/30",
-    emerald: "bg-emerald-500/10 text-emerald-700 border-emerald-400/30",
     amber: "bg-amber-500/10 text-amber-800 border-amber-400/30",
     rose: "bg-rose-500/10 text-rose-700 border-rose-400/30",
     dark: "bg-slate-900/80 text-white border-white/20",
     outline: "bg-white/40 text-slate-700 border-slate-300/80",
-    learner: "bg-[#F3F6FF] text-[#243B9B] border-[#BFDBFE] font-bold",
+    learner: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0] font-bold",
     educator: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0] font-bold",
   };
 

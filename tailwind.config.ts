@@ -113,6 +113,34 @@ const config: Config = {
           light: "#F0FAF5",
           foreground: "#FFFFFF",
         },
+        success: {
+          DEFAULT: "#10B981",
+          soft: "#ECFDF5",
+          border: "#A7F3D0",
+          text: "#065F46",
+        },
+        warning: {
+          DEFAULT: "#F59E0B",
+          soft: "#FFFBEB",
+          border: "#FDE68A",
+          text: "#92400E",
+        },
+        error: {
+          DEFAULT: "#EF4444",
+          soft: "#FEF2F2",
+          border: "#FECACA",
+          text: "#991B1B",
+        },
+        info: {
+          DEFAULT: "#3B82F6",
+          soft: "#EFF6FF",
+          border: "#BFDBFE",
+          text: "#1E40AF",
+        },
+        muted: {
+          DEFAULT: "#475569",
+          foreground: "#94A3B8",
+        },
       },
       borderRadius: {
         lg: "1.25rem",

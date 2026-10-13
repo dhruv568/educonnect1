@@ -254,7 +254,7 @@ export default function TeacherAvailabilityPage() {
               onClick={() => setShowOverrideModal(true)}
               variant="outline"
               size="sm"
-              leftIcon={<Plus className="h-4 w-4 text-[#3157D5]" />}
+              leftIcon={<Plus className="h-4 w-4 text-[#16805B]" />}
             >
               Add Date / Block Slot
             </Button>
@@ -503,7 +503,7 @@ export default function TeacherAvailabilityPage() {
             <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in duration-150">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-[#3157D5]" /> Custom Date / Block Slot
+                  <Calendar className="w-5 h-5 text-[#16805B]" /> Custom Date / Block Slot
                 </h3>
                 <button
                   onClick={() => setShowOverrideModal(false)}

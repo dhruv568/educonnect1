@@ -32,9 +32,9 @@ export function BrandVisionSection() {
   ];
 
   return (
-    <section className="py-20 lg:py-28 bg-[#F5F7F8] border-b border-[#DCE5E4] font-sans relative overflow-hidden">
+    <section className="py-20 lg:py-28 bg-[#F8FAFC] border-b border-[#E2E8F0] font-sans relative overflow-hidden">
       {/* Subtle Background Glow Orbs */}
-      <div className="absolute top-1/2 -translate-y-1/2 left-0 w-80 h-80 bg-[#0F5C5A]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 -translate-y-1/2 left-0 w-80 h-80 bg-[#16805B]/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/2 -translate-y-1/2 right-0 w-80 h-80 bg-[#F2C14E]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -42,19 +42,19 @@ export function BrandVisionSection() {
           {/* Left Column: Brand Vision & Core Mission Copy */}
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
             {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F0EF] border border-[#DCE5E4] text-[#0F5C5A] text-xs font-black uppercase tracking-wider shadow-2xs">
-              <Sparkles className="h-3.5 w-3.5 text-[#0F5C5A]" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F0FAF5] border border-emerald-200 text-[#16805B] text-xs font-black uppercase tracking-wider shadow-2xs">
+              <Sparkles className="h-3.5 w-3.5 text-[#16805B]" />
               <span>Our Vision In Two Words</span>
             </div>
 
             {/* Main Headline */}
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#102A2A] tracking-tight leading-[1.15]">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0F172A] tracking-tight leading-[1.15]">
               Better Learning. <br />
-              <span className="text-[#0F5C5A]">Brighter Tomorrows.</span>
+              <span className="text-[#16805B]">Brighter Tomorrows.</span>
             </h2>
 
             {/* Narrative Explanation */}
-            <p className="text-base sm:text-lg text-[#5D7373] leading-relaxed max-w-2xl mx-auto lg:mx-0">
+            <p className="text-base sm:text-lg text-[#64748B] leading-relaxed max-w-2xl mx-auto lg:mx-0">
               Founded by Sameer Shrivastava, EduConnects is built on the belief that quality education must be directly accessible to every learner, everywhere. We connect ambitious learners with verified educators to build stronger, happier futures together.
             </p>
 
@@ -65,15 +65,15 @@ export function BrandVisionSection() {
                 return (
                   <div
                     key={idx}
-                    className="p-4 rounded-2xl bg-white border border-[#DCE5E4] shadow-xs hover:border-[#0F5C5A]/40 transition-colors space-y-2"
+                    className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs hover:border-[#16805B]/40 transition-colors space-y-2"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-xl bg-[#E6F0EF] text-[#0F5C5A]">
+                      <div className="p-2 rounded-xl bg-[#F0FAF5] text-[#16805B]">
                         <IconComp className="h-4 w-4" />
                       </div>
-                      <h3 className="text-sm font-extrabold text-[#102A2A]">{pillar.title}</h3>
+                      <h3 className="text-sm font-extrabold text-[#0F172A]">{pillar.title}</h3>
                     </div>
-                    <p className="text-xs text-[#5D7373] leading-relaxed pl-0.5">
+                    <p className="text-xs text-[#64748B] leading-relaxed pl-0.5">
                       {pillar.desc}
                     </p>
                   </div>
@@ -87,7 +87,7 @@ export function BrandVisionSection() {
                 <GlassButton
                   variant="primary"
                   size="md"
-                  className="w-full sm:w-auto bg-[#0F5C5A] hover:bg-[#083F3D] active:bg-[#052C2A] text-white shadow-md text-sm font-extrabold px-6 py-2.5 rounded-full transition-all"
+                  className="w-full sm:w-auto bg-[#16805B] hover:bg-[#0D5C41] active:bg-[#09422F] text-white shadow-md text-sm font-extrabold px-6 py-2.5 rounded-full transition-all"
                   rightIcon={<ArrowRight className="h-4 w-4" />}
                 >
                   Explore Educators
@@ -98,7 +98,7 @@ export function BrandVisionSection() {
                 <GlassButton
                   variant="secondary"
                   size="md"
-                  className="w-full sm:w-auto bg-white hover:bg-[#083F3D] hover:text-white active:bg-[#052C2A] text-[#102A2A] border border-[#DCE5E4] text-sm font-bold px-6 py-2.5 rounded-full transition-all"
+                  className="w-full sm:w-auto bg-white hover:bg-[#0D5C41] hover:text-white active:bg-[#09422F] text-[#0F172A] border border-[#E2E8F0] text-sm font-bold px-6 py-2.5 rounded-full transition-all"
                 >
                   Become an Educator
                 </GlassButton>
@@ -110,11 +110,11 @@ export function BrandVisionSection() {
           <div className="lg:col-span-5">
             <div className="relative mx-auto max-w-md lg:max-w-none">
               {/* Outer Glow Ring */}
-              <div className="absolute -inset-2 bg-gradient-to-tr from-[#0F5C5A]/20 via-[#F2C14E]/20 to-[#0F5C5A]/10 rounded-[2.2rem] blur-lg -z-10" />
+              <div className="absolute -inset-2 bg-gradient-to-tr from-[#16805B]/20 via-[#F2C14E]/20 to-[#16805B]/10 rounded-[2.2rem] blur-lg -z-10" />
 
               {/* Card Container with 1:1 Aspect Ratio preserved */}
-              <div className="p-3 sm:p-4 rounded-3xl bg-white border border-[#DCE5E4] shadow-2xl space-y-3 relative overflow-hidden">
-                <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-[#FBF7EE] border border-[#DCE5E4]/60">
+              <div className="p-3 sm:p-4 rounded-3xl bg-white border border-[#E2E8F0] shadow-2xl space-y-3 relative overflow-hidden">
+                <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-[#FBF7EE] border border-[#E2E8F0]">
                   <Image
                     src={photo1}
                     alt="EduConnects Vision - Better Learning, Brighter Tomorrows"
@@ -124,12 +124,12 @@ export function BrandVisionSection() {
                 </div>
 
                 {/* Bottom Caption Pill */}
-                <div className="px-3 py-2 rounded-xl bg-[#F5F7F8] border border-[#DCE5E4] flex items-center justify-between text-xs text-[#5D7373]">
+                <div className="px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between text-xs text-[#64748B]">
                   <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-[#0F5C5A]" />
-                    <span className="font-bold text-[#102A2A]">Learn • Grow • Belong</span>
+                    <span className="h-2 w-2 rounded-full bg-[#16805B]" />
+                    <span className="font-bold text-[#0F172A]">Learn • Grow • Belong</span>
                   </div>
-                  <span className="font-semibold text-[#0F5C5A] text-[11px] uppercase tracking-wider">
+                  <span className="font-semibold text-[#16805B] text-[11px] uppercase tracking-wider">
                     EduConnects Core Vision
                   </span>
                 </div>

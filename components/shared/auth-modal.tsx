@@ -97,13 +97,13 @@ export function AuthModal({ isOpen, onClose, initialRole = "STUDENT", initialMod
           </button>
 
           <div className="mb-6">
-            <span className="text-xs font-bold text-[#0B4F4B] uppercase tracking-widest">
+            <span className="text-xs font-bold text-[#16805B] uppercase tracking-widest">
               EduConnects Access
             </span>
-            <h2 className="text-2xl font-extrabold text-[#102A2A] mt-1">
+            <h2 className="text-2xl font-extrabold text-[#0F172A] mt-1">
               {mode === "register" ? "Create Account" : "Sign In to EduConnects"}
             </h2>
-            <p className="text-sm text-[#5D7373] mt-1">
+            <p className="text-sm text-[#475569] mt-1">
               {mode === "register"
                 ? "Join thousands of teachers and students."
                 : "Welcome back! Enter your credentials to continue."}
@@ -111,12 +111,12 @@ export function AuthModal({ isOpen, onClose, initialRole = "STUDENT", initialMod
           </div>
 
           {/* Mode Switcher */}
-          <div className="flex bg-[#F5F7F8] p-1 rounded-xl mb-6 border border-[#DCE5E4]">
+          <div className="flex bg-[#F8FAFC] p-1 rounded-xl mb-6 border border-[#E2E8F0]">
             <button
               type="button"
               onClick={() => setMode("register")}
               className={`flex-1 text-xs font-bold py-2 rounded-lg transition-all ${
-                mode === "register" ? "bg-white text-[#0B4F4B] shadow-sm" : "text-[#5D7373] hover:text-[#102A2A]"
+                mode === "register" ? "bg-white text-[#16805B] shadow-sm" : "text-[#475569] hover:text-[#0F172A]"
               }`}
             >
               Register
@@ -125,7 +125,7 @@ export function AuthModal({ isOpen, onClose, initialRole = "STUDENT", initialMod
               type="button"
               onClick={() => setMode("login")}
               className={`flex-1 text-xs font-bold py-2 rounded-lg transition-all ${
-                mode === "login" ? "bg-white text-[#0B4F4B] shadow-sm" : "text-[#5D7373] hover:text-[#102A2A]"
+                mode === "login" ? "bg-white text-[#16805B] shadow-sm" : "text-[#475569] hover:text-[#0F172A]"
               }`}
             >
               Login
@@ -137,7 +137,7 @@ export function AuthModal({ isOpen, onClose, initialRole = "STUDENT", initialMod
               <>
                 {/* Role selection pills */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#102A2A] uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-semibold text-[#0F172A] uppercase tracking-wider mb-2">
                     I am joining as:
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -148,8 +148,8 @@ export function AuthModal({ isOpen, onClose, initialRole = "STUDENT", initialMod
                         onClick={() => setRole(r)}
                         className={`text-xs font-bold py-2 px-3 rounded-xl border transition-all ${
                           role === r
-                            ? "border-[#0B4F4B] bg-[#E6F0EF] text-[#0B4F4B] shadow-sm"
-                            : "border-[#DCE5E4] text-[#5D7373] hover:border-[#0B4F4B]"
+                            ? "border-[#16805B] bg-[#F0FAF5] text-[#16805B] shadow-sm"
+                            : "border-[#E2E8F0] text-[#475569] hover:border-[#16805B]"
                         }`}
                       >
                         {r.charAt(0) + r.slice(1).toLowerCase()}

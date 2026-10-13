@@ -110,7 +110,7 @@ export default function StudentDashboardPage() {
     <DashboardLayout role="STUDENT" userName={data.userName} userEmail={data.userEmail}>
       <div className="space-y-8 pb-16">
         {/* Welcome Header Banner */}
-        <div className="bg-gradient-to-r from-[#3157D5] via-[#243B9B] to-[#1E3185] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-[#0D5C41] via-[#16805B] to-[#0A4732] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
           <div className="flex items-center gap-4 relative z-10">
             {data.avatarUrl ? (
               <img
@@ -158,7 +158,7 @@ export default function StudentDashboardPage() {
                   </Badge>
                 ) : null}
               </div>
-              <p className="text-xs sm:text-sm text-blue-100 font-medium">
+              <p className="text-xs sm:text-sm text-emerald-100 font-medium">
                 {data.userEmail || "Your personalized learning dashboard"} • Ready to continue?
               </p>
             </div>
@@ -168,7 +168,7 @@ export default function StudentDashboardPage() {
             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 shadow-sm">
               <Flame className="h-5 w-5 text-amber-300 animate-pulse" />
               <div className="text-left">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-blue-200">Learning Streak</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-200">Learning Streak</div>
                 <div className="text-xs font-black text-white">{data.stats.totalHours} hrs Total</div>
               </div>
             </div>
@@ -187,8 +187,8 @@ export default function StudentDashboardPage() {
             title="Courses Enrolled"
             value={loading ? "..." : data.stats.enrolledCount}
             subtitle={`${data.stats.completedCoursesCount} courses completed`}
-            icon={<BookOpen className="h-5 w-5 text-[#3157D5]" />}
-            variant="blue"
+            icon={<BookOpen className="h-5 w-5 text-[#16805B]" />}
+            variant="emerald"
           />
 
           <MetricCard
@@ -224,14 +224,14 @@ export default function StudentDashboardPage() {
               <h3 className="text-lg font-black text-slate-900">
                 Continue Learning
               </h3>
-              <Link href="/student/courses" className="text-xs font-bold text-blue-600 hover:underline">
+              <Link href="/student/courses" className="text-xs font-bold text-[#16805B] hover:underline">
                 View All Enrolled Courses →
               </Link>
             </div>
 
             {loading ? (
               <Card className="p-8 text-center bg-white border border-slate-200">
-                <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
+                <Loader2 className="h-8 w-8 text-[#16805B] animate-spin mx-auto" />
               </Card>
             ) : !data.continueLearning ? (
               <Card className="p-8 text-center space-y-3 bg-white border-2 border-dashed border-slate-200 shadow-sm rounded-3xl">
@@ -256,10 +256,10 @@ export default function StudentDashboardPage() {
                 </div>
               </Card>
             ) : (
-              <Card className="p-6 space-y-5 border-l-4 border-l-blue-600 shadow-md bg-white rounded-3xl border border-slate-200">
+              <Card className="p-6 space-y-5 border-l-4 border-l-[#16805B] shadow-md bg-white rounded-3xl border border-slate-200">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1">
-                    <span className="text-[11px] font-extrabold uppercase text-blue-600 tracking-wider">
+                    <span className="text-[11px] font-extrabold uppercase text-[#16805B] tracking-wider">
                       Active In-Progress Course
                     </span>
                     <h4 className="text-lg font-extrabold text-slate-900">
@@ -284,7 +284,7 @@ export default function StudentDashboardPage() {
                   </div>
                   <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                      className="h-full bg-[#16805B] rounded-full transition-all duration-500"
                       style={{ width: `${data.continueLearning.progressPercent}%` }}
                     />
                   </div>
@@ -315,7 +315,7 @@ export default function StudentDashboardPage() {
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
                     Your Course Library ({data.enrolledCourses.length})
                   </h4>
-                  <Link href="/student/courses" className="text-xs font-semibold text-blue-600 hover:underline">
+                  <Link href="/student/courses" className="text-xs font-semibold text-[#16805B] hover:underline">
                     View All
                   </Link>
                 </div>
@@ -324,7 +324,7 @@ export default function StudentDashboardPage() {
                     <Link
                       key={c.enrollmentId}
                       href={`/learn/${c.slug}`}
-                      className="group p-3.5 bg-white rounded-2xl border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all flex items-center gap-3"
+                      className="group p-3.5 bg-white rounded-2xl border border-slate-200 hover:border-[#16805B]/40 hover:shadow-md transition-all flex items-center gap-3"
                     >
                       <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0">
                         <img
@@ -334,13 +334,13 @@ export default function StudentDashboardPage() {
                         />
                       </div>
                       <div className="min-w-0 flex-1 space-y-1">
-                        <h5 className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                        <h5 className="text-xs font-bold text-slate-900 truncate group-hover:text-[#16805B] transition-colors">
                           {c.title}
                         </h5>
                         <p className="text-[10px] text-slate-500 truncate">{c.teacherName}</p>
                         <div className="flex items-center justify-between text-[10px] font-semibold text-slate-600">
                           <span>{c.completedLessons}/{c.totalLessons} Lessons</span>
-                          <span className="font-bold text-blue-600">{c.progressPercent}%</span>
+                          <span className="font-bold text-[#16805B]">{c.progressPercent}%</span>
                         </div>
                       </div>
                     </Link>
@@ -356,7 +356,7 @@ export default function StudentDashboardPage() {
               <h3 className="text-lg font-black text-slate-900">
                 Upcoming Live Classes
               </h3>
-              <Link href="/student/live-classes" className="text-xs font-bold text-blue-600 hover:underline">
+              <Link href="/student/live-classes" className="text-xs font-bold text-[#16805B] hover:underline">
                 View All Schedule →
               </Link>
             </div>
@@ -364,7 +364,7 @@ export default function StudentDashboardPage() {
             <Card className="p-5 space-y-4 border-slate-200 bg-white rounded-3xl shadow-sm">
               {loading ? (
                 <div className="p-6 text-center">
-                  <Loader2 className="h-6 w-6 text-blue-600 animate-spin mx-auto" />
+                  <Loader2 className="h-6 w-6 text-[#16805B] animate-spin mx-auto" />
                 </div>
               ) : data.upcomingClasses.length === 0 ? (
                 <div className="p-6 text-center space-y-2">
@@ -411,7 +411,7 @@ export default function StudentDashboardPage() {
 
                     {item.canJoin ? (
                       <Link href={`/classroom/${item.sessionId || item.slotId}`}>
-                        <Button variant="primary" size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700">
+                        <Button variant="primary" size="sm" className="w-full bg-[#16805B] hover:bg-[#0D5C41]">
                           Join Live Classroom
                         </Button>
                       </Link>
@@ -434,7 +434,7 @@ export default function StudentDashboardPage() {
                 <div className="space-y-2.5">
                   {data.recentActivity.map((act) => (
                     <div key={act.id} className="text-xs flex items-start gap-2.5 pb-2 border-b border-slate-100 last:border-0 last:pb-0">
-                      <div className="p-1 rounded-lg bg-blue-50 text-blue-600 mt-0.5 shrink-0">
+                      <div className="p-1 rounded-lg bg-emerald-50 text-[#16805B] mt-0.5 shrink-0">
                         {act.type === "LESSON_COMPLETED" ? (
                           <CheckCircle2 className="w-3.5 h-3.5" />
                         ) : act.type === "CLASS_BOOKED" ? (
@@ -457,10 +457,10 @@ export default function StudentDashboardPage() {
 
         {/* Academic Focus & Personalized Recommendations */}
         <div className="space-y-6">
-          <Card className="p-6 bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-purple-50/50 border border-blue-200/80 rounded-3xl shadow-sm">
+          <Card className="p-6 bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-slate-50/40 border border-emerald-200/80 rounded-3xl shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-[#3157D5]/10 text-[#3157D5] flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-[#16805B]/10 text-[#16805B] flex items-center justify-center shrink-0">
                   <GraduationCap className="w-6 h-6" />
                 </div>
                 <div>
@@ -479,7 +479,7 @@ export default function StudentDashboardPage() {
               </div>
 
               <Link href="/profile/edit" className="shrink-0">
-                <Button variant="outline" size="sm" className="bg-white border-blue-200 text-[#3157D5] hover:bg-blue-50 font-bold shadow-sm">
+                <Button variant="outline" size="sm" className="bg-white border-emerald-200 text-[#16805B] hover:bg-emerald-50 font-bold shadow-sm">
                   Update Academic Focus
                 </Button>
               </Link>
@@ -493,12 +493,12 @@ export default function StudentDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[#3157D5]" />
+                    <Sparkles className="w-4 h-4 text-[#16805B]" />
                     Recommended Educators For You
                   </h4>
                   <p className="text-xs text-slate-500">Handpicked educators verified by EduConnects</p>
                 </div>
-                <Link href="/student/teachers" className="text-xs font-bold text-[#3157D5] hover:underline flex items-center gap-1">
+                <Link href="/student/teachers" className="text-xs font-bold text-[#16805B] hover:underline flex items-center gap-1">
                   View All <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
@@ -509,17 +509,17 @@ export default function StudentDashboardPage() {
                     <Link
                       key={t.id}
                       href={`/teachers/${t.id}`}
-                      className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-blue-50/50 hover:border-blue-200 transition-all flex items-center gap-3 group"
+                      className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-emerald-50/40 hover:border-emerald-200 transition-all flex items-center gap-3 group"
                     >
                       {t.avatarUrl ? (
                         <img src={t.avatarUrl} alt={t.name} className="w-10 h-10 rounded-xl object-cover" />
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#3157D5] font-bold flex items-center justify-center text-sm">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-100 text-[#16805B] font-bold flex items-center justify-center text-sm">
                           {t.name.charAt(0)}
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-slate-900 truncate group-hover:text-[#3157D5]">{t.name}</p>
+                        <p className="text-xs font-bold text-slate-900 truncate group-hover:text-[#16805B]">{t.name}</p>
                         <p className="text-[11px] text-slate-500 truncate">{t.headline || (Array.isArray(t.subjects) ? t.subjects.slice(0, 2).join(", ") : t.subjects)}</p>
                         <p className="text-[10px] font-bold text-emerald-600 mt-0.5">{t.hourlyRateFormatted || `₹${t.hourlyRate || 0}`}/hr</p>
                       </div>
@@ -582,7 +582,7 @@ export default function StudentDashboardPage() {
           <Card className="space-y-3 p-5 bg-white border border-slate-200 rounded-3xl hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Discovery</span>
-              <Search className="h-4 w-4 text-blue-600" />
+              <Search className="h-4 w-4 text-[#16805B]" />
             </div>
             <h3 className="text-base font-bold text-slate-900">Find Teachers</h3>
             <p className="text-xs text-slate-500">Search verified educators, view qualifications, and book sessions.</p>

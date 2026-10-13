@@ -24,8 +24,8 @@ export function AnalyticsChart({
   data = [],
   type = "bar",
   height = 220,
-  primaryColor = "#2563eb", // Blue
-  secondaryColor = "#8b5cf6", // Purple
+  primaryColor = "#16805B", // Brand Emerald Teal
+  secondaryColor = "#35A979", // Brand Accent Emerald Light
   primaryLabel = "Primary",
   secondaryLabel = "Secondary",
 }: AnalyticsChartProps) {

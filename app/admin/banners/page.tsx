@@ -1217,7 +1217,7 @@ export default function AdminPromotionalBannersPage() {
                       onClick={() => setPreviewTheme("LEARNERS")}
                       className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-colors ${
                         previewTheme === "LEARNERS"
-                          ? "bg-[#3157D5] text-white"
+                          ? "bg-[#16805B] text-white"
                           : "text-slate-600 hover:bg-slate-100"
                       }`}
                     >
@@ -1632,7 +1632,7 @@ export default function AdminPromotionalBannersPage() {
                 onClick={() => setPreviewTheme("LEARNERS")}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   previewTheme === "LEARNERS"
-                    ? "bg-[#3157D5] text-white shadow-md"
+                    ? "bg-[#16805B] text-white shadow-md"
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >

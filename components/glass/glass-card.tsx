@@ -17,7 +17,7 @@ export interface GlassCardProps extends HTMLMotionProps<"div"> {
 }
 
 export const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
-  ({ className, enableTilt = true, dark = false, glowColor = "rgba(11, 79, 75, 0.08)", children, ...props }, ref) => {
+  ({ className, enableTilt = true, dark = false, glowColor = "rgba(22, 128, 91, 0.08)", children, ...props }, ref) => {
     const cardRef = useRef<HTMLDivElement>(null);
 
     // 3D Parallax Tilt Values

@@ -107,18 +107,18 @@
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid #DCE5E4;
+  border: 1px solid #E2E8F0;
   box-shadow: 
-    0 20px 50px rgba(16, 42, 42, 0.04),
-    0 8px 16px rgba(11, 79, 75, 0.03),
+    0 20px 50px rgba(15, 23, 42, 0.04),
+    0 8px 16px rgba(22, 128, 91, 0.03),
     inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
 .glass-surface-dark {
-  background: rgba(7, 63, 60, 0.88);
+  background: rgba(13, 92, 65, 0.88);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(220, 229, 228, 0.2);
+  border: 1px solid rgba(167, 243, 208, 0.2);
   box-shadow: 
     0 24px 60px rgba(7, 63, 60, 0.25),
     inset 0 1px 1px rgba(255, 255, 255, 0.15);
@@ -128,8 +128,8 @@
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid #DCE5E4;
-  box-shadow: 0 10px 30px rgba(11, 79, 75, 0.06);
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 10px 30px rgba(22, 128, 91, 0.06);
 }
 
 /* Premium Glass Select & Dropdown Utilities */
@@ -152,10 +152,10 @@ select.bg-slate-50,
 select.text-slate-900,
 select.text-slate-800,
 select.text-slate-700 {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='%230B4F4B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E") !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='%2316805B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E") !important;
   background-color: #ffffff !important;
-  border: 1px solid #DCE5E4 !important;
-  color: #102A2A !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
 }
 
 .glass-select:hover,
@@ -165,8 +165,8 @@ select.text-slate-900:hover,
 select.text-slate-800:hover,
 select.text-slate-700:hover {
   background-color: #ffffff !important;
-  border-color: #0B4F4B !important;
-  color: #102A2A !important;
+  border-color: #16805B !important;
+  color: #0F172A !important;
 }
 
 .glass-select:focus,
@@ -177,9 +177,9 @@ select.text-slate-800:focus,
 select.text-slate-700:focus {
   outline: none !important;
   background-color: #ffffff !important;
-  border-color: #0B4F4B !important;
-  color: #102A2A !important;
-  box-shadow: 0 0 0 3px rgba(11, 79, 75, 0.2) !important;
+  border-color: #16805B !important;
+  color: #0F172A !important;
+  box-shadow: 0 0 0 3px rgba(22, 128, 91, 0.2) !important;
 }
 
 .glass-select option,
@@ -189,7 +189,7 @@ select.text-slate-900 option,
 select.text-slate-800 option,
 select.text-slate-700 option {
   background-color: #ffffff !important;
-  color: #102A2A !important;
+  color: #0F172A !important;
   font-weight: 600;
   padding: 10px 14px;
 }
@@ -277,9 +277,9 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-  -webkit-text-fill-color: #102A2A !important;
-  color: #102A2A !important;
-  caret-color: #102A2A !important;
+  -webkit-text-fill-color: #0F172A !important;
+  color: #0F172A !important;
+  caret-color: #0F172A !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
@@ -315,8 +315,8 @@ input[class*="bg-slate-900"]:-webkit-autofill:focus,
 .dark-input-crisp:-webkit-autofill:hover,
 .dark-input-crisp:-webkit-autofill:focus {
   -webkit-text-fill-color: #ffffff !important;
-  -webkit-box-shadow: 0 0 0px 1000px #073F3C inset !important;
-  box-shadow: 0 0 0px 1000px #073F3C inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0D5C41 inset !important;
+  box-shadow: 0 0 0px 1000px #0D5C41 inset !important;
   color: #ffffff !important;
   caret-color: #ffffff !important;
 }
@@ -332,10 +332,10 @@ input[class*="bg-slate-900"]:-webkit-autofill:focus,
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(28px) saturate(190%);
   -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid #DCE5E4;
+  border: 1px solid #E2E8F0;
   box-shadow: 
-    0 24px 60px rgba(16, 42, 42, 0.1),
-    0 6px 16px rgba(11, 79, 75, 0.05);
+    0 24px 60px rgba(15, 23, 42, 0.1),
+    0 6px 16px rgba(22, 128, 91, 0.05);
   border-radius: 1.25rem;
 }
 
@@ -345,8 +345,8 @@ input[class*="bg-slate-900"]:-webkit-autofill:focus,
 }
 
 .glass-dropdown-item:hover {
-  background-color: rgba(11, 79, 75, 0.08);
-  color: #0B4F4B;
+  background-color: rgba(22, 128, 91, 0.08);
+  color: #0D5C41;
 }
 
 /* Perspective container for 3D tilts */

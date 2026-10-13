@@ -113,22 +113,22 @@ export default function CoursePlatformPage() {
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-[#16805B] selection:text-white">
       <FloatingNavbar />
 
       {/* Hero Header Section */}
-      <section className="relative pt-28 pb-16 overflow-hidden bg-gradient-to-b from-blue-900/10 via-indigo-950/5 to-transparent">
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-tr from-blue-600/15 via-indigo-500/15 to-purple-600/15 blur-3xl pointer-events-none rounded-full" />
+      <section className="relative pt-28 pb-16 overflow-hidden bg-gradient-to-b from-[#16805B]/10 via-[#0D5C41]/5 to-transparent">
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-tr from-emerald-600/15 via-[#16805B]/15 to-teal-600/15 blur-3xl pointer-events-none rounded-full" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold uppercase tracking-wider mb-4 backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[#16805B] dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-4 backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5" />
             <span>EduConnects Course Platform</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-slate-100 max-w-3xl mx-auto">
             Master Any Subject with{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#16805B] via-emerald-600 to-teal-600 bg-clip-text text-transparent">
               Self-Paced Learning
             </span>
           </h1>
@@ -139,7 +139,7 @@ export default function CoursePlatformPage() {
 
           {/* Search Bar */}
           <div className="mt-8 max-w-2xl mx-auto">
-            <div className="relative flex items-center shadow-xl shadow-blue-500/5 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
+            <div className="relative flex items-center shadow-xl shadow-[#16805B]/5 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
               <Search className="absolute left-4 w-5 h-5 text-slate-400" />
               <input
                 type="text"
@@ -173,7 +173,7 @@ export default function CoursePlatformPage() {
                 }}
                 className={`px-4 py-2 text-xs font-semibold rounded-xl whitespace-nowrap transition-all duration-200 ${
                   selectedSubject === sub
-                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20 scale-105"
+                    ? "bg-gradient-to-r from-[#16805B] to-[#0D5C41] text-white shadow-md shadow-emerald-500/20 scale-105"
                     : "bg-white/60 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
@@ -192,7 +192,7 @@ export default function CoursePlatformPage() {
             <div className="p-6 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 text-sm uppercase tracking-wider">
-                  <Filter className="w-4 h-4 text-blue-500" /> Filter Courses
+                  <Filter className="w-4 h-4 text-[#16805B]" /> Filter Courses
                 </h3>
                 {(selectedSubject !== "All" || selectedLevel !== "all" || academicLevel !== "all" || priceMax !== undefined) && (
                   <button
@@ -207,7 +207,7 @@ export default function CoursePlatformPage() {
                       setPriceMax(undefined);
                       setPage(1);
                     }}
-                    className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                    className="text-xs text-[#16805B] dark:text-emerald-400 font-semibold hover:underline"
                   >
                     Reset
                   </button>
@@ -217,7 +217,7 @@ export default function CoursePlatformPage() {
               {/* Academic Level Filter */}
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mb-2">
-                  <GraduationCap className="w-3.5 h-3.5 text-blue-500" /> Academic Level
+                  <GraduationCap className="w-3.5 h-3.5 text-[#16805B]" /> Academic Level
                 </label>
                 <select
                   value={academicLevel}
@@ -229,7 +229,7 @@ export default function CoursePlatformPage() {
                     setDiplomaBranch("all");
                     setPage(1);
                   }}
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 font-medium cursor-pointer"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-[#16805B] font-medium cursor-pointer"
                 >
                   <option value="all">All Academic Levels</option>
                   <option value="SCHOOL">School Education</option>
@@ -344,7 +344,7 @@ export default function CoursePlatformPage() {
                 </label>
                 <div className="space-y-2">
                   {LEVELS.map((lvl) => (
-                    <label key={lvl.value} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 font-medium cursor-pointer hover:text-blue-600">
+                    <label key={lvl.value} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 font-medium cursor-pointer hover:text-[#16805B]">
                       <input
                         type="radio"
                         name="level"
@@ -353,7 +353,7 @@ export default function CoursePlatformPage() {
                           setSelectedLevel(lvl.value);
                           setPage(1);
                         }}
-                        className="text-blue-600 focus:ring-blue-500"
+                        className="text-[#16805B] focus:ring-[#16805B]"
                       />
                       {lvl.label}
                     </label>
@@ -370,7 +370,7 @@ export default function CoursePlatformPage() {
                   <button
                     onClick={() => { setPriceMax(undefined); setPage(1); }}
                     className={`w-full px-3 py-1.5 text-left text-xs font-medium rounded-lg border ${
-                      priceMax === undefined ? "bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-600" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                      priceMax === undefined ? "bg-emerald-50 dark:bg-emerald-950/50 border-[#16805B] text-[#16805B]" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
                     Any Price
@@ -378,7 +378,7 @@ export default function CoursePlatformPage() {
                   <button
                     onClick={() => { setPriceMax(0); setPage(1); }}
                     className={`w-full px-3 py-1.5 text-left text-xs font-medium rounded-lg border ${
-                      priceMax === 0 ? "bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-600" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                      priceMax === 0 ? "bg-emerald-50 dark:bg-emerald-950/50 border-[#16805B] text-[#16805B]" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
                     Free Only (₹0)
@@ -386,7 +386,7 @@ export default function CoursePlatformPage() {
                   <button
                     onClick={() => { setPriceMax(1000); setPage(1); }}
                     className={`w-full px-3 py-1.5 text-left text-xs font-medium rounded-lg border ${
-                      priceMax === 1000 ? "bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-600" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                      priceMax === 1000 ? "bg-emerald-50 dark:bg-emerald-950/50 border-[#16805B] text-[#16805B]" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
                     Under ₹1,000
@@ -394,7 +394,7 @@ export default function CoursePlatformPage() {
                   <button
                     onClick={() => { setPriceMax(2500); setPage(1); }}
                     className={`w-full px-3 py-1.5 text-left text-xs font-medium rounded-lg border ${
-                      priceMax === 2500 ? "bg-blue-50 dark:bg-blue-950/50 border-blue-500 text-blue-600" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                      priceMax === 2500 ? "bg-emerald-50 dark:bg-emerald-950/50 border-[#16805B] text-[#16805B]" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
                     Under ₹2,500
@@ -465,7 +465,7 @@ export default function CoursePlatformPage() {
                     setSelectedLevel("all");
                     setPriceMax(undefined);
                   }}
-                  className="mt-4 px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white shadow-md hover:bg-blue-700 transition"
+                  className="mt-4 px-4 py-2 text-xs font-semibold rounded-xl bg-[#16805B] text-white shadow-md hover:bg-[#0D5C41] transition"
                 >
                   Clear Filters
                 </button>

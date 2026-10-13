@@ -97,7 +97,7 @@ export default function PublicTeacherProfilePage() {
               <h3 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Teaching Subjects</h3>
               <div className="flex flex-wrap gap-2">
                 {teacher.subjects.map((sub: string, idx: number) => (
-                  <GlassBadge key={idx} variant="indigo" size="md">
+                  <GlassBadge key={idx} variant="emerald" size="md">
                     {sub}
                   </GlassBadge>
                 ))}
@@ -112,7 +112,7 @@ export default function PublicTeacherProfilePage() {
               <GlassButton
                 variant="primary"
                 size="lg"
-                className="bg-[#3157D5] hover:bg-[#243B9B] text-white"
+                className="bg-[#16805B] hover:bg-[#0D5C41] text-white shadow-md shadow-emerald-700/20"
                 onClick={() => {
                   const firstCourse = teacher.courses && teacher.courses.length > 0 ? teacher.courses[0] : null;
                   const cParam = firstCourse ? `&courseId=${firstCourse.id}` : "";

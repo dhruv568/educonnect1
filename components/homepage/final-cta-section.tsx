@@ -7,12 +7,12 @@ import { GlassButton } from "@/components/glass/glass-button";
 
 export function FinalCtaSection() {
   return (
-    <section className="py-20 lg:py-24 bg-[#0F5C5A] text-white border-b border-[#083F3D] font-sans relative overflow-hidden">
+    <section className="py-20 lg:py-24 bg-[#16805B] text-white border-b border-[#0D5C41] font-sans relative overflow-hidden">
       {/* Background Subtle Accent Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-64 bg-[#F2C14E]/10 blur-3xl rounded-full pointer-events-none" />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6 relative z-10">
-        <span className="px-3.5 py-1.5 rounded-full bg-[#E6F0EF] text-[#0F5C5A] text-xs font-black uppercase tracking-wider">
+        <span className="px-3.5 py-1.5 rounded-full bg-[#F0FAF5] text-[#16805B] text-xs font-black uppercase tracking-wider">
           TAKE YOUR NEXT STEP
         </span>
 
@@ -20,7 +20,7 @@ export function FinalCtaSection() {
           Ready to start learning?
         </h2>
 
-        <p className="text-base sm:text-lg text-teal-100/90 max-w-xl mx-auto font-normal leading-relaxed">
+        <p className="text-base sm:text-lg text-emerald-100/90 max-w-xl mx-auto font-normal leading-relaxed">
           Find the right educators, explore courses and discover new ways to grow with EduConnects.
         </p>
 
@@ -29,7 +29,7 @@ export function FinalCtaSection() {
             <GlassButton
               variant="primary"
               size="lg"
-              className="w-full sm:w-auto bg-[#083F3D] hover:bg-[#052C2A] active:bg-[#052C2A] text-white border border-[#2A8C84]/40 font-extrabold px-8 py-3.5 rounded-full shadow-xl text-sm transition-all"
+              className="w-full sm:w-auto bg-[#0D5C41] hover:bg-[#09422F] active:bg-[#09422F] text-white border border-emerald-400/40 font-extrabold px-8 py-3.5 rounded-full shadow-xl text-sm transition-all"
               rightIcon={<ArrowRight className="h-4.5 w-4.5" />}
             >
               Find an Educator →
@@ -40,7 +40,7 @@ export function FinalCtaSection() {
             <GlassButton
               variant="secondary"
               size="lg"
-              className="w-full sm:w-auto bg-white/10 hover:bg-[#083F3D] active:bg-[#052C2A] text-white border border-white/20 font-bold px-7 py-3.5 rounded-full text-sm transition-all"
+              className="w-full sm:w-auto bg-white/10 hover:bg-[#0D5C41] active:bg-[#09422F] text-white border border-white/20 font-bold px-7 py-3.5 rounded-full text-sm transition-all"
               leftIcon={<BookOpen className="h-4.5 w-4.5" />}
             >
               Explore Courses
