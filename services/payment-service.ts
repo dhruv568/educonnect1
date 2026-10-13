@@ -119,6 +119,26 @@ export class PaymentService {
           where: { id: liveClassSlotId },
           include: { bookings: true, teacher: true },
         });
+
+        if (!slot) {
+          const session = await prisma.liveClassSession.findFirst({
+            where: {
+              OR: [
+                { id: liveClassSlotId },
+                { roomId: liveClassSlotId },
+                { liveClassSlotId },
+              ],
+            },
+            include: {
+              liveClassSlot: {
+                include: { bookings: true, teacher: true },
+              },
+            },
+          });
+          if (session?.liveClassSlot) {
+            slot = session.liveClassSlot;
+          }
+        }
       }
 
       const reqTeacherId = teacherId || (params as any).educatorId;

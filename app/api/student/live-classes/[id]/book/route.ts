@@ -5,7 +5,7 @@ import { PaymentService } from "@/services/payment-service";
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const session = await requireRole(["STUDENT"]);
+    const session = await requireRole(["STUDENT", "LEARNER"]);
 
     const result = await PaymentService.createPaymentOrder({
       userId: session.userId,
