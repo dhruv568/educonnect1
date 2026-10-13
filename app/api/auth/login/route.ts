@@ -42,8 +42,11 @@ export async function POST(request: NextRequest) {
         await setSessionCookie(result.user, rawHost);
       }
 
-      let redirectPath = result.redirectPath || "/";
-      if (result.user) {
+      const targetParam = validatedData.returnTo || validatedData.redirectTo;
+      const safeCustomReturn = targetParam && isSafeRedirectPath(targetParam) ? sanitizeRedirectUrl(targetParam) : null;
+
+      let redirectPath = safeCustomReturn || result.redirectPath || "/";
+      if (!safeCustomReturn && result.user) {
         if (isEducatorRole(result.user.role)) {
           redirectPath = "/teacher/dashboard";
         } else if (isLearnerRole(result.user.role)) {
@@ -114,8 +117,15 @@ export async function POST(request: NextRequest) {
     await logAuditEvent(user.id, "LOGIN_OTP_DISPATCHED", { role: user.role });
 
     // Step 4: Determine canonical redirect path for OTP verification page based strictly on server/database role
+    const customTargetParam = validatedData.returnTo || validatedData.redirectTo;
+    const safeOtpReturn = customTargetParam && isSafeRedirectPath(customTargetParam)
+      ? sanitizeRedirectUrl(customTargetParam)
+      : null;
+
     let redirectPath = `/verify-email?email=${encodeURIComponent(user.email)}`;
-    if (isAdmin) {
+    if (safeOtpReturn) {
+      redirectPath += `&returnTo=${encodeURIComponent(safeOtpReturn)}&redirectTo=${encodeURIComponent(safeOtpReturn)}`;
+    } else if (isAdmin) {
       redirectPath = `/verify-email?email=${encodeURIComponent(user.email)}&redirectTo=%2Fadmin`;
     } else if (isEducatorRole(user.role)) {
       redirectPath = `/verify-email?email=${encodeURIComponent(user.email)}&redirectTo=%2Fteacher%2Fdashboard`;
