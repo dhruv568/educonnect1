@@ -88,7 +88,17 @@ export default function VirtualClassroomPage() {
         const data = await res.json();
 
         if (!data.success) {
-          setError(data.error || "Failed to load classroom session.");
+          const reason = data.error || data.data?.reason || "Failed to load classroom session.";
+          // If the session exists and requires booking/enrollment, redirect to live-class entry page
+          if (data.data?.requiresBooking || reason.includes("booking") || reason.includes("book") || reason.includes("not have a confirmed booking")) {
+            const targetId = data.data?.sessionDetails?.liveClassSlotId || data.data?.sessionDetails?.id || sessionId;
+            window.location.replace(`/live-class/${targetId}`);
+            return;
+          }
+          setError(reason);
+          if (data.data?.sessionDetails) {
+            setSessionDetails(data.data.sessionDetails);
+          }
           return;
         }
 
@@ -461,18 +471,30 @@ export default function VirtualClassroomPage() {
   }
 
   if (error || !sessionDetails) {
+    const isBookingIssue = error?.includes("booking") || error?.includes("book") || error?.includes("not have a confirmed booking");
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center space-y-4">
         <div className="bg-red-500/10 border border-red-500/30 rounded-3xl p-6 max-w-md w-full text-red-200">
-          <h2 className="text-lg font-bold text-white mb-2">Classroom Access Error</h2>
+          <h2 className="text-lg font-bold text-white mb-2">Classroom Access Notice</h2>
           <p className="text-xs text-red-300 mb-4">{error || "Unable to access this classroom."}</p>
-          <button
-            type="button"
-            onClick={() => router.push(isTeacher ? "/teacher/dashboard" : "/student/dashboard")}
-            className="w-full h-10 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl"
-          >
-            Return to Dashboard
-          </button>
+          <div className="flex flex-col gap-2">
+            {isBookingIssue && (
+              <button
+                type="button"
+                onClick={() => window.location.replace(`/live-class/${sessionDetails?.liveClassSlotId || sessionId}`)}
+                className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-colors"
+              >
+                View Class Details & Enroll
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => router.push(isTeacher ? "/teacher/dashboard" : "/student/dashboard")}
+              className="w-full h-10 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-xl"
+            >
+              Return to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
