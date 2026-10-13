@@ -18,7 +18,16 @@ interface SignalItem {
   id: string;
   fromUserId: string;
   toUserId: string;
-  type: "offer" | "answer" | "candidate" | "media-state" | "peer-left" | "peer-joined";
+  type:
+    | "offer"
+    | "answer"
+    | "candidate"
+    | "media-state"
+    | "peer-left"
+    | "peer-joined"
+    | "class-ended"
+    | "whiteboard-update"
+    | "draw-permission";
   payload: any;
   timestamp: number;
 }
@@ -27,6 +36,9 @@ interface RoomSignalingState {
   canonicalId: string;
   peers: Map<string, PeerState>;
   signals: Map<string, SignalItem[]>; // destination userId -> pending signals
+  isEnded?: boolean;
+  endedAt?: number;
+  whiteboardState?: any;
 }
 
 // Global in-memory storage for classroom signaling
@@ -242,6 +254,40 @@ export async function POST(
       return apiSuccess({ updated: true, peers: Array.from(room.peers.values()) });
     }
 
+    if (action === "broadcast") {
+      if (!type) {
+        return apiError("Missing broadcast signal type", 400);
+      }
+
+      // Update sender lastSeen
+      const sender = room.peers.get(effectiveUserId);
+      if (sender) sender.lastSeen = now;
+
+      if (type === "whiteboard-update") {
+        (room as any).whiteboardState = payload?.elements;
+      } else if (type === "class-ended") {
+        (room as any).isEnded = true;
+      }
+
+      // Queue for all other peers in the room
+      for (const destId of Array.from(room.peers.keys())) {
+        if (destId !== effectiveUserId) {
+          const queue = room.signals.get(destId) || [];
+          queue.push({
+            id: Math.random().toString(36).substring(2),
+            fromUserId: effectiveUserId,
+            toUserId: destId,
+            type: type as any,
+            payload,
+            timestamp: now,
+          });
+          room.signals.set(destId, queue);
+        }
+      }
+
+      return apiSuccess({ broadcast: true, peerCount: room.peers.size });
+    }
+
     if (action === "leave") {
       room.peers.delete(effectiveUserId);
       room.signals.delete(effectiveUserId);
@@ -266,7 +312,7 @@ export async function POST(
     if (action === "heartbeat") {
       const peer = room.peers.get(effectiveUserId);
       if (peer) peer.lastSeen = now;
-      return apiSuccess({ alive: true, peerCount: room.peers.size });
+      return apiSuccess({ alive: true, peerCount: room.peers.size, isEnded: !!(room as any).isEnded });
     }
 
     return apiError("Unknown signaling action", 400);
@@ -313,6 +359,8 @@ export async function GET(
       signals,
       peers: allPeers,
       peerCount: allPeers.length,
+      isEnded: !!(room as any).isEnded,
+      whiteboardState: (room as any).whiteboardState || null,
     });
   } catch (error: any) {
     console.error("[Signaling Poll Error]:", error);

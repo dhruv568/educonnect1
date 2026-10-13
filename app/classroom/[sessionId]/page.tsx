@@ -57,6 +57,7 @@ export default function VirtualClassroomPage() {
 
   // Drawers & Modals
   const [activeDrawer, setActiveDrawer] = useState<"participants" | "chat" | "whiteboard" | "files" | null>(null);
+  const [isWhiteboardExpanded, setIsWhiteboardExpanded] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -310,6 +311,31 @@ export default function VirtualClassroomPage() {
         setPermissionError(data.message);
       });
 
+      // Real-time Class Ended Broadcast Handler
+      adapter.on("class-ended", (data) => {
+        setIsClassEnded(true);
+        if (heartbeatTimerRef.current) clearInterval(heartbeatTimerRef.current);
+        if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      });
+
+      // Real-time Whiteboard Update Broadcast Handler
+      adapter.on("whiteboard-update", (data) => {
+        if (Array.isArray(data.elements)) {
+          setWhiteboardElements(data.elements);
+        }
+        // Auto-open whiteboard for learners when educator starts drawing
+        if (data.fromUserId && data.fromUserId !== currentUserId && !isTeacher) {
+          setActiveDrawer("whiteboard");
+        }
+      });
+
+      // Real-time Student Drawing Permission Handler
+      adapter.on("draw-permission-changed", (data) => {
+        if (typeof data.studentCanDraw === "boolean") {
+          setStudentCanDraw(data.studentCanDraw);
+        }
+      });
+
       // Connect to Provider using active canonical ID and user-selected devices
       await adapter.connect({
         sessionId: activeId,
@@ -348,7 +374,8 @@ export default function VirtualClassroomPage() {
     if (heartbeatTimerRef.current) clearInterval(heartbeatTimerRef.current);
     heartbeatTimerRef.current = setInterval(async () => {
       try {
-        await fetch(`/api/classroom/${sessionId}/attendance`, {
+        const activeId = sessionDetails?.id || sessionId;
+        await fetch(`/api/classroom/${activeId}/attendance`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ secondsElapsed: 30 }),
@@ -362,16 +389,30 @@ export default function VirtualClassroomPage() {
   // Polling for updates
   const startPolling = () => {
     if (pollTimerRef.current) clearInterval(pollTimerRef.current);
-    pollTimerRef.current = setInterval(() => {
+    pollTimerRef.current = setInterval(async () => {
       fetchChatMessages();
       fetchWhiteboardState();
+
+      // Check if session status was marked ENDED
+      const activeId = sessionDetails?.id || sessionId;
+      try {
+        const res = await fetch(`/api/classroom/${activeId}`);
+        const data = await res.json();
+        if (data.data?.sessionDetails?.status === "ENDED") {
+          setIsClassEnded(true);
+          if (providerRef.current) await providerRef.current.disconnect();
+          if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+          if (heartbeatTimerRef.current) clearInterval(heartbeatTimerRef.current);
+        }
+      } catch {}
     }, 4000);
   };
 
   // Fetch Chat
   const fetchChatMessages = async () => {
     try {
-      const res = await fetch(`/api/classroom/${sessionId}/messages`);
+      const activeId = sessionDetails?.id || sessionId;
+      const res = await fetch(`/api/classroom/${activeId}/messages`);
       const data = await res.json();
       if (data.success) {
         setMessages(data.data.messages || []);
@@ -384,7 +425,8 @@ export default function VirtualClassroomPage() {
   // Fetch Whiteboard
   const fetchWhiteboardState = async () => {
     try {
-      const res = await fetch(`/api/classroom/${sessionId}/whiteboard`);
+      const activeId = sessionDetails?.id || sessionId;
+      const res = await fetch(`/api/classroom/${activeId}/whiteboard`);
       const data = await res.json();
       if (data.success) {
         setWhiteboardElements(data.data.elements || []);
@@ -398,7 +440,8 @@ export default function VirtualClassroomPage() {
   // Fetch Files
   const fetchFiles = async () => {
     try {
-      const res = await fetch(`/api/classroom/${sessionId}/files`);
+      const activeId = sessionDetails?.id || sessionId;
+      const res = await fetch(`/api/classroom/${activeId}/files`);
       const data = await res.json();
       if (data.success) {
         setFiles(data.data.files || []);
@@ -457,9 +500,15 @@ export default function VirtualClassroomPage() {
 
   const handleEndClass = async () => {
     try {
-      const res = await fetch(`/api/classroom/${sessionId}/end`, { method: "POST" });
+      const activeId = sessionDetails?.id || sessionId;
+      const res = await fetch(`/api/classroom/${activeId}/end`, { method: "POST" });
       const data = await res.json();
       if (data.success) {
+        if (providerRef.current) {
+          await providerRef.current.disconnect();
+        }
+        if (heartbeatTimerRef.current) clearInterval(heartbeatTimerRef.current);
+        if (pollTimerRef.current) clearInterval(pollTimerRef.current);
         setIsClassEnded(true);
         setSummaryData(data.data);
       }
@@ -469,7 +518,8 @@ export default function VirtualClassroomPage() {
   };
 
   const handleSendMessage = async (text: string) => {
-    const res = await fetch(`/api/classroom/${sessionId}/messages`, {
+    const activeId = sessionDetails?.id || sessionId;
+    const res = await fetch(`/api/classroom/${activeId}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: text }),
@@ -481,17 +531,31 @@ export default function VirtualClassroomPage() {
   };
 
   const handleSaveWhiteboardState = async (elements: WhiteboardElement[]) => {
-    await fetch(`/api/classroom/${sessionId}/whiteboard`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ elements }),
-    });
+    setWhiteboardElements(elements);
+
+    // 1. Instant Peer Broadcast via WebRTC / Signaling adapter (< 200ms)
+    if (providerRef.current) {
+      await providerRef.current.broadcastWhiteboard(elements, "update");
+    }
+
+    // 2. Persistent Storage to API
+    const activeId = sessionDetails?.id || sessionId;
+    try {
+      await fetch(`/api/classroom/${activeId}/whiteboard`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ elements }),
+      });
+    } catch (e) {
+      console.warn("Whiteboard save note:", e);
+    }
   };
 
   const handleUploadFile = async (file: File) => {
+    const activeId = sessionDetails?.id || sessionId;
     const formData = new FormData();
     formData.append("file", file);
-    const res = await fetch(`/api/classroom/${sessionId}/files`, {
+    const res = await fetch(`/api/classroom/${activeId}/files`, {
       method: "POST",
       body: formData,
     });
@@ -504,7 +568,8 @@ export default function VirtualClassroomPage() {
   };
 
   const handleToggleStudentDraw = async (enabled: boolean) => {
-    const res = await fetch(`/api/classroom/${sessionId}/moderate`, {
+    const activeId = sessionDetails?.id || sessionId;
+    const res = await fetch(`/api/classroom/${activeId}/moderate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "TOGGLE_STUDENT_DRAW", enabled }),
@@ -622,7 +687,13 @@ export default function VirtualClassroomPage() {
               onClick={() => setActiveDrawer(null)}
             />
 
-            <div className="w-full md:w-96 h-full absolute right-0 top-0 bottom-0 z-40 shadow-2xl bg-slate-900 border-l border-slate-800 flex flex-col animate-in slide-in-from-right duration-200">
+            <div
+              className={`w-full ${
+                activeDrawer === "whiteboard" && isWhiteboardExpanded
+                  ? "md:w-[680px] lg:w-[860px]"
+                  : "md:w-96"
+              } h-full absolute right-0 top-0 bottom-0 z-40 shadow-2xl bg-slate-900 border-l border-slate-800 flex flex-col transition-all duration-200 animate-in slide-in-from-right`}
+            >
               {activeDrawer === "participants" && (
                 <ParticipantsPanel
                   participants={participants}
@@ -653,6 +724,8 @@ export default function VirtualClassroomPage() {
                   isTeacher={isTeacher}
                   onSaveState={handleSaveWhiteboardState}
                   onClose={() => setActiveDrawer(null)}
+                  isExpanded={isWhiteboardExpanded}
+                  onToggleExpand={() => setIsWhiteboardExpanded((prev) => !prev)}
                 />
               )}
 

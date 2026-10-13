@@ -11,6 +11,9 @@ export type ClassroomEventType =
   | "participants-changed"
   | "peer-media-state-changed"
   | "remote-screen-changed"
+  | "class-ended"
+  | "whiteboard-update"
+  | "draw-permission-changed"
   | "error";
 
 export type ClassroomEventHandler = (data: any) => void;

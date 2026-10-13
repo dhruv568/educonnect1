@@ -21,8 +21,16 @@ export async function GET(
     }
 
     const liveSession = accessCheck.liveSession;
+    const canonicalRoomId = liveSession.id;
+
+    // Check in-memory signaling store for the most recent live state
+    const signalingStore = (global as any).__classroomSignaling;
+    const cachedState = signalingStore?.get(canonicalRoomId)?.whiteboardState;
+
     let whiteboardElements = [];
-    if (liveSession.whiteboardState) {
+    if (cachedState && Array.isArray(cachedState)) {
+      whiteboardElements = cachedState;
+    } else if (liveSession.whiteboardState) {
       try {
         whiteboardElements = JSON.parse(liveSession.whiteboardState);
       } catch {
@@ -57,6 +65,7 @@ export async function POST(
     }
 
     const liveSession = accessCheck.liveSession;
+    const canonicalRoomId = liveSession.id;
     const isTeacher = accessCheck.isTeacher || false;
 
     if (!isTeacher && !liveSession.studentCanDraw) {
@@ -68,14 +77,27 @@ export async function POST(
 
     const stateJson = JSON.stringify(elements || []);
 
+    // Always update using canonical primary key id
     await prisma.liveClassSession.update({
-      where: { id: sessionId },
+      where: { id: canonicalRoomId },
       data: {
         whiteboardState: stateJson,
       },
     });
 
-    return apiSuccess({ elements, studentCanDraw: liveSession.studentCanDraw }, "Whiteboard state saved.");
+    // Update in-memory signaling store
+    const signalingStore = (global as any).__classroomSignaling;
+    if (signalingStore) {
+      const room = signalingStore.get(canonicalRoomId);
+      if (room) {
+        room.whiteboardState = elements || [];
+      }
+    }
+
+    return apiSuccess(
+      { elements, studentCanDraw: liveSession.studentCanDraw },
+      "Whiteboard state saved."
+    );
   } catch (error: any) {
     console.error("[Save Whiteboard Error]:", error);
     return apiError("Failed to update whiteboard state.", 500);

@@ -14,9 +14,17 @@ export async function POST(
     }
 
     const { sessionId } = params;
+    const currentUserId = session.userId || session.id;
 
-    const liveSession = await prisma.liveClassSession.findUnique({
-      where: { id: sessionId },
+    // 1. Resolve session supporting session ID, slot ID, or room ID
+    const liveSession = await prisma.liveClassSession.findFirst({
+      where: {
+        OR: [
+          { id: sessionId },
+          { liveClassSlotId: sessionId },
+          { roomId: sessionId },
+        ],
+      },
       include: {
         teacher: true,
         liveClassSlot: {
@@ -31,69 +39,111 @@ export async function POST(
       return apiError("Classroom session not found.", 404);
     }
 
-    if (liveSession.teacher.userId !== session.id) {
+    // Authorization check
+    if (liveSession.teacher.userId !== currentUserId && (session as any).role !== "ADMIN") {
       return apiError("Only the assigned teacher can end this live class.", 403);
     }
 
+    const canonicalSessionId = liveSession.id;
     const now = new Date();
     const startAt = liveSession.actualStartAt || liveSession.scheduledStartAt;
     const durationMs = Math.max(0, now.getTime() - startAt.getTime());
     const durationMinutes = Math.max(1, Math.round(durationMs / (1000 * 60)));
 
-    // 1. Update session status
-    const updatedSession = await prisma.liveClassSession.update({
-      where: { id: sessionId },
-      data: {
-        status: "ENDED",
-        actualEndAt: now,
-        durationMinutes,
-      },
-    });
-
-    // 2. Finalize attendance for booked students
-    const bookings = liveSession.liveClassSlot.bookings;
-    const requiredDurationSeconds = Math.max(60, (durationMinutes * 60) * 0.75); // 75% threshold for PRESENT
-
-    for (const booking of bookings) {
-      const attendance = await prisma.classAttendance.findFirst({
-        where: {
-          sessionId,
-          studentId: booking.studentId,
+    // 2. Idempotent check: if already ended, calculate stats and return without failure
+    let updatedSession = liveSession;
+    if (liveSession.status !== "ENDED") {
+      updatedSession = await prisma.liveClassSession.update({
+        where: { id: canonicalSessionId },
+        data: {
+          status: "ENDED",
+          actualEndAt: now,
+          durationMinutes,
+        },
+        include: {
+          teacher: true,
+          liveClassSlot: {
+            include: {
+              bookings: true,
+            },
+          },
         },
       });
 
-      if (!attendance) {
-        // Student never joined -> ABSENT
-        await prisma.classAttendance.create({
-          data: {
-            sessionId,
-            studentId: booking.studentId,
-            status: "ABSENT",
-            duration: 0,
-          },
-        });
-      } else {
-        const studentDuration = attendance.duration || 0;
-        let finalStatus = "ABSENT";
-        if (studentDuration >= requiredDurationSeconds) {
-          finalStatus = "PRESENT";
-        } else if (studentDuration > 0) {
-          finalStatus = "PARTIAL";
-        }
+      // 3. Finalize attendance for booked students
+      const bookings = liveSession.liveClassSlot.bookings;
+      const requiredDurationSeconds = Math.max(60, durationMinutes * 60 * 0.75); // 75% threshold for PRESENT
 
-        await prisma.classAttendance.update({
-          where: { id: attendance.id },
-          data: {
-            status: finalStatus,
-            leftAt: attendance.leftAt || now,
+      for (const booking of bookings) {
+        const attendance = await prisma.classAttendance.findFirst({
+          where: {
+            sessionId: canonicalSessionId,
+            studentId: booking.studentId,
           },
         });
+
+        if (!attendance) {
+          // Student never joined -> ABSENT
+          await prisma.classAttendance.create({
+            data: {
+              sessionId: canonicalSessionId,
+              studentId: booking.studentId,
+              status: "ABSENT",
+              duration: 0,
+            },
+          });
+        } else {
+          const studentDuration = attendance.duration || 0;
+          let finalStatus = "ABSENT";
+          if (studentDuration >= requiredDurationSeconds) {
+            finalStatus = "PRESENT";
+          } else if (studentDuration > 0) {
+            finalStatus = "PARTIAL";
+          }
+
+          await prisma.classAttendance.update({
+            where: { id: attendance.id },
+            data: {
+              status: finalStatus,
+              leftAt: attendance.leftAt || now,
+            },
+          });
+        }
       }
     }
 
-    // 3. Fetch summary stats
+    // 4. Broadcast reliable class-ended signal to all connected peers in signaling room
+    const signalingStore = (global as any).__classroomSignaling;
+    if (signalingStore) {
+      const room = signalingStore.get(canonicalSessionId);
+      if (room) {
+        const nowMs = Date.now();
+        (room as any).isEnded = true;
+        (room as any).endedAt = nowMs;
+
+        for (const destId of Array.from(room.peers.keys())) {
+          const queue = room.signals.get(destId) || [];
+          queue.push({
+            id: Math.random().toString(36).substring(2),
+            fromUserId: currentUserId,
+            toUserId: destId,
+            type: "class-ended",
+            payload: {
+              sessionId: canonicalSessionId,
+              endedBy: currentUserId,
+              endedAt: now.toISOString(),
+              message: "The educator has ended this live class.",
+            },
+            timestamp: nowMs,
+          });
+          room.signals.set(destId, queue);
+        }
+      }
+    }
+
+    // 5. Fetch summary stats
     const allAttendances = await prisma.classAttendance.findMany({
-      where: { sessionId },
+      where: { sessionId: canonicalSessionId },
       include: {
         student: {
           include: { profile: true },
@@ -106,12 +156,12 @@ export async function POST(
     const absentCount = allAttendances.filter((a) => a.status === "ABSENT").length;
 
     return apiSuccess({
-      status: updatedSession.status,
-      actualStartAt: updatedSession.actualStartAt?.toISOString(),
-      actualEndAt: updatedSession.actualEndAt?.toISOString(),
-      durationMinutes,
+      status: "ENDED",
+      actualStartAt: updatedSession.actualStartAt?.toISOString() || startAt.toISOString(),
+      actualEndAt: updatedSession.actualEndAt?.toISOString() || now.toISOString(),
+      durationMinutes: updatedSession.durationMinutes || durationMinutes,
       stats: {
-        totalBooked: bookings.length,
+        totalBooked: liveSession.liveClassSlot.bookings.length,
         present: presentCount,
         partial: partialCount,
         absent: absentCount,

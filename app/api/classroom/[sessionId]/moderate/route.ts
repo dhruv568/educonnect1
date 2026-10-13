@@ -17,8 +17,16 @@ export async function POST(
     const body = await req.json();
     const { action, targetUserId, enabled } = body;
 
-    const liveSession = await prisma.liveClassSession.findUnique({
-      where: { id: sessionId },
+    const currentUserId = session.userId || session.id;
+
+    const liveSession = await prisma.liveClassSession.findFirst({
+      where: {
+        OR: [
+          { id: sessionId },
+          { liveClassSlotId: sessionId },
+          { roomId: sessionId },
+        ],
+      },
       include: { teacher: true },
     });
 
@@ -26,15 +34,41 @@ export async function POST(
       return apiError("Classroom session not found.", 404);
     }
 
-    if (liveSession.teacher.userId !== session.id) {
+    if (liveSession.teacher.userId !== currentUserId && (session as any).role !== "ADMIN") {
       return apiError("Only the assigned teacher can moderate participants.", 403);
     }
 
+    const canonicalSessionId = liveSession.id;
+
     if (action === "TOGGLE_STUDENT_DRAW") {
       const updated = await prisma.liveClassSession.update({
-        where: { id: sessionId },
+        where: { id: canonicalSessionId },
         data: { studentCanDraw: !!enabled },
       });
+
+      // Broadcast draw permission change to room peers
+      const signalingStore = (global as any).__classroomSignaling;
+      if (signalingStore) {
+        const room = signalingStore.get(canonicalSessionId);
+        if (room) {
+          const nowMs = Date.now();
+          for (const destId of Array.from(room.peers.keys())) {
+            if (destId !== currentUserId) {
+              const queue = room.signals.get(destId) || [];
+              queue.push({
+                id: Math.random().toString(36).substring(2),
+                fromUserId: currentUserId,
+                toUserId: destId,
+                type: "draw-permission",
+                payload: { studentCanDraw: updated.studentCanDraw },
+                timestamp: nowMs,
+              });
+              room.signals.set(destId, queue);
+            }
+          }
+        }
+      }
+
       return apiSuccess({ studentCanDraw: updated.studentCanDraw }, "Student whiteboard permission updated.");
     }
 

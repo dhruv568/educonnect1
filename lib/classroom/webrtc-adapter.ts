@@ -237,6 +237,12 @@ export class WebRTCAdapter implements ClassroomProvider {
 
         const data = await res.json();
         if (data.success) {
+          if (data.data?.isEnded) {
+            this.emit("class-ended", { message: "The educator has ended this live class." });
+            this.disconnect();
+            return;
+          }
+
           if (data.data?.canonicalRoomId && this.options.sessionId !== data.data.canonicalRoomId) {
             this.options.sessionId = data.data.canonicalRoomId;
           }
@@ -421,6 +427,22 @@ export class WebRTCAdapter implements ClassroomProvider {
   private async handleIncomingSignal(signal: any): Promise<void> {
     const { fromUserId, type, payload } = signal;
     if (!fromUserId) return;
+
+    if (type === "class-ended") {
+      this.emit("class-ended", payload || { message: "The educator has ended this live class." });
+      await this.disconnect();
+      return;
+    }
+
+    if (type === "whiteboard-update") {
+      this.emit("whiteboard-update", payload);
+      return;
+    }
+
+    if (type === "draw-permission") {
+      this.emit("draw-permission-changed", payload);
+      return;
+    }
 
     if (type === "peer-left") {
       this.handlePeerLeft(fromUserId);
@@ -805,6 +827,29 @@ export class WebRTCAdapter implements ClassroomProvider {
     } catch (err) {
       console.error("Error enumerating devices:", err);
       return { cameras: [], microphones: [], speakers: [] };
+    }
+  }
+
+  public async broadcastWhiteboard(elements: any[], actionType = "update"): Promise<void> {
+    if (!this.options) return;
+    try {
+      await fetch(`/api/classroom/${this.options.sessionId}/signal`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "broadcast",
+          userId: this.options.userId,
+          type: "whiteboard-update",
+          payload: {
+            elements,
+            actionType,
+            fromUserId: this.options.userId,
+            timestamp: Date.now(),
+          },
+        }),
+      });
+    } catch (err) {
+      console.warn("[WebRTCAdapter] Whiteboard broadcast note:", err);
     }
   }
 
