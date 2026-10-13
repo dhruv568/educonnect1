@@ -140,13 +140,18 @@ export class WebRTCAdapter implements ClassroomProvider {
       });
 
       const data = await res.json();
-      if (data.success && Array.isArray(data.data?.peers)) {
-        this.emit("participants-changed", { peers: data.data.peers });
-        // Initiate peer connections with existing participants
-        for (const peer of data.data.peers) {
-          if (peer.userId !== this.options.userId) {
-            this.knownPeers.add(peer.userId);
-            this.getOrCreatePeerConnection(peer.userId, true);
+      if (data.success) {
+        if (data.data?.canonicalRoomId) {
+          this.options.sessionId = data.data.canonicalRoomId;
+        }
+        if (Array.isArray(data.data?.peers)) {
+          this.emit("participants-changed", { peers: data.data.peers });
+          // Initiate peer connections with existing participants
+          for (const peer of data.data.peers) {
+            if (peer.userId !== this.options.userId) {
+              this.knownPeers.add(peer.userId);
+              this.getOrCreatePeerConnection(peer.userId, true);
+            }
           }
         }
       }
@@ -359,6 +364,17 @@ export class WebRTCAdapter implements ClassroomProvider {
 
     if (type === "peer-left") {
       this.handlePeerLeft(fromUserId);
+      return;
+    }
+
+    if (type === "peer-joined") {
+      const peer = payload?.peer;
+      const peerId = peer?.userId || fromUserId;
+      if (peerId && peerId !== this.options?.userId) {
+        this.knownPeers.add(peerId);
+        const shouldOffer = this.options?.isTeacher || (this.options?.userId ?? "") < peerId;
+        this.getOrCreatePeerConnection(peerId, shouldOffer);
+      }
       return;
     }
 

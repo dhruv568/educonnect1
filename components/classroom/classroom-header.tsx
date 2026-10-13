@@ -16,6 +16,7 @@ interface ClassroomHeaderProps {
   actualStartAt?: string | null;
   connectionQuality: ConnectionQuality;
   isTeacher: boolean;
+  participantCount?: number;
 }
 
 export function ClassroomHeader({
@@ -27,6 +28,7 @@ export function ClassroomHeader({
   actualStartAt,
   connectionQuality,
   isTeacher,
+  participantCount = 1,
 }: ClassroomHeaderProps) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
@@ -140,6 +142,13 @@ export function ClassroomHeader({
             {status}
           </Badge>
         )}
+
+        {/* Participant Count Pill */}
+        <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 px-2 sm:px-2.5 py-1 rounded-full text-slate-300 text-[10px] sm:text-xs font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span>{participantCount}</span>
+          <span className="hidden sm:inline text-slate-400">in meeting</span>
+        </div>
 
         <div>{renderConnectionBadge()}</div>
         <div className="hidden sm:block">

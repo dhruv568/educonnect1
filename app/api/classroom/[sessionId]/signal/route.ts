@@ -11,18 +11,20 @@ interface PeerState {
   isVideoOn: boolean;
   isScreenSharing: boolean;
   lastSeen: number;
+  joinedAt: number;
 }
 
 interface SignalItem {
   id: string;
   fromUserId: string;
   toUserId: string;
-  type: "offer" | "answer" | "candidate" | "media-state" | "peer-left";
+  type: "offer" | "answer" | "candidate" | "media-state" | "peer-left" | "peer-joined";
   payload: any;
   timestamp: number;
 }
 
 interface RoomSignalingState {
+  canonicalId: string;
   peers: Map<string, PeerState>;
   signals: Map<string, SignalItem[]>; // destination userId -> pending signals
 }
@@ -30,33 +32,39 @@ interface RoomSignalingState {
 // Global in-memory storage for classroom signaling
 declare global {
   var __classroomSignaling: Map<string, RoomSignalingState> | undefined;
+  var __classroomSessionAliasMap: Map<string, string> | undefined;
 }
 
 if (!global.__classroomSignaling) {
   global.__classroomSignaling = new Map<string, RoomSignalingState>();
 }
+if (!global.__classroomSessionAliasMap) {
+  global.__classroomSessionAliasMap = new Map<string, string>();
+}
 
 const signalingStore = global.__classroomSignaling;
+const aliasMap = global.__classroomSessionAliasMap;
 
-function getOrCreateRoom(sessionId: string): RoomSignalingState {
-  let room = signalingStore.get(sessionId);
+function getOrCreateRoom(roomId: string): RoomSignalingState {
+  let room = signalingStore.get(roomId);
   if (!room) {
     room = {
+      canonicalId: roomId,
       peers: new Map<string, PeerState>(),
       signals: new Map<string, SignalItem[]>(),
     };
-    signalingStore.set(sessionId, room);
+    signalingStore.set(roomId, room);
   }
   return room;
 }
 
-function cleanStalePeers(room: RoomSignalingState, timeoutMs = 15000) {
+function cleanStalePeers(room: RoomSignalingState, timeoutMs = 20000) {
   const now = Date.now();
   for (const [peerId, peer] of Array.from(room.peers.entries())) {
     if (now - peer.lastSeen > timeoutMs) {
       room.peers.delete(peerId);
       room.signals.delete(peerId);
-      // Notify remaining peers that this peer left
+      // Notify remaining peers that this peer timed out / left
       for (const destId of Array.from(room.peers.keys())) {
         const queue = room.signals.get(destId) || [];
         queue.push({
@@ -71,6 +79,26 @@ function cleanStalePeers(room: RoomSignalingState, timeoutMs = 15000) {
       }
     }
   }
+}
+
+// Helper to resolve canonical room ID from any session alias (slotId, sessionId, roomId)
+async function resolveCanonicalRoomId(sessionId: string, session: any): Promise<string> {
+  const cached = aliasMap.get(sessionId);
+  if (cached) return cached;
+
+  const accessCheck = await verifyRoomAccess(sessionId, session);
+  if (accessCheck.authorized && accessCheck.liveSession?.id) {
+    const canonicalId = accessCheck.liveSession.id;
+    aliasMap.set(sessionId, canonicalId);
+    if (accessCheck.liveSession.liveClassSlotId) {
+      aliasMap.set(accessCheck.liveSession.liveClassSlotId, canonicalId);
+    }
+    if (accessCheck.liveSession.roomId) {
+      aliasMap.set(accessCheck.liveSession.roomId, canonicalId);
+    }
+    return canonicalId;
+  }
+  return sessionId;
 }
 
 // POST: Join, leave, send signal (offer/answer/candidate), update media state
@@ -90,6 +118,15 @@ export async function POST(
       return apiError(accessCheck.reason || "Classroom access denied.", 403);
     }
 
+    const canonicalRoomId = accessCheck.liveSession?.id || (await resolveCanonicalRoomId(sessionId, session));
+
+    // Register all aliases
+    if (accessCheck.liveSession) {
+      aliasMap.set(sessionId, canonicalRoomId);
+      if (accessCheck.liveSession.liveClassSlotId) aliasMap.set(accessCheck.liveSession.liveClassSlotId, canonicalRoomId);
+      if (accessCheck.liveSession.roomId) aliasMap.set(accessCheck.liveSession.roomId, canonicalRoomId);
+    }
+
     const body = await req.json();
     const { action, userId, userName, role, isAudioOn, isVideoOn, isScreenSharing, toUserId, type, payload } = body;
 
@@ -98,7 +135,7 @@ export async function POST(
     const effectiveUserName = userName || `${session.firstName || ""} ${session.lastName || ""}`.trim() || session.email;
     const effectiveRole = role || session.role || (accessCheck.isTeacher ? "TEACHER" : "STUDENT");
 
-    const room = getOrCreateRoom(sessionId);
+    const room = getOrCreateRoom(canonicalRoomId);
     cleanStalePeers(room);
 
     const now = Date.now();
@@ -113,6 +150,7 @@ export async function POST(
         isVideoOn: isVideoOn ?? existingPeer?.isVideoOn ?? true,
         isScreenSharing: isScreenSharing ?? existingPeer?.isScreenSharing ?? false,
         lastSeen: now,
+        joinedAt: existingPeer?.joinedAt || now,
       };
       room.peers.set(effectiveUserId, peerState);
 
@@ -120,12 +158,30 @@ export async function POST(
         room.signals.set(effectiveUserId, []);
       }
 
-      // Return all other active peers in room
-      const activePeers = Array.from(room.peers.values()).filter((p) => p.userId !== effectiveUserId);
+      // Notify all other active peers in room immediately that this peer joined
+      for (const destId of Array.from(room.peers.keys())) {
+        if (destId !== effectiveUserId) {
+          const queue = room.signals.get(destId) || [];
+          queue.push({
+            id: Math.random().toString(36).substring(2),
+            fromUserId: effectiveUserId,
+            toUserId: destId,
+            type: "peer-joined",
+            payload: { peer: peerState },
+            timestamp: now,
+          });
+          room.signals.set(destId, queue);
+        }
+      }
+
+      // Return all active peers in room (including self)
+      const allPeers = Array.from(room.peers.values());
 
       return apiSuccess({
+        canonicalRoomId,
         self: peerState,
-        peers: activePeers,
+        peers: allPeers,
+        peerCount: allPeers.length,
       });
     }
 
@@ -183,7 +239,7 @@ export async function POST(
         }
       }
 
-      return apiSuccess({ updated: true });
+      return apiSuccess({ updated: true, peers: Array.from(room.peers.values()) });
     }
 
     if (action === "leave") {
@@ -210,7 +266,7 @@ export async function POST(
     if (action === "heartbeat") {
       const peer = room.peers.get(effectiveUserId);
       if (peer) peer.lastSeen = now;
-      return apiSuccess({ alive: true });
+      return apiSuccess({ alive: true, peerCount: room.peers.size });
     }
 
     return apiError("Unknown signaling action", 400);
@@ -235,7 +291,9 @@ export async function GET(
     const url = new URL(req.url);
     const userId = url.searchParams.get("userId") || session.userId || session.id;
 
-    const room = getOrCreateRoom(sessionId);
+    // Resolve canonical room ID
+    const canonicalRoomId = await resolveCanonicalRoomId(sessionId, session);
+    const room = getOrCreateRoom(canonicalRoomId);
     cleanStalePeers(room);
 
     // Update receiver lastSeen
@@ -248,11 +306,13 @@ export async function GET(
     const signals = room.signals.get(userId) || [];
     room.signals.set(userId, []);
 
-    const activePeers = Array.from(room.peers.values()).filter((p) => p.userId !== userId);
+    const allPeers = Array.from(room.peers.values());
 
     return apiSuccess({
+      canonicalRoomId,
       signals,
-      peers: activePeers,
+      peers: allPeers,
+      peerCount: allPeers.length,
     });
   } catch (error: any) {
     console.error("[Signaling Poll Error]:", error);

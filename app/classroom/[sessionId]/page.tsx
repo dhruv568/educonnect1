@@ -106,12 +106,18 @@ export default function VirtualClassroomPage() {
         setIsTeacher(data.data.userPermissions.isTeacher);
         setStudentCanDraw(data.data.sessionDetails.studentCanDraw);
 
+        const canonicalId = data.data.sessionDetails.id;
+        if (canonicalId && canonicalId !== sessionId && typeof window !== "undefined") {
+          window.history.replaceState(null, "", `/classroom/${canonicalId}`);
+        }
+
         if (data.data.sessionDetails.status === "ENDED") {
           setIsClassEnded(true);
         }
 
-        // Fetch User Info & LiveKit Token
-        const tokenRes = await fetch(`/api/classroom/${sessionId}/token`, { method: "POST" });
+        // Fetch User Info & LiveKit Token using canonical ID
+        const activeId = canonicalId || sessionId;
+        const tokenRes = await fetch(`/api/classroom/${activeId}/token`, { method: "POST" });
         const tokenData = await tokenRes.json();
         if (tokenData.success) {
           setCurrentUserId(tokenData.data.userId);
@@ -216,8 +222,10 @@ export default function VirtualClassroomPage() {
     try {
       setLoading(true);
 
+      const activeId = sessionDetails?.id || sessionId;
+
       // Get Access Token
-      const tokenRes = await fetch(`/api/classroom/${sessionId}/token`, { method: "POST" });
+      const tokenRes = await fetch(`/api/classroom/${activeId}/token`, { method: "POST" });
       const tokenData = await tokenRes.json();
       if (!tokenData.success) {
         throw new Error(tokenData.error || "Failed to issue room token.");
@@ -302,9 +310,9 @@ export default function VirtualClassroomPage() {
         setPermissionError(data.message);
       });
 
-      // Connect to Provider
+      // Connect to Provider using active canonical ID
       await adapter.connect({
-        sessionId,
+        sessionId: activeId,
         roomId,
         token,
         userId,
@@ -585,6 +593,7 @@ export default function VirtualClassroomPage() {
         actualStartAt={sessionDetails.actualStartAt}
         connectionQuality={connectionQuality}
         isTeacher={isTeacher}
+        participantCount={participants.length}
       />
 
       {/* Main Classroom Body */}
