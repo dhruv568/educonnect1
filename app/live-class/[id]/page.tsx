@@ -44,7 +44,7 @@ export default function LiveClassEntryPage() {
         if (data.success && data.data?.authorized) {
           // Authorized -> Enter classroom directly
           const targetSessionId = data.data.sessionDetails?.id || classId;
-          router.replace(`/classroom/${targetSessionId}`);
+          window.location.replace(`/classroom/${targetSessionId}`);
           return;
         }
 
@@ -89,8 +89,9 @@ export default function LiveClassEntryPage() {
       });
       const data = await res.json();
       if (data.success) {
-        // Enrolled! Re-enter classroom
-        router.replace(`/classroom/${classId}`);
+        // Enrolled! Re-enter classroom directly
+        const targetSessionId = data.data?.sessionId || data.data?.sessionDetails?.id || sessionDetails?.id || classId;
+        window.location.replace(`/classroom/${targetSessionId}`);
       } else {
         setErrorReason(data.error || "Could not complete class enrollment.");
       }
@@ -176,7 +177,7 @@ export default function LiveClassEntryPage() {
                 Join Classroom Now
               </Button>
             ) : (
-              <Link href={`/payment/checkout?type=LIVE_CLASS_BOOKING&slotId=${classId}`} className="block">
+              <Link href={`/payment/checkout?type=LIVE_CLASS_BOOKING&slotId=${sessionDetails?.liveClassSlotId || classId}`} className="block">
                 <Button
                   variant="primary"
                   size="md"
