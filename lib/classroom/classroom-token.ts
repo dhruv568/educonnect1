@@ -150,7 +150,7 @@ export async function verifyRoomAccess(
       };
     }
 
-    const booking = await prisma.booking.findFirst({
+    let booking = await prisma.booking.findFirst({
       where: {
         liveClassSlotId: liveSession.liveClassSlotId,
         studentId: session.id,
@@ -159,20 +159,74 @@ export async function verifyRoomAccess(
     });
 
     if (!booking) {
-      return {
-        authorized: false,
-        reason: "You do not have a confirmed booking for this live class.",
-        liveSession,
-      };
+      const slot = liveSession.liveClassSlot;
+      // 1. One-to-one restriction: If this is a 1-to-1 session and already booked by another student, deny access.
+      if (slot && slot.classType === "ONE_TO_ONE") {
+        const otherBooking = await prisma.booking.findFirst({
+          where: {
+            liveClassSlotId: slot.id,
+            status: { in: ["CONFIRMED", "ATTENDED"] },
+            studentId: { not: session.id },
+          },
+        });
+        if (otherBooking) {
+          return {
+            authorized: false,
+            reason: "This private 1-on-1 session is reserved for another learner.",
+            liveSession,
+          };
+        }
+      }
+
+      // 2. Capacity check for group sessions
+      if (slot) {
+        const totalBookings = await prisma.booking.count({
+          where: {
+            liveClassSlotId: slot.id,
+            status: { in: ["CONFIRMED", "ATTENDED"] },
+          },
+        });
+        if (totalBookings >= slot.maxCapacity) {
+          return {
+            authorized: false,
+            reason: "This live class has reached maximum capacity.",
+            liveSession,
+          };
+        }
+
+        // 3. If class is free (price === 0), auto-create confirmed booking for this authenticated student
+        if (slot.price === 0) {
+          booking = await prisma.booking.create({
+            data: {
+              liveClassSlotId: slot.id,
+              studentId: session.id,
+              status: "CONFIRMED",
+            },
+          });
+        }
+      }
+
+      if (!booking) {
+        return {
+          authorized: false,
+          reason: "You do not have a confirmed booking for this live class.",
+          liveSession,
+        };
+      }
     }
 
-    // Check Join Window (Default 10 minutes prior to scheduled start)
-    const joinBeforeMinutes = liveSession.liveClassSlot?.joinBeforeMinutes ?? 10;
+    // Check Join Window: allow join if class is already active (LIVE or OPEN) or within joinBeforeMinutes window
+    const joinBeforeMinutes = liveSession.liveClassSlot?.joinBeforeMinutes ?? 15;
     const startTime = new Date(liveSession.scheduledStartAt || liveSession.liveClassSlot?.startTime).getTime();
     const joinWindowStart = startTime - joinBeforeMinutes * 60 * 1000;
     const now = Date.now();
 
-    if (liveSession.status !== "LIVE" && now < joinWindowStart) {
+    const isClassLiveOrOpen =
+      liveSession.status === "LIVE" ||
+      liveSession.status === "OPEN" ||
+      liveSession.liveClassSlot?.status === "LIVE";
+
+    if (!isClassLiveOrOpen && now < joinWindowStart) {
       const minutesLeft = Math.ceil((joinWindowStart - now) / (60 * 1000));
       return {
         authorized: false,
