@@ -341,7 +341,8 @@ export function middleware(request: NextRequest) {
     }
     if (pathname.startsWith("/classroom") || pathname.startsWith("/live-class")) {
       const fullTarget = `${pathname}${request.nextUrl.search}`;
-      const loginUrl = new URL("/student/login", request.url);
+      const targetBase = isMainDomain || isEducatorSubdomain ? studentDomainUrl : request.url;
+      const loginUrl = new URL("/student/login", targetBase);
       loginUrl.searchParams.set("returnTo", fullTarget);
       loginUrl.searchParams.set("redirectTo", fullTarget);
       return NextResponse.redirect(loginUrl);
