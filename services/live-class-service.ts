@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getLearnerClassroomUrl } from "@/lib/app-url";
 
 export interface CreateLiveClassInput {
   title: string;
@@ -155,6 +156,7 @@ export class LiveClassService {
     return slots.map((s) => ({
       ...s,
       studentCount: s.bookings.filter((b) => b.status !== "CANCELLED").length,
+      shareableUrl: getLearnerClassroomUrl(s.id),
     }));
   }
 
@@ -262,7 +264,10 @@ export class LiveClassService {
       },
     });
 
-    return slot;
+    return {
+      ...slot,
+      shareableUrl: getLearnerClassroomUrl(slot.id),
+    };
   }
 
   /**
@@ -307,7 +312,10 @@ export class LiveClassService {
       throw new Error("Live class slot not found or unauthorized access.");
     }
 
-    return slot;
+    return {
+      ...slot,
+      shareableUrl: getLearnerClassroomUrl(slot.id),
+    };
   }
 
   /**
