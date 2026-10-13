@@ -293,6 +293,29 @@ async function runLearnerNavbarTests() {
     );
 
     // -------------------------------------------------------------------------
+    // TEST P: Learner Portal Login button & action cluster use learner theme
+    // -------------------------------------------------------------------------
+    console.log("\n📋 TEST P: Learner Portal Login Button & Action Cluster Theme Consistency...");
+    const learnerClusterRegex = /3A\. LEARNER RIGHT ACTION CLUSTER[\s\S]*?(?=isEducator\s*\?)/;
+    const learnerClusterMatch = navbarFile.match(learnerClusterRegex);
+    const learnerClusterContent = learnerClusterMatch ? learnerClusterMatch[0] : "";
+
+    const hasLearnerLoginToken = learnerClusterContent.includes("bg-learner") &&
+      learnerClusterContent.includes("hover:bg-learner-hover") &&
+      learnerClusterContent.includes("active:bg-learner-dark") &&
+      learnerClusterContent.includes("focus-visible:ring-learner-accent");
+    const noGreenInLearnerCluster = !learnerClusterContent.includes("#16805B") &&
+      !learnerClusterContent.includes("#0D5C41") &&
+      !learnerClusterContent.includes("text-emerald-100");
+
+    assert(
+      hasLearnerLoginToken && noGreenInLearnerCluster,
+      "TEST P",
+      "Learner Portal Login button uses centralized learner theme tokens with hover, active, and focus states, with zero hardcoded green",
+      `Learner right action cluster uses bg-learner, hover:bg-learner-hover, active:bg-learner-dark, focus-visible:ring-learner-accent`
+    );
+
+    // -------------------------------------------------------------------------
     // Summary
     // -------------------------------------------------------------------------
     console.log("\n==================================================");

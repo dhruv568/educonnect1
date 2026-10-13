@@ -575,15 +575,15 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                 <div className="flex items-center gap-3">
                   <Link
                     href={getLearnerSubdomainUrl("/student/dashboard")}
-                    className="h-9 px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+                    className="h-9 px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-learner hover:bg-learner-hover active:bg-learner-dark shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-learner-accent focus-visible:ring-offset-2 focus-visible:ring-offset-learner-dark"
                   >
-                    <LayoutDashboard className="h-4 w-4 text-emerald-100" />
+                    <LayoutDashboard className="h-4 w-4 text-blue-100" />
                     <span>Learner Dashboard</span>
                   </Link>
                   <button
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="text-xs sm:text-sm font-bold text-emerald-100 hover:text-white px-3 py-2 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+                    className="text-xs sm:text-sm font-bold text-blue-100 hover:text-white px-3 py-2 rounded-xl hover:bg-white/10 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-learner-accent"
                   >
                     Logout
                   </button>
@@ -591,7 +591,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               ) : (
                 <Link
                   href="/student/login"
-                  className="text-xs sm:text-sm font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] px-4 py-2 rounded-xl transition-colors whitespace-nowrap shadow-xs"
+                  className="text-xs sm:text-sm font-bold text-white bg-learner hover:bg-learner-hover active:bg-learner-dark active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-learner-accent focus-visible:ring-offset-2 focus-visible:ring-offset-learner-dark px-4 py-2 rounded-xl transition-all whitespace-nowrap shadow-xs cursor-pointer"
                 >
                   Login
                 </Link>
@@ -666,7 +666,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   {(userSession.role === "STUDENT" || isLearnerRole(userSession.role)) ? (
                     <Link
                       href={getLearnerSubdomainUrl("/student/dashboard")}
-                      className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#2563EB] hover:bg-[#1E40AF] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+                      className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-learner hover:bg-learner-hover active:bg-learner-dark shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-learner-accent focus-visible:ring-offset-2"
                     >
                       <LayoutDashboard className="h-4 w-4 text-blue-100" />
                       <span>Learner Portal</span>
@@ -720,7 +720,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       <div
                         className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-white font-black text-xs flex items-center justify-center shadow-2xs ${
                           isLearnerRole(userSession.role)
-                            ? "bg-[#16805B]"
+                            ? "bg-learner"
                             : isEducatorRole(userSession.role)
                             ? "bg-[#16805B]"
                             : "bg-[#0D5C41]"
@@ -1264,7 +1264,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       <Link
                         href={getLearnerSubdomainUrl("/student/dashboard")}
                         onClick={() => setMobileOpen(false)}
-                        className="w-full py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1E40AF] text-white text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                        className="w-full py-2.5 rounded-xl bg-learner hover:bg-learner-hover active:bg-learner-dark active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-learner-accent focus-visible:ring-offset-2 focus-visible:ring-offset-learner-dark text-white text-sm font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
                         <LayoutDashboard className="h-4 w-4" />
                         <span>Learner Dashboard</span>
@@ -1276,7 +1276,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                           handleLogout(e);
                         }}
                         disabled={isLoggingOut}
-                        className="w-full py-2 rounded-xl text-blue-200 hover:text-white text-xs font-bold text-center cursor-pointer"
+                        className="w-full py-2 rounded-xl text-blue-200 hover:text-white text-xs font-bold text-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-learner-accent"
                       >
                         Logout
                       </button>
@@ -1285,7 +1285,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                     <Link
                       href="/student/login"
                       onClick={() => setMobileOpen(false)}
-                      className="w-full py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1E40AF] text-white text-sm font-bold transition-colors text-center cursor-pointer block shadow-xs"
+                      className="w-full py-2.5 rounded-xl bg-learner hover:bg-learner-hover active:bg-learner-dark active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-learner-accent focus-visible:ring-offset-2 focus-visible:ring-offset-learner-dark text-white text-sm font-bold transition-all text-center cursor-pointer block shadow-xs"
                     >
                       Login
                     </Link>
@@ -1349,7 +1349,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                         <Link
                           href={getLearnerSubdomainUrl("/student/dashboard")}
                           onClick={() => setMobileOpen(false)}
-                          className="w-full py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1E40AF] text-white text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                          className="w-full py-2.5 rounded-xl bg-learner hover:bg-learner-hover active:bg-learner-dark active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-learner-accent focus-visible:ring-offset-2 text-white text-sm font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
                         >
                           <LayoutDashboard className="h-4 w-4" />
                           <span>Learner Dashboard</span>
