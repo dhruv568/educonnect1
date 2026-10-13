@@ -14,6 +14,7 @@ export class WebRTCAdapter implements ClassroomProvider {
   private audioAnalyser: AnalyserNode | null = null;
   private audioContext: AudioContext | null = null;
   private activeSpeakerCheckInterval: NodeJS.Timeout | null = null;
+  private lastSpeakerId: string | null = null;
   private options: ClassroomProviderOptions | null = null;
   private isAudioEnabled: boolean = true;
   private isVideoEnabled: boolean = true;
@@ -22,10 +23,10 @@ export class WebRTCAdapter implements ClassroomProvider {
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
   private remoteStreams: Map<string, MediaStream> = new Map();
   private pendingCandidates: Map<string, RTCIceCandidateInit[]> = new Map();
-  private screenSenders: Map<string, RTCRtpSender> = new Map();
   private pollInterval: NodeJS.Timeout | null = null;
   private isPolling: boolean = false;
   private knownPeers: Set<string> = new Set();
+  private lastPeersSignature: string = "";
 
   private readonly iceServers: RTCIceServer[] = [
     { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
@@ -59,41 +60,90 @@ export class WebRTCAdapter implements ClassroomProvider {
     this.setConnectionState("CONNECTING");
 
     try {
-      // 1. Acquire local camera & microphone
+      // 1. Acquire local camera & microphone with physical camera prioritization
       if (typeof window !== "undefined" && navigator.mediaDevices) {
         try {
-          const constraints: MediaStreamConstraints = {
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true,
-            },
-            video: options.initialVideoEnabled !== false
+          // If no specific camera ID provided, discover available cameras and sort physical first
+          let targetCameraId = options.cameraId;
+          if (!targetCameraId && navigator.mediaDevices.enumerateDevices) {
+            try {
+              const allDevs = await navigator.mediaDevices.enumerateDevices();
+              const cams = allDevs.filter((d) => d.kind === "videoinput");
+              const sortedCams = [...cams].sort((a, b) => {
+                const aVirt = /iriun|triun|virtual|obs|droidcam|splitcam/i.test(a.label);
+                const bVirt = /iriun|triun|virtual|obs|droidcam|splitcam/i.test(b.label);
+                if (aVirt && !bVirt) return 1;
+                if (!aVirt && bVirt) return -1;
+                return 0;
+              });
+              if (sortedCams[0]?.deviceId) {
+                targetCameraId = sortedCams[0].deviceId;
+              }
+            } catch (e) {
+              console.warn("[WebRTCAdapter] Device enumeration note:", e);
+            }
+          }
+
+          const videoConstraints: any = options.initialVideoEnabled !== false
+            ? targetCameraId
               ? {
-                  width: { ideal: 1280, max: 1920 },
-                  height: { ideal: 720, max: 1080 },
-                  frameRate: { ideal: 30, max: 30 },
-                  facingMode: "user",
+                  deviceId: { exact: targetCameraId },
+                  width: { ideal: 1280, max: 1280 },
+                  height: { ideal: 720, max: 720 },
+                  frameRate: { ideal: 24, max: 30 },
                 }
-              : false,
-          };
-          this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
+              : {
+                  facingMode: "user",
+                  width: { ideal: 1280, max: 1280 },
+                  height: { ideal: 720, max: 720 },
+                  frameRate: { ideal: 24, max: 30 },
+                }
+            : false;
+
+          const audioConstraints: any = options.initialAudioEnabled !== false
+            ? options.microphoneId
+              ? {
+                  deviceId: { exact: options.microphoneId },
+                  echoCancellation: true,
+                  noiseSuppression: true,
+                  autoGainControl: true,
+                }
+              : {
+                  echoCancellation: true,
+                  noiseSuppression: true,
+                  autoGainControl: true,
+                }
+            : false;
+
+          try {
+            this.localStream = await navigator.mediaDevices.getUserMedia({
+              video: videoConstraints,
+              audio: audioConstraints,
+            });
+          } catch (initialErr: any) {
+            // Fallback: If exact deviceId fails, retry with general constraints
+            console.warn("[WebRTCAdapter] Exact constraints failed, falling back to default:", initialErr);
+            this.localStream = await navigator.mediaDevices.getUserMedia({
+              video: options.initialVideoEnabled !== false ? { facingMode: "user" } : false,
+              audio: options.initialAudioEnabled !== false,
+            });
+          }
+
           this.isAudioEnabled = options.initialAudioEnabled !== false;
           this.isVideoEnabled = options.initialVideoEnabled !== false;
 
-          // Apply initial enabled states
+          // Sync track enabled states
           this.localStream.getAudioTracks().forEach((t) => (t.enabled = this.isAudioEnabled));
           this.localStream.getVideoTracks().forEach((t) => (t.enabled = this.isVideoEnabled));
 
           this.setupAudioAnalysis(this.localStream);
         } catch (err: any) {
-          console.warn("[WebRTCAdapter] Initial media permission issue:", err);
+          console.warn("[WebRTCAdapter] Media acquisition issue:", err);
           if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
             this.emit("device-permission-denied", {
-              message: "Microphone and camera access was blocked. Please enable browser permissions to speak and show video.",
+              message: "Microphone or camera permission was blocked. Please enable browser permissions to talk and show video.",
             });
           }
-          // Fallback to empty stream so user can still enter classroom to watch/listen
           this.localStream = new MediaStream();
         }
       }
@@ -104,10 +154,10 @@ export class WebRTCAdapter implements ClassroomProvider {
         isVideoOn: this.isVideoEnabled,
       });
 
-      // 2. Join classroom signaling room
+      // 2. Register presence in signaling room
       await this.joinSignalingRoom();
 
-      // 3. Start signaling poll loop
+      // 3. Start signaling poll loop (every 600ms)
       this.startSignalingLoop();
 
       // 4. Start active speaker detector
@@ -144,19 +194,31 @@ export class WebRTCAdapter implements ClassroomProvider {
         if (data.data?.canonicalRoomId) {
           this.options.sessionId = data.data.canonicalRoomId;
         }
+
         if (Array.isArray(data.data?.peers)) {
-          this.emit("participants-changed", { peers: data.data.peers });
-          // Initiate peer connections with existing participants
+          this.updatePeersIfChanged(data.data.peers);
+
+          // Educator initiates offers to existing participants
           for (const peer of data.data.peers) {
             if (peer.userId !== this.options.userId) {
               this.knownPeers.add(peer.userId);
-              this.getOrCreatePeerConnection(peer.userId, true);
+              const shouldInitiate = this.options.isTeacher;
+              this.getOrCreatePeerConnection(peer.userId, shouldInitiate);
             }
           }
         }
       }
     } catch (e) {
       console.warn("[WebRTCAdapter] Failed to register join in signaling:", e);
+    }
+  }
+
+  private updatePeersIfChanged(peers: any[]) {
+    // Generate signature to avoid unnecessary React re-renders and flickering
+    const sig = peers.map((p) => `${p.userId}_${p.isAudioOn}_${p.isVideoOn}_${p.isScreenSharing}`).sort().join("|");
+    if (sig !== this.lastPeersSignature) {
+      this.lastPeersSignature = sig;
+      this.emit("participants-changed", { peers });
     }
   }
 
@@ -175,22 +237,25 @@ export class WebRTCAdapter implements ClassroomProvider {
 
         const data = await res.json();
         if (data.success) {
+          if (data.data?.canonicalRoomId && this.options.sessionId !== data.data.canonicalRoomId) {
+            this.options.sessionId = data.data.canonicalRoomId;
+          }
+
           // 1. Process active peers
           if (Array.isArray(data.data?.peers)) {
             const currentPeerIds = new Set(data.data.peers.map((p: any) => p.userId));
-            this.emit("participants-changed", { peers: data.data.peers });
+            this.updatePeersIfChanged(data.data.peers);
 
-            // Check for new peers
+            // Handle new peers (Educator initiates offer)
             for (const peer of data.data.peers) {
               if (peer.userId !== this.options.userId && !this.knownPeers.has(peer.userId)) {
                 this.knownPeers.add(peer.userId);
-                // The participant with smaller ID or teacher creates offer
                 const shouldOffer = this.options.isTeacher || this.options.userId < peer.userId;
                 this.getOrCreatePeerConnection(peer.userId, shouldOffer);
               }
             }
 
-            // Check for removed peers
+            // Handle removed peers
             for (const knownId of Array.from(this.knownPeers)) {
               if (!currentPeerIds.has(knownId)) {
                 this.handlePeerLeft(knownId);
@@ -210,7 +275,7 @@ export class WebRTCAdapter implements ClassroomProvider {
       } finally {
         this.isPolling = false;
       }
-    }, 700);
+    }, 600);
   }
 
   private async sendSignal(toUserId: string, type: string, payload: any): Promise<void> {
@@ -238,29 +303,16 @@ export class WebRTCAdapter implements ClassroomProvider {
 
     pc = new RTCPeerConnection({
       iceServers: this.iceServers,
-      iceCandidatePoolSize: 6,
+      iceCandidatePoolSize: 4,
     });
 
     this.peerConnections.set(peerId, pc);
-
-    // Track remote stream for this peer
-    const remoteStream = new MediaStream();
-    this.remoteStreams.set(peerId, remoteStream);
 
     // Add local media tracks to peer connection
     if (this.localStream) {
       this.localStream.getTracks().forEach((track) => {
         pc.addTrack(track, this.localStream!);
       });
-    }
-
-    // Add local screen share track if already sharing
-    if (this.screenStream) {
-      const screenTrack = this.screenStream.getVideoTracks()[0];
-      if (screenTrack) {
-        const sender = pc.addTrack(screenTrack, this.screenStream);
-        this.screenSenders.set(peerId, sender);
-      }
     }
 
     // ICE Candidate handler
@@ -272,35 +324,44 @@ export class WebRTCAdapter implements ClassroomProvider {
 
     // Remote Track handler
     pc.ontrack = (event) => {
-      const stream = this.remoteStreams.get(peerId);
-      if (stream) {
-        stream.addTrack(event.track);
-
-        // Check if track is screen share (indicated by contentHint or label)
-        const isScreen = (event.track as any).contentHint === "detail" ||
-          event.track.label.toLowerCase().includes("screen") ||
-          event.track.label.toLowerCase().includes("display");
-
-        if (isScreen) {
-          const screenMediaStream = new MediaStream([event.track]);
-          this.emit("remote-screen-changed", {
-            isSharing: true,
-            stream: screenMediaStream,
-            presenterId: peerId,
-          });
+      // Use the browser's native stream provided in event.streams[0]
+      let stream = event.streams[0];
+      const existing = this.remoteStreams.get(peerId);
+      if (!stream) {
+        stream = existing || new MediaStream();
+        if (!stream.getTracks().includes(event.track)) {
+          stream.addTrack(event.track);
         }
+      } else if (existing && existing !== stream) {
+        // Retain previously received tracks if browser emits a different stream instance
+        existing.getTracks().forEach((t) => {
+          if (!stream.getTracks().some((st) => st.id === t.id)) {
+            stream.addTrack(t);
+          }
+        });
+      }
+      this.remoteStreams.set(peerId, stream);
 
+      this.emit("remote-stream-added", {
+        userId: peerId,
+        stream,
+        track: event.track,
+        kind: event.track.kind,
+      });
+
+      // Handle unmuting when first media frames arrive (especially on mobile)
+      event.track.onunmute = () => {
         this.emit("remote-stream-added", {
           userId: peerId,
           stream,
           track: event.track,
           kind: event.track.kind,
         });
+      };
 
-        // Set up speaking detector on remote audio stream
-        if (event.track.kind === "audio") {
-          this.setupRemoteAudioAnalysis(peerId, stream);
-        }
+      // Set up speaking detector on remote audio stream
+      if (event.track.kind === "audio") {
+        this.setupRemoteAudioAnalysis(peerId, stream);
       }
     };
 
@@ -313,7 +374,6 @@ export class WebRTCAdapter implements ClassroomProvider {
         this.setConnectionState("CONNECTING");
       } else if (state === "disconnected" || state === "failed") {
         this.setConnectionState("POOR_CONNECTION");
-        // Try ICE restart
         this.restartIce(peerId, pc);
       }
     };
@@ -327,7 +387,7 @@ export class WebRTCAdapter implements ClassroomProvider {
       }
     };
 
-    // If this participant is designated to initiate the offer
+    // Strictly initiate offer if designated
     if (shouldInitiateOffer) {
       this.initiateOffer(peerId, pc);
     }
@@ -341,7 +401,7 @@ export class WebRTCAdapter implements ClassroomProvider {
       await pc.setLocalDescription(offer);
       await this.sendSignal(peerId, "offer", offer);
     } catch (e) {
-      console.warn("[WebRTCAdapter] ICE restart failed:", e);
+      console.warn("[WebRTCAdapter] ICE restart note:", e);
     }
   }
 
@@ -372,6 +432,7 @@ export class WebRTCAdapter implements ClassroomProvider {
       const peerId = peer?.userId || fromUserId;
       if (peerId && peerId !== this.options?.userId) {
         this.knownPeers.add(peerId);
+        // Only educator initiates offer
         const shouldOffer = this.options?.isTeacher || (this.options?.userId ?? "") < peerId;
         this.getOrCreatePeerConnection(peerId, shouldOffer);
       }
@@ -384,6 +445,14 @@ export class WebRTCAdapter implements ClassroomProvider {
         this.emit("remote-screen-changed", {
           isSharing: false,
           stream: null,
+          presenterId: fromUserId,
+        });
+      } else if (payload.isScreenSharing === true) {
+        // Stream of this peer is presenting screen
+        const peerStream = this.remoteStreams.get(fromUserId);
+        this.emit("remote-screen-changed", {
+          isSharing: true,
+          stream: peerStream || null,
           presenterId: fromUserId,
         });
       }
@@ -402,7 +471,7 @@ export class WebRTCAdapter implements ClassroomProvider {
           try {
             await pc.addIceCandidate(new RTCIceCandidate(cand));
           } catch (e) {
-            console.warn("[WebRTCAdapter] Error adding queued ICE candidate:", e);
+            console.warn("[WebRTCAdapter] Queued ICE candidate note:", e);
           }
         }
         this.pendingCandidates.delete(fromUserId);
@@ -411,18 +480,20 @@ export class WebRTCAdapter implements ClassroomProvider {
         await pc.setLocalDescription(answer);
         await this.sendSignal(fromUserId, "answer", answer);
       } else if (type === "answer") {
-        await pc.setRemoteDescription(new RTCSessionDescription(payload));
+        if (pc.signalingState === "have-local-offer") {
+          await pc.setRemoteDescription(new RTCSessionDescription(payload));
 
-        // Flush queued candidates
-        const queued = this.pendingCandidates.get(fromUserId) || [];
-        for (const cand of queued) {
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(cand));
-          } catch (e) {
-            console.warn("[WebRTCAdapter] Error adding queued ICE candidate:", e);
+          // Flush queued candidates
+          const queued = this.pendingCandidates.get(fromUserId) || [];
+          for (const cand of queued) {
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(cand));
+            } catch (e) {
+              console.warn("[WebRTCAdapter] Queued ICE candidate note:", e);
+            }
           }
+          this.pendingCandidates.delete(fromUserId);
         }
-        this.pendingCandidates.delete(fromUserId);
       } else if (type === "candidate") {
         if (pc.remoteDescription && pc.remoteDescription.type) {
           await pc.addIceCandidate(new RTCIceCandidate(payload));
@@ -433,7 +504,7 @@ export class WebRTCAdapter implements ClassroomProvider {
         }
       }
     } catch (err) {
-      console.error(`[WebRTCAdapter] Error handling ${type} signal from ${fromUserId}:`, err);
+      console.error(`[WebRTCAdapter] Signal handling note for ${type}:`, err);
     }
   }
 
@@ -444,7 +515,6 @@ export class WebRTCAdapter implements ClassroomProvider {
       this.peerConnections.delete(peerId);
     }
     this.remoteStreams.delete(peerId);
-    this.screenSenders.delete(peerId);
     this.pendingCandidates.delete(peerId);
     this.knownPeers.delete(peerId);
 
@@ -460,7 +530,6 @@ export class WebRTCAdapter implements ClassroomProvider {
       this.pollInterval = null;
     }
 
-    // Notify peers that we are leaving
     if (this.options) {
       try {
         await fetch(`/api/classroom/${this.options.sessionId}/signal`, {
@@ -472,29 +541,25 @@ export class WebRTCAdapter implements ClassroomProvider {
           }),
         });
       } catch (e) {
-        console.warn("[WebRTCAdapter] Error sending leave signal:", e);
+        console.warn("[WebRTCAdapter] Leave signal error:", e);
       }
     }
 
-    // Stop all local tracks
     if (this.localStream) {
       this.localStream.getTracks().forEach((track) => track.stop());
       this.localStream = null;
     }
 
-    // Stop all screen tracks
     if (this.screenStream) {
       this.screenStream.getTracks().forEach((track) => track.stop());
       this.screenStream = null;
     }
 
-    // Close all peer connections
-    for (const [peerId, pc] of Array.from(this.peerConnections.entries())) {
+    for (const pc of Array.from(this.peerConnections.values())) {
       pc.close();
     }
     this.peerConnections.clear();
     this.remoteStreams.clear();
-    this.screenSenders.clear();
     this.pendingCandidates.clear();
     this.knownPeers.clear();
 
@@ -521,9 +586,12 @@ export class WebRTCAdapter implements ClassroomProvider {
           const newTrack = micStream.getAudioTracks()[0];
           if (newTrack) {
             this.localStream.addTrack(newTrack);
-            // Replace or add track across peer connections
             for (const pc of Array.from(this.peerConnections.values())) {
-              pc.addTrack(newTrack, this.localStream);
+              for (const sender of pc.getSenders()) {
+                if (sender.track?.kind === "audio") {
+                  await sender.replaceTrack(newTrack);
+                }
+              }
             }
           }
         } catch (err) {
@@ -533,7 +601,6 @@ export class WebRTCAdapter implements ClassroomProvider {
       }
     }
 
-    // Broadcast media-state to peers
     this.broadcastMediaState({ isAudioOn: enabled });
 
     this.emit("local-stream-changed", {
@@ -556,17 +623,20 @@ export class WebRTCAdapter implements ClassroomProvider {
         try {
           const camStream = await navigator.mediaDevices.getUserMedia({
             video: {
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
+              width: { ideal: 1280, max: 1280 },
+              height: { ideal: 720, max: 720 },
               facingMode: "user",
             },
           });
           const newTrack = camStream.getVideoTracks()[0];
           if (newTrack) {
             this.localStream.addTrack(newTrack);
-            // Replace or add track across peer connections
             for (const pc of Array.from(this.peerConnections.values())) {
-              pc.addTrack(newTrack, this.localStream);
+              for (const sender of pc.getSenders()) {
+                if (sender.track?.kind === "video") {
+                  await sender.replaceTrack(newTrack);
+                }
+              }
             }
           }
         } catch (err) {
@@ -576,7 +646,6 @@ export class WebRTCAdapter implements ClassroomProvider {
       }
     }
 
-    // Broadcast media-state to peers
     this.broadcastMediaState({ isVideoOn: enabled });
 
     this.emit("local-stream-changed", {
@@ -620,17 +689,17 @@ export class WebRTCAdapter implements ClassroomProvider {
       const screenTrack = this.screenStream.getVideoTracks()[0];
       (screenTrack as any).contentHint = "detail";
 
-      // Listen for browser native "Stop Sharing" floating button
       screenTrack.onended = () => {
         this.stopScreenShare();
       };
 
-      // Add screen track to all active peer connections
-      for (const [peerId, pc] of Array.from(this.peerConnections.entries())) {
-        const sender = pc.addTrack(screenTrack, this.screenStream);
-        this.screenSenders.set(peerId, sender);
-        // Renegotiate offer with peers
-        this.initiateOffer(peerId, pc);
+      // Seamless Track Replacement: Replace video sender track on peer connections
+      for (const pc of Array.from(this.peerConnections.values())) {
+        for (const sender of pc.getSenders()) {
+          if (sender.track?.kind === "video") {
+            await sender.replaceTrack(screenTrack);
+          }
+        }
       }
 
       this.broadcastMediaState({ isScreenSharing: true });
@@ -655,19 +724,15 @@ export class WebRTCAdapter implements ClassroomProvider {
       this.screenStream = null;
     }
 
-    // Remove track from peer connections
-    for (const [peerId, sender] of Array.from(this.screenSenders.entries())) {
-      const pc = this.peerConnections.get(peerId);
-      if (pc) {
-        try {
-          pc.removeTrack(sender);
-          this.initiateOffer(peerId, pc);
-        } catch (e) {
-          console.warn("[WebRTCAdapter] Error removing screen track sender:", e);
+    // Restore camera track seamlessly on peer connections
+    const cameraTrack = this.localStream?.getVideoTracks()[0] || null;
+    for (const pc of Array.from(this.peerConnections.values())) {
+      for (const sender of pc.getSenders()) {
+        if (sender.track?.kind === "video") {
+          await sender.replaceTrack(cameraTrack);
         }
       }
     }
-    this.screenSenders.clear();
 
     this.broadcastMediaState({ isScreenSharing: false });
 
@@ -680,14 +745,20 @@ export class WebRTCAdapter implements ClassroomProvider {
     try {
       const constraints: MediaStreamConstraints = {
         audio: devices.microphoneId ? { deviceId: { exact: devices.microphoneId } } : this.isAudioEnabled,
-        video: devices.cameraId ? { deviceId: { exact: devices.cameraId } } : this.isVideoEnabled,
+        video: devices.cameraId
+          ? {
+              deviceId: { exact: devices.cameraId },
+              width: { ideal: 1280, max: 1280 },
+              height: { ideal: 720, max: 720 },
+            }
+          : this.isVideoEnabled,
       };
 
       const newStream = await navigator.mediaDevices.getUserMedia(constraints);
       const newVideoTrack = newStream.getVideoTracks()[0];
       const newAudioTrack = newStream.getAudioTracks()[0];
 
-      // Seamlessly replace tracks across peer connections
+      // Seamlessly replace tracks across peer connections without reconnecting
       for (const pc of Array.from(this.peerConnections.values())) {
         for (const sender of pc.getSenders()) {
           if (sender.track?.kind === "video" && newVideoTrack) {
@@ -817,7 +888,8 @@ export class WebRTCAdapter implements ClassroomProvider {
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
         const average = sum / dataArray.length;
-        if (average > 18) {
+        if (average > 18 && this.lastSpeakerId !== peerId) {
+          this.lastSpeakerId = peerId;
           this.emit("active-speaker-changed", {
             speakerId: peerId,
             volume: average,
@@ -841,13 +913,22 @@ export class WebRTCAdapter implements ClassroomProvider {
         sum += dataArray[i];
       }
       const average = sum / dataArray.length;
-      const isSpeaking = average > 15;
+      const isSpeaking = average > 16;
 
       if (isSpeaking && this.options) {
+        if (this.lastSpeakerId !== this.options.userId) {
+          this.lastSpeakerId = this.options.userId;
+          this.emit("active-speaker-changed", {
+            speakerId: this.options.userId,
+            speakerName: this.options.userName,
+            volume: average,
+          });
+        }
+      } else if (!isSpeaking && this.lastSpeakerId === this.options?.userId) {
+        this.lastSpeakerId = null;
         this.emit("active-speaker-changed", {
-          speakerId: this.options.userId,
-          speakerName: this.options.userName,
-          volume: average,
+          speakerId: null,
+          volume: 0,
         });
       }
     }, 500);

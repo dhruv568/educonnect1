@@ -310,7 +310,7 @@ export default function VirtualClassroomPage() {
         setPermissionError(data.message);
       });
 
-      // Connect to Provider using active canonical ID
+      // Connect to Provider using active canonical ID and user-selected devices
       await adapter.connect({
         sessionId: activeId,
         roomId,
@@ -320,12 +320,9 @@ export default function VirtualClassroomPage() {
         isTeacher,
         initialAudioEnabled: initialAudio,
         initialVideoEnabled: initialVideo,
+        cameraId: devices.cameraId,
+        microphoneId: devices.microphoneId,
       });
-
-      // Select chosen devices if set
-      if (devices.cameraId || devices.microphoneId || devices.speakerId) {
-        await adapter.selectDevices(devices);
-      }
 
       setIsAudioOn(initialAudio);
       setIsVideoOn(initialVideo);

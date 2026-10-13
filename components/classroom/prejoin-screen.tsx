@@ -2,9 +2,8 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Camera, CameraOff, Mic, MicOff, Volume2, Settings, ShieldCheck, Clock } from "lucide-react";
+import { Camera, CameraOff, Mic, MicOff, Volume2, Settings, ShieldCheck, Clock, AlertTriangle } from "lucide-react";
 import { DeviceSelection, LiveSessionDetails } from "@/types/classroom";
 import { BackButton } from "@/components/ui/back-button";
 import { Logo } from "@/components/brand/logo";
@@ -45,18 +44,56 @@ export function PreJoinScreen({
   const minutesToStart = Math.ceil((scheduledStart - now) / (1000 * 60));
   const isEarly = !isTeacher && sessionDetails.status !== "LIVE" && minutesToStart > 10;
 
+  // Helper to detect virtual webcam drivers
+  const isVirtualCamera = (label: string = "") => {
+    return /iriun|triun|virtual|obs|droidcam|splitcam/i.test(label);
+  };
+
+  const selectedCamera = availableDevices.cameras.find((c) => c.deviceId === selectedDevices.cameraId);
+  const isSelectedCameraVirtual = selectedCamera ? isVirtualCamera(selectedCamera.label) : false;
+
   useEffect(() => {
     async function initPreview() {
       if (typeof window === "undefined" || !navigator.mediaDevices) return;
 
       try {
+        // Stop previous tracks before re-acquiring
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
+
+        const videoConstraint: any = isVideoOn
+          ? selectedDevices.cameraId
+            ? {
+                deviceId: { exact: selectedDevices.cameraId },
+                width: { ideal: 1280, max: 1280 },
+                height: { ideal: 720, max: 720 },
+              }
+            : {
+                facingMode: "user",
+                width: { ideal: 1280, max: 1280 },
+                height: { ideal: 720, max: 720 },
+              }
+          : false;
+
+        const audioConstraint: any = isAudioOn
+          ? selectedDevices.microphoneId
+            ? {
+                deviceId: { exact: selectedDevices.microphoneId },
+                echoCancellation: true,
+                noiseSuppression: true,
+              }
+            : { echoCancellation: true, noiseSuppression: true }
+          : false;
+
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: isVideoOn ? { width: 1280, height: 720 } : false,
-          audio: isAudioOn,
+          video: videoConstraint,
+          audio: audioConstraint,
         });
 
         streamRef.current = stream;
-        if (videoRef.current) {
+        if (videoRef.current && videoRef.current.srcObject !== stream) {
           videoRef.current.srcObject = stream;
         }
 
@@ -65,13 +102,35 @@ export function PreJoinScreen({
           setupAudioMeter(stream);
         }
 
-        // List devices
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        setAvailableDevices({
-          cameras: devices.filter((d) => d.kind === "videoinput"),
-          mics: devices.filter((d) => d.kind === "audioinput"),
-          speakers: devices.filter((d) => d.kind === "audiooutput"),
+        // List devices & sort physical cameras before virtual webcams
+        const rawDevices = await navigator.mediaDevices.enumerateDevices();
+        const allCameras = rawDevices.filter((d) => d.kind === "videoinput");
+        const allMics = rawDevices.filter((d) => d.kind === "audioinput");
+        const allSpeakers = rawDevices.filter((d) => d.kind === "audiooutput");
+
+        // Sort cameras: Physical webcams first, virtual webcams last
+        const sortedCameras = [...allCameras].sort((a, b) => {
+          const aVirt = isVirtualCamera(a.label);
+          const bVirt = isVirtualCamera(b.label);
+          if (aVirt && !bVirt) return 1;
+          if (!aVirt && bVirt) return -1;
+          return 0;
         });
+
+        setAvailableDevices({
+          cameras: sortedCameras,
+          mics: allMics,
+          speakers: allSpeakers,
+        });
+
+        // If no camera currently selected, auto-select the best physical camera
+        if (!selectedDevices.cameraId && sortedCameras.length > 0) {
+          setSelectedDevices((prev) => ({
+            ...prev,
+            cameraId: sortedCameras[0].deviceId,
+            microphoneId: prev.microphoneId || (allMics[0]?.deviceId ?? undefined),
+          }));
+        }
 
         setPermissionError(null);
       } catch (err: any) {
@@ -97,15 +156,19 @@ export function PreJoinScreen({
         audioContextRef.current.close();
       }
     };
-  }, [isAudioOn, isVideoOn]);
+  }, [isAudioOn, isVideoOn, selectedDevices.cameraId, selectedDevices.microphoneId]);
 
   const setupAudioMeter = (stream: MediaStream) => {
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
 
-      const audioCtx = new AudioCtx();
-      audioContextRef.current = audioCtx;
+      if (!audioContextRef.current || audioContextRef.current.state === "closed") {
+        audioContextRef.current = new AudioCtx();
+      }
+      const audioCtx = audioContextRef.current;
+      if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+
       const source = audioCtx.createMediaStreamSource(stream);
       const analyser = audioCtx.createAnalyser();
       analyser.fftSize = 64;
@@ -139,7 +202,7 @@ export function PreJoinScreen({
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(440, audioCtx.currentTime); // 440Hz tone
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
       gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
@@ -151,15 +214,15 @@ export function PreJoinScreen({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 md:p-8">
-      <div className="max-w-4xl w-full space-y-6">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-3 sm:p-6 md:p-8">
+      <div className="max-w-4xl w-full space-y-5">
         <div className="flex items-center justify-between">
           <Logo
             variant="compact"
             size="sm"
             theme="dark"
             href="/"
-            showTagline
+            showTagline={false}
             priority
           />
           <BackButton
@@ -170,14 +233,14 @@ export function PreJoinScreen({
         </div>
 
         {/* Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-1.5">
           <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 px-3 py-1 rounded-full text-xs font-semibold text-blue-400">
             <ShieldCheck className="h-4 w-4" /> EduConnects Virtual Classroom Setup
           </div>
-          <h1 className="text-2xl md:text-4xl font-extrabold text-white">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white">
             {sessionDetails.title}
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-400">
             {sessionDetails.subject} • Educator: <span className="text-slate-200 font-medium">{sessionDetails.teacherName}</span>
           </p>
         </div>
@@ -195,6 +258,19 @@ export function PreJoinScreen({
           </div>
         )}
 
+        {/* Virtual Camera Warning Tip */}
+        {isSelectedCameraVirtual && (
+          <div className="bg-amber-500/15 border border-amber-500/30 rounded-2xl p-3.5 flex items-start gap-3 text-amber-200 text-xs">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
+            <div>
+              <p className="font-bold text-amber-100">Virtual Camera Selected ({selectedCamera?.label || "Virtual Webcam"})</p>
+              <p className="text-amber-300/80 mt-0.5">
+                If your preview shows &quot;Please start Triun/Iriun Webcam&quot; or a blank screen, please choose your laptop or USB Integrated Webcam from the Camera dropdown on the right.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Permission Denied Warning Notice */}
         {permissionError && (
           <div className="bg-red-500/15 border border-red-500/30 rounded-2xl p-4 text-red-200 text-sm">
@@ -204,9 +280,9 @@ export function PreJoinScreen({
         )}
 
         {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 items-start">
           {/* Camera Preview Tile */}
-          <div className="md:col-span-7 space-y-4">
+          <div className="md:col-span-7 space-y-3">
             <div className="relative aspect-video bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center">
               {isVideoOn ? (
                 <video
@@ -274,7 +350,7 @@ export function PreJoinScreen({
           </div>
 
           {/* Device Controls Card */}
-          <div className="md:col-span-5 bg-slate-900/70 border border-slate-800/80 rounded-3xl p-5 space-y-5">
+          <div className="md:col-span-5 bg-slate-900/70 border border-slate-800/80 rounded-3xl p-5 space-y-4">
             <h3 className="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
               <Settings className="h-4 w-4 text-blue-400" /> Device Setup
             </h3>
@@ -282,7 +358,7 @@ export function PreJoinScreen({
             {/* Camera Selector */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-                <Camera className="h-3.5 w-3.5 text-blue-400" /> Camera
+                <Camera className="h-3.5 w-3.5 text-blue-400" /> Camera Source
               </label>
               <select
                 className="w-full h-10 px-3 text-xs bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -300,7 +376,7 @@ export function PreJoinScreen({
             {/* Microphone Selector */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-                <Mic className="h-3.5 w-3.5 text-emerald-400" /> Microphone
+                <Mic className="h-3.5 w-3.5 text-emerald-400" /> Microphone Source
               </label>
               <select
                 className="w-full h-10 px-3 text-xs bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -350,7 +426,7 @@ export function PreJoinScreen({
             <Button
               disabled={isEarly}
               onClick={() => onJoin(selectedDevices, isAudioOn, isVideoOn)}
-              className="w-full h-12 text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl shadow-lg shadow-blue-500/20 transition-all"
+              className="w-full h-12 text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl shadow-lg shadow-blue-500/20 transition-all mt-2"
             >
               {isTeacher ? "Start Live Class" : "Join Classroom"}
             </Button>

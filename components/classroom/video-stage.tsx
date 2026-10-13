@@ -56,16 +56,29 @@ function ParticipantVideoElement({
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !stream) return;
+    if (!video) return;
 
-    video.srcObject = stream;
-    const playPromise = video.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        if (err.name === "NotAllowedError" && !muted) {
-          onAutoplayFailed?.();
-        }
-      });
+    if (!stream) {
+      if (video.srcObject) {
+        video.srcObject = null;
+      }
+      return;
+    }
+
+    // Only assign if the stream reference changed to avoid flushing the hardware video decoder
+    if (video.srcObject !== stream) {
+      video.srcObject = stream;
+    }
+
+    if (video.paused) {
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          if (err.name === "NotAllowedError" && !muted) {
+            onAutoplayFailed?.();
+          }
+        });
+      }
     }
   }, [stream, muted, onAutoplayFailed]);
 
@@ -94,16 +107,29 @@ function RemoteAudioPlayer({
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !stream) return;
+    if (!audio) return;
 
-    audio.srcObject = stream;
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        if (err.name === "NotAllowedError") {
-          onAutoplayFailed?.();
-        }
-      });
+    if (!stream) {
+      if (audio.srcObject) {
+        audio.srcObject = null;
+      }
+      return;
+    }
+
+    // Only assign if stream changed to prevent audio crackles and drops
+    if (audio.srcObject !== stream) {
+      audio.srcObject = stream;
+    }
+
+    if (audio.paused) {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          if (err.name === "NotAllowedError") {
+            onAutoplayFailed?.();
+          }
+        });
+      }
     }
   }, [stream, onAutoplayFailed]);
 

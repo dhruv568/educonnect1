@@ -24,6 +24,8 @@ export interface ClassroomProviderOptions {
   isTeacher: boolean;
   initialAudioEnabled?: boolean;
   initialVideoEnabled?: boolean;
+  cameraId?: string;
+  microphoneId?: string;
 }
 
 /**
