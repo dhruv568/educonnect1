@@ -214,7 +214,7 @@ export default function TeacherDashboardPage() {
 
             {loading ? (
               <div className="p-6 text-center">
-                <Loader2 className="h-6 w-6 text-blue-600 animate-spin mx-auto" />
+                <Loader2 className="h-6 w-6 text-[#0F766E] animate-spin mx-auto" />
               </div>
             ) : data.todaySchedule.length === 0 ? (
               <div className="p-6 text-center bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80">

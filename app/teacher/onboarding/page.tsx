@@ -490,7 +490,7 @@ export default function TeacherOnboardingPage() {
     return (
       <DashboardLayout role="TEACHER" userName={personal.firstName || "Educator"} userEmail={userInfo.email}>
         <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-          <Loader2 className="h-10 w-10 text-emerald-600 animate-spin" />
+          <Loader2 className="h-10 w-10 text-[#0F766E] animate-spin" />
           <p className="text-sm font-semibold text-slate-600">Loading Educator Verification System...</p>
         </div>
       </DashboardLayout>
@@ -504,10 +504,10 @@ export default function TeacherOnboardingPage() {
     return (
       <DashboardLayout role="TEACHER" userName={personal.firstName || "Educator"} userEmail={userInfo.email}>
         <div className="max-w-3xl mx-auto py-8 space-y-8">
-          <div className="bg-white rounded-3xl border border-emerald-200 shadow-xl p-8 sm:p-10 space-y-8 text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500" />
+          <div className="bg-white rounded-3xl border border-teal-200 shadow-xl p-8 sm:p-10 space-y-8 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-[#0F766E] via-[#2DD4BF] to-[#115E59]" />
 
-            <div className="mx-auto w-20 h-20 bg-emerald-100 rounded-3xl flex items-center justify-center text-emerald-600 shadow-inner">
+            <div className="mx-auto w-20 h-20 bg-teal-100 rounded-3xl flex items-center justify-center text-[#0F766E] shadow-inner">
               <CheckCircle2 className="h-12 w-12" />
             </div>
 
@@ -522,12 +522,12 @@ export default function TeacherOnboardingPage() {
             </div>
 
             {/* EXACT CONFIRMATION MESSAGE REQUIRED BY SPEC */}
-            <div className="p-6 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-left space-y-3 shadow-2xs">
-              <div className="flex items-center gap-2 text-emerald-900 font-extrabold text-sm">
-                <ShieldCheck className="h-5 w-5 text-emerald-600" />
+            <div className="p-6 rounded-2xl bg-teal-50/80 border border-teal-200 text-left space-y-3 shadow-2xs">
+              <div className="flex items-center gap-2 text-teal-900 font-extrabold text-sm">
+                <ShieldCheck className="h-5 w-5 text-[#0F766E]" />
                 <span>Official EduConnects Submission Confirmation</span>
               </div>
-              <p className="text-sm sm:text-base font-bold text-emerald-950 leading-relaxed">
+              <p className="text-sm sm:text-base font-bold text-teal-950 leading-relaxed">
                 Thank You for applying. We shall verify your documents, and if they meet our policy requirements, the next round will proceed. You will be informed through our official email, WhatsApp, or via call.
               </p>
             </div>
@@ -536,7 +536,7 @@ export default function TeacherOnboardingPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left text-xs">
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
                 <div className="font-black text-slate-900 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">1</span>
+                  <span className="w-5 h-5 rounded-full bg-[#0F766E] text-white flex items-center justify-center text-[10px]">1</span>
                   <span>Document Audit</span>
                 </div>
                 <p className="text-slate-600">Verification team checks your qualifications, KYC ID, and bank details.</p>
@@ -544,7 +544,7 @@ export default function TeacherOnboardingPage() {
 
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
                 <div className="font-black text-slate-900 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">2</span>
+                  <span className="w-5 h-5 rounded-full bg-[#115E59] text-white flex items-center justify-center text-[10px]">2</span>
                   <span>Direct Outreach</span>
                 </div>
                 <p className="text-slate-600">We will reach out via email, WhatsApp, or phone call for the next round.</p>
@@ -552,7 +552,7 @@ export default function TeacherOnboardingPage() {
 
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
                 <div className="font-black text-slate-900 flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px]">3</span>
+                  <span className="w-5 h-5 rounded-full bg-[#042F2E] text-white flex items-center justify-center text-[10px]">3</span>
                   <span>Teaching Unlocked</span>
                 </div>
                 <p className="text-slate-600">Upon approval, live classroom creation and course publishing are unlocked.</p>
@@ -562,7 +562,7 @@ export default function TeacherOnboardingPage() {
             {/* Action Buttons */}
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/teacher/dashboard" className="w-full sm:w-auto">
-                <GlassButton variant="primary" size="md" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold">
+                <GlassButton variant="teacher" size="md" className="w-full bg-[#0F766E] hover:bg-[#115E59] text-white font-extrabold">
                   Go to Educator Dashboard
                 </GlassButton>
               </Link>
@@ -613,11 +613,11 @@ export default function TeacherOnboardingPage() {
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <div className="text-xs font-bold text-slate-700">Verification Readiness</div>
-              <div className="text-sm font-black text-emerald-600">{readiness.completionPercentage}% Complete</div>
+              <div className="text-sm font-black text-[#0F766E]">{readiness.completionPercentage}% Complete</div>
             </div>
             <div className="w-28 bg-slate-200 h-3 rounded-full overflow-hidden">
               <div
-                className="bg-emerald-600 h-full transition-all duration-500 rounded-full"
+                className="bg-[#0F766E] h-full transition-all duration-500 rounded-full"
                 style={{ width: `${readiness.completionPercentage}%` }}
               />
             </div>
@@ -639,11 +639,11 @@ export default function TeacherOnboardingPage() {
                   disabled={!accessible}
                   className={`flex flex-col items-center gap-1.5 transition-all group ${
                     isCurrent
-                      ? "text-emerald-700 font-black"
+                      ? "text-[#0F766E] font-black"
                       : isCompleted
-                      ? "text-emerald-600 font-bold"
+                      ? "text-[#115E59] font-bold"
                       : accessible
-                      ? "text-slate-600 hover:text-emerald-700 font-medium"
+                      ? "text-slate-600 hover:text-[#0F766E] font-medium"
                       : "text-slate-300 cursor-not-allowed opacity-60 font-normal"
                   }`}
                   title={!accessible ? `Locked: Complete Step 0${step.number - 1} first` : step.title}
@@ -651,9 +651,9 @@ export default function TeacherOnboardingPage() {
                   <div
                     className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black transition-all shadow-xs ${
                       isCurrent
-                        ? "bg-emerald-600 text-white ring-4 ring-emerald-100 scale-105"
+                        ? "bg-[#0F766E] text-white ring-4 ring-teal-100 scale-105"
                         : isCompleted
-                        ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                        ? "bg-teal-100 text-[#0F766E] border border-teal-300"
                         : accessible
                         ? "bg-slate-100 text-slate-700 border border-slate-300"
                         : "bg-slate-100 text-slate-400 border border-slate-200"
@@ -662,7 +662,7 @@ export default function TeacherOnboardingPage() {
                     {!accessible ? (
                       <Lock className="h-4 w-4 text-slate-400" />
                     ) : isCompleted ? (
-                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                      <CheckCircle2 className="h-5 w-5 text-[#0F766E]" />
                     ) : (
                       step.number
                     )}
@@ -696,7 +696,7 @@ export default function TeacherOnboardingPage() {
           {activeStep === 1 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-                <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                <div className="p-3 bg-teal-50 text-[#0F766E] rounded-2xl">
                   <User className="h-6 w-6" />
                 </div>
                 <div>
@@ -797,12 +797,12 @@ export default function TeacherOnboardingPage() {
                   Step 1 of 5: Personal Info
                 </div>
                 <GlassButton
-                  variant="primary"
+                  variant="teacher"
                   size="md"
                   onClick={handleNextStep}
                   isLoading={saving}
                   rightIcon={<ArrowRight className="h-4 w-4" />}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black"
+                  className="bg-[#0F766E] hover:bg-[#115E59] text-white font-black"
                 >
                   Next: Educator Details
                 </GlassButton>
@@ -816,7 +816,7 @@ export default function TeacherOnboardingPage() {
           {activeStep === 2 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                <div className="p-3 bg-teal-50 text-[#0F766E] rounded-2xl">
                   <Briefcase className="h-6 w-6" />
                 </div>
                 <div>
@@ -913,7 +913,7 @@ export default function TeacherOnboardingPage() {
                           }}
                           className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
                             isSelected
-                              ? "bg-emerald-600 text-white shadow-xs"
+                              ? "bg-[#0F766E] text-white shadow-xs"
                               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                           }`}
                         >
@@ -929,7 +929,7 @@ export default function TeacherOnboardingPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
-                        <GraduationCap className="h-4 w-4 text-emerald-600" />
+                        <GraduationCap className="h-4 w-4 text-[#0F766E]" />
                         <span>Academic Qualifications</span>
                         <span className="text-rose-500">*</span>
                       </h3>
@@ -994,12 +994,12 @@ export default function TeacherOnboardingPage() {
                 </GlassButton>
 
                 <GlassButton
-                  variant="primary"
+                  variant="teacher"
                   size="md"
                   onClick={handleNextStep}
                   isLoading={saving}
                   rightIcon={<ArrowRight className="h-4 w-4" />}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black"
+                  className="bg-[#0F766E] hover:bg-[#115E59] text-white font-black"
                 >
                   Next: Identity Documents
                 </GlassButton>
@@ -1013,7 +1013,7 @@ export default function TeacherOnboardingPage() {
           {activeStep === 3 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-                <div className="p-3 bg-purple-50 text-purple-600 rounded-2xl">
+                <div className="p-3 bg-teal-50 text-[#0F766E] rounded-2xl">
                   <FileText className="h-6 w-6" />
                 </div>
                 <div>
@@ -1023,26 +1023,26 @@ export default function TeacherOnboardingPage() {
               </div>
 
               {/* Document Actions Header */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-purple-50/60 border border-purple-100">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-teal-50/60 border border-teal-100">
                 <div className="space-y-1">
-                  <h3 className="text-xs font-black text-purple-950 flex items-center gap-1.5">
-                    <ShieldCheck className="h-4 w-4 text-purple-600" />
+                  <h3 className="text-xs font-black text-teal-950 flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-[#0F766E]" />
                     <span>Regulatory KYC Compliance (JPG, PNG, or PDF &le; 10MB)</span>
                   </h3>
-                  <p className="text-[11px] text-purple-800">
+                  <p className="text-[11px] text-teal-800">
                     Your documents are stored in secure private storage and only accessed by authorized verification staff.
                   </p>
                 </div>
 
                 <GlassButton
-                  variant="primary"
+                  variant="teacher"
                   size="sm"
                   onClick={() => {
                     setUploadCategory("IDENTITY");
                     setShowDocModal(true);
                   }}
                   leftIcon={<Upload className="h-3.5 w-3.5" />}
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-black shrink-0 text-xs"
+                  className="bg-[#0F766E] hover:bg-[#115E59] text-white font-black shrink-0 text-xs"
                 >
                   Upload Document
                 </GlassButton>
@@ -1083,7 +1083,7 @@ export default function TeacherOnboardingPage() {
                           className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-blue-100 text-blue-700 rounded-xl">
+                            <div className="p-2.5 bg-teal-100 text-[#0F766E] rounded-xl">
                               <FileText className="h-5 w-5" />
                             </div>
                             <div>
@@ -1102,7 +1102,7 @@ export default function TeacherOnboardingPage() {
                           <div className="flex items-center gap-2 self-end sm:self-center">
                             <button
                               onClick={() => setViewDoc(doc)}
-                              className="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors flex items-center gap-1 shadow-xs"
+                              className="px-3 py-1.5 rounded-xl bg-[#0F766E] text-white text-xs font-bold hover:bg-[#115E59] transition-colors flex items-center gap-1 shadow-xs"
                             >
                               <Eye className="h-3.5 w-3.5" /> Preview
                             </button>
@@ -1133,12 +1133,12 @@ export default function TeacherOnboardingPage() {
                 </GlassButton>
 
                 <GlassButton
-                  variant="primary"
+                  variant="teacher"
                   size="md"
                   onClick={handleNextStep}
                   isLoading={saving}
                   rightIcon={<ArrowRight className="h-4 w-4" />}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black"
+                  className="bg-[#0F766E] hover:bg-[#115E59] text-white font-black"
                 >
                   Next: Bank Account Details
                 </GlassButton>
@@ -1249,7 +1249,7 @@ export default function TeacherOnboardingPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setViewDoc(chequeDoc)}
-                        className="px-3.5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-xs"
+                        className="px-3.5 py-2 rounded-xl bg-[#0F766E] text-white text-xs font-bold hover:bg-[#115E59] transition-colors flex items-center gap-1.5 shadow-xs"
                       >
                         <Eye className="h-3.5 w-3.5" /> Preview Cheque
                       </button>
@@ -1314,12 +1314,12 @@ export default function TeacherOnboardingPage() {
                 </GlassButton>
 
                 <GlassButton
-                  variant="primary"
+                  variant="teacher"
                   size="md"
                   onClick={handleNextStep}
                   isLoading={saving}
                   rightIcon={<ArrowRight className="h-4 w-4" />}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black"
+                  className="bg-[#0F766E] hover:bg-[#115E59] text-white font-black"
                 >
                   Next: Review & Submit
                 </GlassButton>
@@ -1333,7 +1333,7 @@ export default function TeacherOnboardingPage() {
           {activeStep === 5 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                <div className="p-3 bg-teal-50 text-[#0F766E] rounded-2xl">
                   <ShieldCheck className="h-6 w-6" />
                 </div>
                 <div>
@@ -1348,10 +1348,10 @@ export default function TeacherOnboardingPage() {
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5">
                     <h3 className="font-black text-slate-900 flex items-center gap-1.5">
-                      <User className="h-4 w-4 text-blue-600" />
+                      <User className="h-4 w-4 text-[#0F766E]" />
                       <span>Personal Information</span>
                     </h3>
-                    <button onClick={() => setActiveStep(1)} className="text-blue-600 font-extrabold hover:underline">
+                    <button onClick={() => setActiveStep(1)} className="text-[#0F766E] font-extrabold hover:underline">
                       Edit
                     </button>
                   </div>
@@ -1373,10 +1373,10 @@ export default function TeacherOnboardingPage() {
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5">
                     <h3 className="font-black text-slate-900 flex items-center gap-1.5">
-                      <Briefcase className="h-4 w-4 text-emerald-600" />
+                      <Briefcase className="h-4 w-4 text-[#0F766E]" />
                       <span>Educator Credentials</span>
                     </h3>
-                    <button onClick={() => setActiveStep(2)} className="text-emerald-600 font-extrabold hover:underline">
+                    <button onClick={() => setActiveStep(2)} className="text-[#0F766E] font-extrabold hover:underline">
                       Edit
                     </button>
                   </div>
@@ -1402,10 +1402,10 @@ export default function TeacherOnboardingPage() {
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5">
                     <h3 className="font-black text-slate-900 flex items-center gap-1.5">
-                      <FileText className="h-4 w-4 text-purple-600" />
+                      <FileText className="h-4 w-4 text-[#0F766E]" />
                       <span>KYC Documents</span>
                     </h3>
-                    <button onClick={() => setActiveStep(3)} className="text-purple-600 font-extrabold hover:underline">
+                    <button onClick={() => setActiveStep(3)} className="text-[#0F766E] font-extrabold hover:underline">
                       Edit
                     </button>
                   </div>
@@ -1450,7 +1450,7 @@ export default function TeacherOnboardingPage() {
                   </div>
                   <div>
                     <span className="text-slate-500 block">IFSC Code:</span>
-                    <span className="text-emerald-700 font-mono font-bold uppercase">{bankDetails.ifscCode}</span>
+                    <span className="text-[#0F766E] font-mono font-bold uppercase">{bankDetails.ifscCode}</span>
                   </div>
                   <div>
                     <span className="text-slate-500 block">Cancelled Cheque:</span>
@@ -1469,13 +1469,13 @@ export default function TeacherOnboardingPage() {
               </div>
 
               {/* Confirmation Policy Checkbox */}
-              <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200 space-y-3">
+              <div className="p-5 rounded-2xl bg-teal-50/60 border border-teal-200 space-y-3">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={termsAccepted}
                     onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded-md border-emerald-300 text-emerald-600 focus:ring-emerald-500"
+                    className="mt-0.5 h-4 w-4 rounded-md border-teal-300 text-[#0F766E] focus:ring-teal-500"
                   />
                   <div className="text-xs text-slate-800 space-y-1">
                     <strong className="block font-black text-slate-900">
@@ -1501,13 +1501,13 @@ export default function TeacherOnboardingPage() {
                 </GlassButton>
 
                 <GlassButton
-                  variant="primary"
+                  variant="teacher"
                   size="md"
                   onClick={handleSubmitVerification}
                   disabled={!termsAccepted || submitting}
                   isLoading={submitting}
                   rightIcon={<ShieldCheck className="h-4 w-4" />}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black w-full sm:w-auto shadow-md"
+                  className="bg-[#0F766E] hover:bg-[#115E59] text-white font-black w-full sm:w-auto shadow-md"
                 >
                   Submit Application for Verification
                 </GlassButton>
@@ -1563,7 +1563,7 @@ export default function TeacherOnboardingPage() {
                   <GlassButton type="button" variant="secondary" size="sm" onClick={() => setShowQualModal(false)}>
                     Cancel
                   </GlassButton>
-                  <GlassButton type="submit" variant="primary" size="sm" className="bg-emerald-600 text-white font-bold">
+                  <GlassButton type="submit" variant="teacher" size="sm" className="bg-[#0F766E] hover:bg-[#115E59] text-white font-bold">
                     Save Qualification
                   </GlassButton>
                 </div>
@@ -1600,7 +1600,7 @@ export default function TeacherOnboardingPage() {
                     required
                     accept=".pdf,.jpg,.jpeg,.png"
                     onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                    className="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                    className="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-teal-50 file:text-[#0F766E] hover:file:bg-teal-100"
                   />
                 </div>
 
@@ -1610,10 +1610,10 @@ export default function TeacherOnboardingPage() {
                   </GlassButton>
                   <GlassButton
                     type="submit"
-                    variant="primary"
+                    variant="teacher"
                     size="sm"
                     isLoading={uploadingDoc}
-                    className="bg-purple-600 text-white font-bold"
+                    className="bg-[#0F766E] hover:bg-[#115E59] text-white font-bold"
                   >
                     Upload Document
                   </GlassButton>

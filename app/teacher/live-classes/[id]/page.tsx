@@ -126,7 +126,7 @@ export default function TeacherLiveClassDetailsPage() {
             />
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md bg-blue-100 text-blue-700">
+                <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md bg-teal-100 text-[#0F766E]">
                   {slot?.subject || "Subject"}
                 </span>
                 <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-800">
@@ -140,7 +140,7 @@ export default function TeacherLiveClassDetailsPage() {
           {verificationStatus === "VERIFIED" ? (
             <Button
               onClick={handleLaunchClassroom}
-              variant="primary"
+              variant="teacher"
               size="md"
               leftIcon={<Play className="h-4 w-4" />}
             >
@@ -172,7 +172,7 @@ export default function TeacherLiveClassDetailsPage() {
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 text-xs font-bold rounded-xl transition ${
                     activeTab === tab
-                      ? "bg-blue-600 text-white shadow-xs"
+                      ? "bg-[#0F766E] text-white shadow-xs"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
                   }`}
                 >
@@ -233,7 +233,7 @@ export default function TeacherLiveClassDetailsPage() {
                     {slot.bookings.map((b: any) => (
                       <div key={b.id} className="py-3 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-[#0F766E] text-white font-bold flex items-center justify-center">
                             {b.student.profile?.firstName ? b.student.profile.firstName.charAt(0) : "S"}
                           </div>
                           <div>

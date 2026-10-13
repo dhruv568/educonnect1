@@ -27,7 +27,7 @@ export default function SingleLiveClassAnalyticsPage({ params }: { params: { id:
     return (
       <DashboardLayout role="TEACHER" userName="Live Class Analytics">
         <div className="p-12 text-center">
-          <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
+          <Loader2 className="h-8 w-8 text-[#0F766E] animate-spin mx-auto" />
         </div>
       </DashboardLayout>
     );
@@ -63,8 +63,8 @@ export default function SingleLiveClassAnalyticsPage({ params }: { params: { id:
             title="Booked Students"
             value={data.analytics.bookedStudents}
             subtitle={`Capacity: ${data.slot.maxCapacity}`}
-            icon={<Users className="h-5 w-5 text-blue-600" />}
-            variant="blue"
+            icon={<Users className="h-5 w-5 text-[#0F766E]" />}
+            variant="teal"
           />
 
           <MetricCard
@@ -79,8 +79,8 @@ export default function SingleLiveClassAnalyticsPage({ params }: { params: { id:
             title="Attendance Rate"
             value={`${data.analytics.attendanceRatePercent}%`}
             subtitle="Of expected participants"
-            icon={<Video className="h-5 w-5 text-purple-600" />}
-            variant="purple"
+            icon={<Video className="h-5 w-5 text-[#115E59]" />}
+            variant="teal"
           />
 
           <MetricCard

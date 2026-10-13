@@ -184,3 +184,56 @@ export function getPasswordResetUrl(token: string, email: string): string {
   const baseUrl = getPublicAppUrl();
   return `${baseUrl}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
 }
+
+/**
+ * Resolves the canonical permanent shareable live classroom URL for learners.
+ * 
+ * - Production: Always points to the real deployed domain (https://learners.educonnects.co.in/live-class/CLASS_ID).
+ * - Local development: Points to local server (http://localhost:3000/live-class/CLASS_ID) ONLY when in dev.
+ * - Guaranteed: Never emits localhost in production or when NEXT_PUBLIC_LEARNER_DOMAIN is configured.
+ */
+export function getLearnerClassroomUrl(classId: string): string {
+  if (!classId) return "";
+
+  const isDev = process.env.NODE_ENV !== "production";
+
+  // Production learner domain
+  const prodDomain = (
+    process.env.NEXT_PUBLIC_LEARNER_DOMAIN ||
+    process.env.NEXT_PUBLIC_STUDENT_DOMAIN ||
+    "https://learners.educonnects.co.in"
+  )
+    .trim()
+    .replace(/\/+$/, "");
+
+  let base = prodDomain;
+
+  // Local development override
+  if (isDev) {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname.toLowerCase();
+      if (host === "localhost" || host === "127.0.0.1") {
+        base = window.location.origin;
+      }
+    } else {
+      const appUrl = (
+        process.env.NEXT_PUBLIC_APP_URL ||
+        process.env.APP_URL ||
+        "http://localhost:3000"
+      )
+        .trim()
+        .replace(/\/+$/, "");
+      if (appUrl) {
+        base = appUrl;
+      }
+    }
+  }
+
+  // Double safety guard: Never allow localhost or 127.0.0.1 in production
+  if (process.env.NODE_ENV === "production" && (base.includes("localhost") || base.includes("127.0.0.1"))) {
+    base = "https://learners.educonnects.co.in";
+  }
+
+  return `${base}/live-class/${classId}`;
+}
+

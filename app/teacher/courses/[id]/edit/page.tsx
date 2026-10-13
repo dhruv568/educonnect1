@@ -549,7 +549,7 @@ export default function TeacherCourseEditorPage() {
             <Link
               href={`/courses/${course?.slug || courseId}/preview`}
               target="_blank"
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30 transition"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-teal-600/20 text-[#2DD4BF] border border-teal-500/30 hover:bg-teal-600/30 transition"
             >
               <Eye className="w-3.5 h-3.5" /> Student Preview
             </Link>
@@ -716,7 +716,7 @@ export default function TeacherCourseEditorPage() {
                   )}
                 </div>
 
-                <label className="w-full py-2.5 px-4 text-xs font-bold rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30 text-center block cursor-pointer hover:bg-blue-600/30 transition">
+                <label className="w-full py-2.5 px-4 text-xs font-bold rounded-xl bg-teal-600/20 text-[#2DD4BF] border border-teal-500/30 text-center block cursor-pointer hover:bg-teal-600/30 transition">
                   {uploadingThumb ? "Uploading Thumbnail..." : "Upload Cover Image"}
                   <input type="file" accept="image/*" onChange={handleThumbnailUpload} className="hidden" />
                 </label>
@@ -729,7 +729,7 @@ export default function TeacherCourseEditorPage() {
               <span className="text-xs text-slate-400 font-medium">Step 1 of 4: Course Basic Information</span>
               <button
                 onClick={handleNextFromStep1}
-                className="flex items-center gap-2 px-6 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 transition shadow-md shadow-blue-500/20"
+                className="flex items-center gap-2 px-6 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-[#0F766E] to-[#115E59] text-white hover:from-[#115E59] hover:to-[#042F2E] transition shadow-md shadow-teal-500/20"
               >
                 <span>Next: Curriculum Builder</span>
                 <ArrowRight className="w-4 h-4" />
@@ -752,7 +752,7 @@ export default function TeacherCourseEditorPage() {
               </div>
               <button
                 onClick={() => setShowSectionModal(true)}
-                className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-md hover:bg-blue-500 transition"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-[#0F766E] text-white shadow-md hover:bg-[#115E59] transition"
               >
                 <Plus className="w-4 h-4" /> Add Section
               </button>
@@ -767,7 +767,7 @@ export default function TeacherCourseEditorPage() {
                 </p>
                 <button
                   onClick={() => setShowSectionModal(true)}
-                  className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold inline-flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-[#0F766E] text-white text-xs font-bold inline-flex items-center gap-1.5 hover:bg-[#115E59]"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Section Now
                 </button>
@@ -778,7 +778,7 @@ export default function TeacherCourseEditorPage() {
                   <div key={sec.id} className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                       <span className="font-bold text-sm text-slate-200 flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs">
+                        <span className="w-6 h-6 rounded-lg bg-teal-500/20 text-[#2DD4BF] flex items-center justify-center text-xs">
                           {secIdx + 1}
                         </span>
                         <span>Section: {sec.title}</span>
@@ -790,7 +790,7 @@ export default function TeacherCourseEditorPage() {
                             setPendingVideoFile(null);
                             setShowLessonModal(true);
                           }}
-                          className="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition"
+                          className="px-3 py-1.5 text-xs font-bold rounded-lg bg-teal-500/20 text-[#2DD4BF] border border-teal-500/30 hover:bg-teal-500/30 transition"
                         >
                           + Add Lesson
                         </button>
@@ -836,15 +836,15 @@ export default function TeacherCourseEditorPage() {
                                 <div className="flex items-center gap-2">
                                   <div className="w-20 bg-slate-800 h-2 rounded-full overflow-hidden">
                                     <div
-                                      className="bg-blue-500 h-full transition-all"
+                                      className="bg-[#2DD4BF] h-full transition-all"
                                       style={{ width: `${lessonProgresses[les.id]}%` }}
                                     />
                                   </div>
-                                  <span className="text-[10px] text-blue-400">{lessonProgresses[les.id]}%</span>
+                                  <span className="text-[10px] text-[#2DD4BF]">{lessonProgresses[les.id]}%</span>
                                 </div>
                               ) : (
                                 <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-[11px] font-bold flex items-center gap-1.5">
-                                  <Upload className="w-3 h-3 text-blue-400" />
+                                  <Upload className="w-3 h-3 text-[#2DD4BF]" />
                                   <span>{les.videoAssetId || les.videoUrl ? "Replace Video" : "Upload Video"}</span>
                                   <input
                                     type="file"
@@ -945,7 +945,7 @@ export default function TeacherCourseEditorPage() {
                     type="checkbox"
                     checked={certificateEnabled}
                     onChange={(e) => setCertificateEnabled(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600"
+                    className="w-4 h-4 rounded text-[#0F766E]"
                   />
                 </div>
               </div>
@@ -955,7 +955,7 @@ export default function TeacherCourseEditorPage() {
                 {/* Outcomes */}
                 <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
                   <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-blue-400" /> Learning Outcomes
+                    <Sparkles className="w-4 h-4 text-[#2DD4BF]" /> Learning Outcomes
                   </h3>
                   <div className="flex gap-2">
                     <input
@@ -972,7 +972,7 @@ export default function TeacherCourseEditorPage() {
                           setNewOutcome("");
                         }
                       }}
-                      className="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white"
+                      className="px-4 py-2 text-xs font-bold rounded-xl bg-[#0F766E] text-white hover:bg-[#115E59]"
                     >
                       Add
                     </button>
@@ -1007,7 +1007,7 @@ export default function TeacherCourseEditorPage() {
                           setNewReq("");
                         }
                       }}
-                      className="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white"
+                      className="px-4 py-2 text-xs font-bold rounded-xl bg-[#0F766E] text-white hover:bg-[#115E59]"
                     >
                       Add
                     </button>
@@ -1282,7 +1282,7 @@ export default function TeacherCourseEditorPage() {
                   <button type="button" onClick={() => setShowSectionModal(false)} className="text-xs text-slate-400">
                     Cancel
                   </button>
-                  <button type="submit" className="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white">
+                  <button type="submit" className="px-4 py-2 text-xs font-bold rounded-xl bg-[#0F766E] text-white hover:bg-[#115E59]">
                     Add Section
                   </button>
                 </div>
@@ -1311,8 +1311,8 @@ export default function TeacherCourseEditorPage() {
 
                 <div>
                   <label className="text-xs font-bold text-slate-300 block mb-1">Lesson Video Upload</label>
-                  <label className="w-full py-3 px-4 text-xs font-semibold rounded-xl bg-slate-950 border border-slate-800 border-dashed text-slate-300 flex items-center justify-center gap-2 cursor-pointer hover:border-blue-500">
-                    <Upload className="w-4 h-4 text-blue-400" />
+                  <label className="w-full py-3 px-4 text-xs font-semibold rounded-xl bg-slate-950 border border-slate-800 border-dashed text-slate-300 flex items-center justify-center gap-2 cursor-pointer hover:border-[#0F766E]">
+                    <Upload className="w-4 h-4 text-[#2DD4BF]" />
                     <span>
                       {uploadingVideo
                         ? "Uploading Video..."
@@ -1332,7 +1332,7 @@ export default function TeacherCourseEditorPage() {
                     id="preview"
                     checked={lessonIsPreview}
                     onChange={(e) => setLessonIsPreview(e.target.checked)}
-                    className="text-blue-600 rounded"
+                    className="text-[#0F766E] rounded"
                   />
                   <label htmlFor="preview" className="text-xs text-slate-300 font-semibold cursor-pointer">
                     Mark as Free Preview Lesson
@@ -1343,7 +1343,7 @@ export default function TeacherCourseEditorPage() {
                   <button type="button" onClick={() => setShowLessonModal(false)} className="text-xs text-slate-400">
                     Cancel
                   </button>
-                  <button type="submit" className="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white">
+                  <button type="submit" className="px-4 py-2 text-xs font-bold rounded-xl bg-[#0F766E] text-white hover:bg-[#115E59]">
                     Save Lesson
                   </button>
                 </div>

@@ -28,7 +28,7 @@ export default function SingleCourseAnalyticsPage({ params }: { params: { id: st
     return (
       <DashboardLayout role="TEACHER" userName="Course Analytics">
         <div className="p-12 text-center">
-          <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
+          <Loader2 className="h-8 w-8 text-[#0F766E] animate-spin mx-auto" />
         </div>
       </DashboardLayout>
     );
@@ -64,8 +64,8 @@ export default function SingleCourseAnalyticsPage({ params }: { params: { id: st
             title="Total Enrollments"
             value={data.analytics.totalEnrollments}
             subtitle={`Price: ${formatCurrency(data.course.price)}`}
-            icon={<Users className="h-5 w-5 text-blue-600" />}
-            variant="blue"
+            icon={<Users className="h-5 w-5 text-[#0F766E]" />}
+            variant="teal"
           />
 
           <MetricCard
@@ -80,8 +80,8 @@ export default function SingleCourseAnalyticsPage({ params }: { params: { id: st
             title="Average Progress"
             value={`${data.analytics.averageProgressPercent}%`}
             subtitle={`${data.analytics.totalLessons} lessons total`}
-            icon={<BookOpen className="h-5 w-5 text-purple-600" />}
-            variant="purple"
+            icon={<BookOpen className="h-5 w-5 text-[#115E59]" />}
+            variant="teal"
           />
 
           <MetricCard
@@ -124,7 +124,7 @@ export default function SingleCourseAnalyticsPage({ params }: { params: { id: st
                         </span>
                       </td>
                       <td className="py-3 px-2 font-bold">{s.completedLessons} / {s.totalLessons}</td>
-                      <td className="py-3 px-2 text-blue-600 font-bold">{s.progressPercent}%</td>
+                      <td className="py-3 px-2 text-[#0F766E] font-bold">{s.progressPercent}%</td>
                     </tr>
                   ))}
                 </tbody>

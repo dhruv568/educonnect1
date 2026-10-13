@@ -26,6 +26,8 @@ export const LoginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().optional(),
   otp: z.string().length(6, "OTP must be exactly 6 digits").regex(/^\d+$/, "OTP must contain only numbers").optional(),
+  returnTo: z.string().optional(),
+  redirectTo: z.string().optional(),
 });
 
 export type LoginInput = z.infer<typeof LoginSchema>;
@@ -33,6 +35,8 @@ export type LoginInput = z.infer<typeof LoginSchema>;
 export const VerifyOTPSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   otp: z.string().length(6, "OTP must be exactly 6 digits").regex(/^\d+$/, "OTP must contain only numbers"),
+  returnTo: z.string().optional(),
+  redirectTo: z.string().optional(),
 });
 
 export type VerifyOTPInput = z.infer<typeof VerifyOTPSchema>;

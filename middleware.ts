@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isSafeRedirectPath } from "@/lib/auth/redirect-validator";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -107,7 +108,9 @@ export function middleware(request: NextRequest) {
         pathname === "/courses" ||
         pathname.startsWith("/courses/") ||
         pathname.startsWith("/exam") ||
-        pathname.startsWith("/find-teachers");
+        pathname.startsWith("/find-teachers") ||
+        pathname.startsWith("/classroom") ||
+        pathname.startsWith("/live-class");
 
       if (!isSharedOrExternal) {
         // Explicit friendly shortcut mappings
@@ -151,7 +154,9 @@ export function middleware(request: NextRequest) {
         pathname.startsWith("/refund") ||
         pathname.startsWith("/verify-") ||
         pathname.startsWith("/courses/") ||
-        pathname.startsWith("/find-teachers");
+        pathname.startsWith("/find-teachers") ||
+        pathname.startsWith("/classroom") ||
+        pathname.startsWith("/live-class");
 
       if (!isSharedOrExternal) {
         if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
@@ -287,6 +292,13 @@ export function middleware(request: NextRequest) {
       return rewrite || NextResponse.next();
     }
     // Unauthenticated user attempting to access protected route
+    if (pathname.startsWith("/classroom") || pathname.startsWith("/live-class")) {
+      const fullTarget = `${pathname}${request.nextUrl.search}`;
+      const loginUrl = new URL("/student/login", request.url);
+      loginUrl.searchParams.set("returnTo", fullTarget);
+      loginUrl.searchParams.set("redirectTo", fullTarget);
+      return NextResponse.redirect(loginUrl);
+    }
     if (pathname.startsWith("/staff")) {
       return NextResponse.redirect(new URL("/staff/login", request.url));
     }
@@ -321,6 +333,13 @@ export function middleware(request: NextRequest) {
     if (isPublicPath) {
       const rewrite = getSubdomainRewrite();
       return rewrite || NextResponse.next();
+    }
+    if (pathname.startsWith("/classroom") || pathname.startsWith("/live-class")) {
+      const fullTarget = `${pathname}${request.nextUrl.search}`;
+      const loginUrl = new URL("/student/login", request.url);
+      loginUrl.searchParams.set("returnTo", fullTarget);
+      loginUrl.searchParams.set("redirectTo", fullTarget);
+      return NextResponse.redirect(loginUrl);
     }
     if (pathname.startsWith("/staff")) {
       return NextResponse.redirect(new URL("/staff/login", request.url));
@@ -370,6 +389,10 @@ export function middleware(request: NextRequest) {
 
     if (isLearnerLoginRequest) {
       if (isLearnerRole(userSession.role)) {
+        const returnTarget = request.nextUrl.searchParams.get("returnTo") || request.nextUrl.searchParams.get("redirectTo");
+        if (returnTarget && isSafeRedirectPath(returnTarget)) {
+          return NextResponse.redirect(new URL(returnTarget, request.url));
+        }
         const target = isStudentSubdomain ? "/dashboard" : "/student/dashboard";
         return NextResponse.redirect(new URL(target, request.url));
       }
@@ -398,6 +421,10 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(target, request.url));
     }
     if (isLearnerRole(userSession.role)) {
+      const returnTarget = request.nextUrl.searchParams.get("returnTo") || request.nextUrl.searchParams.get("redirectTo");
+      if (returnTarget && isSafeRedirectPath(returnTarget)) {
+        return NextResponse.redirect(new URL(returnTarget, request.url));
+      }
       const target = isStudentSubdomain ? "/dashboard" : "/student/dashboard";
       return NextResponse.redirect(new URL(target, request.url));
     }

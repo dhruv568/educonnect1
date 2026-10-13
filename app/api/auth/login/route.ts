@@ -12,6 +12,7 @@ import { checkRateLimit } from "@/lib/rate-limiter";
 import { prisma } from "@/lib/prisma";
 import { getResendCooldownSeconds } from "@/lib/auth/tokens";
 import { logAuditEvent } from "@/lib/audit-logger";
+import { isSafeRedirectPath, sanitizeRedirectUrl } from "@/lib/auth/redirect-validator";
 
 export async function POST(request: NextRequest) {
   // Rate limit: 10 login requests per minute per IP

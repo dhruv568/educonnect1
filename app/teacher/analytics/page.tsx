@@ -87,7 +87,7 @@ export default function TeacherAnalyticsPage() {
                   onClick={() => setRange(tab.id)}
                   className={`px-3 py-1.5 font-bold rounded-lg transition ${
                     range === tab.id
-                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs"
+                      ? "bg-white dark:bg-slate-800 text-[#0F766E] dark:text-[#2DD4BF] shadow-xs"
                       : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
                   }`}
                 >
@@ -110,8 +110,8 @@ export default function TeacherAnalyticsPage() {
             title="Period Enrollments"
             value={loading ? "..." : analytics?.courseMetrics?.totalEnrollmentsInPeriod || 0}
             subtitle="Student course enrollments"
-            icon={<BookOpen className="h-5 w-5 text-blue-600" />}
-            variant="blue"
+            icon={<BookOpen className="h-5 w-5 text-[#0F766E]" />}
+            variant="teal"
           />
 
           <MetricCard
@@ -126,8 +126,8 @@ export default function TeacherAnalyticsPage() {
             title="Class Attendance Rate"
             value={loading ? "..." : `${analytics?.liveClassMetrics?.attendanceRatePercent || 0}%`}
             subtitle={`${analytics?.liveClassMetrics?.totalPresentParticipants || 0} participants attended`}
-            icon={<Video className="h-5 w-5 text-purple-600" />}
-            variant="purple"
+            icon={<Video className="h-5 w-5 text-[#115E59]" />}
+            variant="teal"
           />
 
           <MetricCard
@@ -147,7 +147,7 @@ export default function TeacherAnalyticsPage() {
 
           {loading ? (
             <div className="p-12 text-center">
-              <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto" />
+              <Loader2 className="h-8 w-8 text-[#0F766E] animate-spin mx-auto" />
             </div>
           ) : chartData.length === 0 ? (
             <EmptyAnalyticsState
@@ -158,7 +158,7 @@ export default function TeacherAnalyticsPage() {
             />
           ) : (
             <AnalyticsChart
-              title="Enrollments (Blue) vs Completion Rate % (Purple)"
+              title="Enrollments vs Completion Rate %"
               data={chartData}
               primaryLabel="Period Enrollments"
               secondaryLabel="Completion Rate %"
@@ -200,7 +200,7 @@ export default function TeacherAnalyticsPage() {
                       </td>
                       <td className="py-3 px-2">{formatCurrency(course.price)}</td>
                       <td className="py-3 px-2 font-bold">{course.totalEnrollments}</td>
-                      <td className="py-3 px-2 text-blue-600 font-bold">{course.periodEnrollments}</td>
+                      <td className="py-3 px-2 text-[#0F766E] font-bold">{course.periodEnrollments}</td>
                       <td className="py-3 px-2">{course.averageProgressPercent}%</td>
                       <td className="py-3 px-2 text-emerald-600 font-bold">{course.completionRatePercent}%</td>
                       <td className="py-3 px-2">

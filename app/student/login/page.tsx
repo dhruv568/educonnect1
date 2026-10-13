@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { isEducatorRole, isLearnerRole } from "@/lib/auth/roles";
 import { Logo } from "@/components/brand/logo";
+import { isSafeRedirectPath, sanitizeRedirectUrl } from "@/lib/auth/redirect-validator";
 import {
   Mail,
   Lock,
@@ -27,12 +28,19 @@ export default function StudentLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [classroomReturnTarget, setClassroomReturnTarget] = useState<string | null>(null);
 
   const router = useRouter();
   const { showToast } = useToast();
 
   // Authentication & Back-Button (bfcache) Protection
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const returnParam = searchParams.get("returnTo") || searchParams.get("redirectTo");
+    if (returnParam && isSafeRedirectPath(returnParam)) {
+      setClassroomReturnTarget(sanitizeRedirectUrl(returnParam));
+    }
+
     const checkAuthenticatedState = async () => {
       try {
         const res = await fetch("/api/auth/me", {
@@ -44,7 +52,12 @@ export default function StudentLoginPage() {
           if (json?.data?.user) {
             const role = json.data.user.role;
             if (isLearnerRole(role)) {
-              window.location.replace("/student/dashboard");
+              const currentParams = new URLSearchParams(window.location.search);
+              const target = currentParams.get("returnTo") || currentParams.get("redirectTo");
+              const safeDestination = target && isSafeRedirectPath(target)
+                ? sanitizeRedirectUrl(target)
+                : "/student/dashboard";
+              window.location.replace(safeDestination);
             }
           }
         }
@@ -54,7 +67,6 @@ export default function StudentLoginPage() {
     checkAuthenticatedState();
 
     try {
-      const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.get("restart") === "true") {
         document.cookie = "educonnects_pending_otp=; path=/; max-age=0;";
         document.cookie = "admin_pending_otp=; path=/; max-age=0;";
@@ -74,10 +86,14 @@ export default function StudentLoginPage() {
     setLoading(true);
 
     try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const returnParam = searchParams.get("returnTo") || searchParams.get("redirectTo");
+      const safeReturn = returnParam && isSafeRedirectPath(returnParam) ? sanitizeRedirectUrl(returnParam) : undefined;
+
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, returnTo: safeReturn, redirectTo: safeReturn }),
       });
 
       const data = await res.json();
@@ -89,11 +105,14 @@ export default function StudentLoginPage() {
           "Please enter the 6-digit OTP code sent to your email to complete login.",
           "info"
         );
-        router.push(data.data.redirectPath || `/verify-email?email=${encodeURIComponent(email)}&redirectTo=/student/dashboard`);
+        const fallbackTarget = safeReturn
+          ? `/verify-email?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(safeReturn)}&redirectTo=${encodeURIComponent(safeReturn)}`
+          : `/verify-email?email=${encodeURIComponent(email)}&redirectTo=/student/dashboard`;
+        router.push(data.data.redirectPath || fallbackTarget);
       } else {
         showToast("Welcome Back!", `Signed in as ${data.data.user.firstName || "Learner"}`, "success");
         // Hard navigate to bypass client router cache
-        const destination = data.data.redirectPath || "/student/dashboard";
+        const destination = data.data.redirectPath || safeReturn || "/student/dashboard";
         window.location.replace(destination);
       }
     } catch (err: any) {
@@ -188,6 +207,15 @@ export default function StudentLoginPage() {
               glowColor="rgba(37, 99, 235, 0.15)"
               className="p-7 sm:p-8 border border-white/90 shadow-xl space-y-6"
             >
+              {classroomReturnTarget && (
+                <div className="p-3.5 rounded-2xl bg-blue-50/90 border border-blue-200 text-blue-900 text-xs flex items-center gap-2.5 shadow-2xs">
+                  <Video className="h-4 w-4 text-blue-600 shrink-0" />
+                  <span className="font-semibold">
+                    Live Classroom Access: Sign in to join your session directly.
+                  </span>
+                </div>
+              )}
+
               <form onSubmit={handleLogin} className="space-y-4">
                 <Input
                   label="Learner Email Address"

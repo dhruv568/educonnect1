@@ -141,8 +141,8 @@ export default function StudentAttendancePage() {
             title="Lessons Completed"
             value={loading ? "..." : data.stats.completedLessonsCount}
             subtitle="On-demand LMS milestones"
-            icon={<BookOpen className="h-5 w-5 text-purple-600" />}
-            variant="purple"
+            icon={<BookOpen className="h-5 w-5 text-blue-600" />}
+            variant="blue"
           />
         </div>
 

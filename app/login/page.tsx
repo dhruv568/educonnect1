@@ -11,6 +11,7 @@ import { GlassButton } from "@/components/glass/glass-button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { isEducatorRole, isLearnerRole } from "@/lib/auth/roles";
+import { isSafeRedirectPath, sanitizeRedirectUrl } from "@/lib/auth/redirect-validator";
 import { Logo } from "@/components/brand/logo";
 import { LogIn, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
 
@@ -41,10 +42,21 @@ export default function LoginPage() {
                 window.location.hostname.startsWith("students.") ||
                 window.location.hostname.startsWith("student."));
 
+            const searchParams = new URLSearchParams(window.location.search);
+            const returnTarget = searchParams.get("returnTo") || searchParams.get("redirectTo");
+            const safeDestination = returnTarget && isSafeRedirectPath(returnTarget)
+              ? sanitizeRedirectUrl(returnTarget)
+              : null;
+
             if (isLearnerHost) {
               if (isLearnerRole(role)) {
-                window.location.replace("/student/dashboard");
+                window.location.replace(safeDestination || "/student/dashboard");
               }
+              return;
+            }
+
+            if (safeDestination && (isLearnerRole(role) || isEducatorRole(role) || role === "ADMIN")) {
+              window.location.replace(safeDestination);
               return;
             }
 
@@ -87,10 +99,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const returnParam = searchParams.get("returnTo") || searchParams.get("redirectTo");
+      const safeReturn = returnParam && isSafeRedirectPath(returnParam) ? sanitizeRedirectUrl(returnParam) : undefined;
+
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, returnTo: safeReturn, redirectTo: safeReturn }),
       });
 
       const data = await res.json();
@@ -98,10 +114,13 @@ export default function LoginPage() {
 
       if (data.data?.requiresVerification || data.data?.requiresOtp) {
         showToast("Verification Code Sent ✉️", "Please enter the 6-digit OTP code sent to your email to complete login.", "info");
-        router.push(data.data.redirectPath || `/verify-email?email=${encodeURIComponent(email)}`);
+        const fallbackTarget = safeReturn
+          ? `/verify-email?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(safeReturn)}&redirectTo=${encodeURIComponent(safeReturn)}`
+          : `/verify-email?email=${encodeURIComponent(email)}`;
+        router.push(data.data.redirectPath || fallbackTarget);
       } else {
         showToast("Welcome Back!", `Signed in as ${data.data.user.firstName || "User"}`, "success");
-        window.location.replace(data.data.redirectPath || "/");
+        window.location.replace(data.data.redirectPath || safeReturn || "/");
       }
     } catch (err: any) {
       showToast("Authentication Error", err.message, "error");

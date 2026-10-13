@@ -88,7 +88,7 @@ export default function TeacherCourseDetailsPage() {
             />
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md bg-blue-100 text-blue-700">
+                <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md bg-teal-100 text-[#0F766E]">
                   {course?.subject || "Subject"}
                 </span>
                 <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-800">
@@ -111,7 +111,7 @@ export default function TeacherCourseDetailsPage() {
               </Button>
             </Link>
             <Link href={`/teacher/courses/${courseId}/edit`}>
-              <Button variant="primary" size="sm" leftIcon={<Edit className="h-4 w-4" />}>
+              <Button variant="teacher" size="sm" leftIcon={<Edit className="h-4 w-4" />}>
                 Open Course Builder
               </Button>
             </Link>
@@ -149,7 +149,7 @@ export default function TeacherCourseDetailsPage() {
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 text-xs font-bold rounded-xl transition ${
                     activeTab === tab
-                      ? "bg-blue-600 text-white shadow-xs"
+                      ? "bg-[#0F766E] text-white shadow-xs"
                       : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
                   }`}
                 >
@@ -203,7 +203,7 @@ export default function TeacherCourseDetailsPage() {
                     {students.map((st: any) => (
                       <div key={st.id} className="py-3 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-[#0F766E] text-white font-bold flex items-center justify-center">
                             {st.name.charAt(0).toUpperCase()}
                           </div>
                           <div>

@@ -200,7 +200,7 @@ export default function TeacherCoursesDashboardPage() {
               className="mb-3"
             />
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-2">
-              <BookOpen className="h-7 w-7 text-blue-600" /> Courses & Content
+              <BookOpen className="h-7 w-7 text-[#0F766E]" /> Courses & Content
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Create, manage, and publish your LMS pre-recorded learning content.
@@ -210,7 +210,7 @@ export default function TeacherCoursesDashboardPage() {
           {verificationStatus === "VERIFIED" ? (
             <Button
               onClick={() => setShowCreateModal(true)}
-              variant="primary"
+              variant="teacher"
               size="sm"
               leftIcon={<Plus className="h-4 w-4" />}
             >
@@ -244,8 +244,8 @@ export default function TeacherCoursesDashboardPage() {
             <div className="text-xs font-semibold text-amber-600 uppercase">Draft Courses</div>
             <div className="text-2xl font-black text-slate-900">{stats.draftCourses || 0}</div>
           </Card>
-          <Card className="space-y-1 border-l-4 border-l-blue-600">
-            <div className="text-xs font-semibold text-blue-600 uppercase">Enrolled Students</div>
+          <Card className="space-y-1 border-l-4 border-l-[#0F766E]">
+            <div className="text-xs font-semibold text-[#0F766E] uppercase">Enrolled Students</div>
             <div className="text-2xl font-black text-slate-900">{stats.totalStudents || 0}</div>
           </Card>
         </div>
@@ -258,7 +258,7 @@ export default function TeacherCoursesDashboardPage() {
               onClick={() => setFilterStatus(st)}
               className={`px-4 py-2 text-xs font-bold rounded-xl transition ${
                 filterStatus === st
-                  ? "bg-blue-600 text-white shadow-xs"
+                  ? "bg-[#0F766E] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
@@ -297,12 +297,12 @@ export default function TeacherCoursesDashboardPage() {
             {filteredCourses.map((c) => {
               const getSubjectGradient = (subject: string) => {
                 const s = (subject || "").toLowerCase();
-                if (s.includes("math")) return "bg-gradient-to-br from-blue-600 via-indigo-600 to-indigo-800";
+                if (s.includes("math")) return "bg-gradient-to-br from-[#0F766E] via-[#115E59] to-[#042F2E]";
                 if (s.includes("science")) return "bg-gradient-to-br from-emerald-600 via-teal-600 to-teal-800";
-                if (s.includes("physic")) return "bg-gradient-to-br from-violet-600 via-purple-600 to-purple-800";
+                if (s.includes("physic")) return "bg-gradient-to-br from-teal-700 via-teal-800 to-slate-900";
                 if (s.includes("chem")) return "bg-gradient-to-br from-amber-500 via-rose-600 to-rose-700";
                 if (s.includes("bio")) return "bg-gradient-to-br from-teal-600 via-emerald-700 to-green-800";
-                if (s.includes("comp") || s.includes("code")) return "bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-900";
+                if (s.includes("comp") || s.includes("code")) return "bg-gradient-to-br from-teal-600 via-cyan-700 to-slate-900";
                 if (s.includes("english") || s.includes("lang")) return "bg-gradient-to-br from-pink-600 via-rose-600 to-rose-800";
                 return "bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900";
               };
@@ -371,12 +371,12 @@ export default function TeacherCoursesDashboardPage() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                         <span>{c.level || "Beginner"}</span>
-                        <span className={c.price > 0 ? "text-blue-600 font-extrabold" : "text-emerald-600 font-extrabold"}>
+                        <span className={c.price > 0 ? "text-[#0F766E] font-extrabold" : "text-emerald-600 font-extrabold"}>
                           {c.price > 0 ? formatCurrency(c.price) : "FREE"}
                         </span>
                       </div>
 
-                      <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 line-clamp-2 h-12 leading-snug group-hover:text-blue-600 transition-colors">
+                      <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 line-clamp-2 h-12 leading-snug group-hover:text-[#0F766E] transition-colors">
                         {c.title}
                       </h3>
                     </div>
@@ -384,12 +384,12 @@ export default function TeacherCoursesDashboardPage() {
                     {/* 4-Stats Grid */}
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
                       <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60">
-                        <BookOpen className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <BookOpen className="h-4 w-4 text-[#0F766E] flex-shrink-0" />
                         <span className="truncate">{c.lessonCount} Lessons</span>
                       </div>
 
                       <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60">
-                        <Users className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+                        <Users className="h-4 w-4 text-teal-600 flex-shrink-0" />
                         <span className="truncate">{c.enrolledCount} Students</span>
                       </div>
 
@@ -419,7 +419,7 @@ export default function TeacherCoursesDashboardPage() {
 
                       <Link href={`/teacher/courses/${c.id}/edit`} className="flex-1">
                         <Button
-                          variant="primary"
+                          variant="teacher"
                           size="sm"
                           className="w-full text-xs font-bold rounded-xl shadow-xs"
                           leftIcon={<Edit className="h-3.5 w-3.5 flex-shrink-0" />}
@@ -431,7 +431,7 @@ export default function TeacherCoursesDashboardPage() {
                       <div className="flex items-center gap-1 border-l border-slate-200 dark:border-slate-800 pl-2">
                         <button
                           onClick={() => handleDuplicateCourse(c.id)}
-                          className="p-2 rounded-xl text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition"
+                          className="p-2 rounded-xl text-slate-500 hover:text-[#0F766E] hover:bg-teal-50 dark:hover:bg-slate-800 transition"
                           title="Duplicate Course"
                         >
                           <Copy className="h-4 w-4" />
@@ -471,7 +471,7 @@ export default function TeacherCoursesDashboardPage() {
           <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
               <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-blue-600" /> Create Pre-Recorded Course
+                <Sparkles className="h-5 w-5 text-[#0F766E]" /> Create Pre-Recorded Course
               </h3>
 
               <form onSubmit={handleCreateCourse} className="space-y-4">
@@ -483,7 +483,7 @@ export default function TeacherCoursesDashboardPage() {
                     placeholder="e.g. Mathematics Mastery: Algebra & Functions"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-[#0F766E]"
                   />
                 </div>
 
@@ -499,7 +499,7 @@ export default function TeacherCoursesDashboardPage() {
                           setNewSubject("Mathematics");
                         }
                       }}
-                      className="text-[10px] text-blue-600 hover:underline font-semibold"
+                      className="text-[10px] text-[#0F766E] hover:underline font-semibold"
                     >
                       {isCustomSubject ? "← Choose from list" : "+ Custom Subject"}
                     </button>
@@ -512,7 +512,7 @@ export default function TeacherCoursesDashboardPage() {
                       placeholder="e.g. Instagram Growth, Digital Marketing..."
                       value={newSubject}
                       onChange={(e) => setNewSubject(e.target.value)}
-                      className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-[#0F766E]"
                     />
                   ) : (
                     <select
@@ -562,7 +562,7 @@ export default function TeacherCoursesDashboardPage() {
                   <Button type="button" variant="outline" size="sm" onClick={() => setShowCreateModal(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" variant="primary" size="sm" disabled={creating}>
+                  <Button type="submit" variant="teacher" size="sm" disabled={creating}>
                     {creating ? "Creating..." : "Continue to Course Builder"}
                   </Button>
                 </div>
