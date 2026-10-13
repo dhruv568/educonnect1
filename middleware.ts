@@ -74,11 +74,15 @@ export function middleware(request: NextRequest) {
 
   // Prevent main domain showing learner/educator dashboards directly
   if (isMainDomain && pathname.startsWith("/student")) {
-    return NextResponse.redirect(new URL(pathname, studentDomainUrl));
+    const targetUrl = new URL(pathname, studentDomainUrl);
+    targetUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(targetUrl);
   }
 
   if (isMainDomain && pathname.startsWith("/teacher") && pathname !== "/teacher/logout") {
-    return NextResponse.redirect(new URL(pathname, educatorDomainUrl));
+    const targetUrl = new URL(pathname, educatorDomainUrl);
+    targetUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(targetUrl);
   }
 
   // Helper for subdomain rewrites
@@ -294,7 +298,8 @@ export function middleware(request: NextRequest) {
     // Unauthenticated user attempting to access protected route
     if (pathname.startsWith("/classroom") || pathname.startsWith("/live-class")) {
       const fullTarget = `${pathname}${request.nextUrl.search}`;
-      const loginUrl = new URL("/student/login", request.url);
+      const targetBase = isMainDomain || isEducatorSubdomain ? studentDomainUrl : request.url;
+      const loginUrl = new URL("/student/login", targetBase);
       loginUrl.searchParams.set("returnTo", fullTarget);
       loginUrl.searchParams.set("redirectTo", fullTarget);
       return NextResponse.redirect(loginUrl);
