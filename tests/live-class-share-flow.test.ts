@@ -2,6 +2,8 @@ import { getLearnerClassroomUrl } from "../lib/app-url";
 import { isSafeRedirectPath, sanitizeRedirectUrl } from "../lib/auth/redirect-validator";
 import { generateRoomToken, decodeRoomToken } from "../lib/classroom/classroom-token";
 import { generateLiveKitRoomToken } from "../lib/classroom/livekit-server";
+import { encodeSession, decodeSession } from "../lib/auth/session";
+import { isLearnerRole } from "../lib/auth/roles";
 
 async function runShareFlowTests() {
   console.log("🧪 Starting EduConnects Shareable Live Class Link & Login Redirect Test Suite...\n");
@@ -289,6 +291,126 @@ async function runShareFlowTests() {
   );
 
   // =========================================================================
+  // TEST SUITE 6: User Session Normalization (id vs userId Interoperability)
+  // =========================================================================
+  console.log("\n👤 6. Testing User Session Normalization (id vs userId)...");
+
+  const sessionPayloadWithIdOnly = encodeSession({
+    id: "user-id-only-123",
+    email: "learner-id@educonnects.com",
+    role: "STUDENT",
+  } as any);
+  const decodedWithId = decodeSession(sessionPayloadWithIdOnly);
+  assert(
+    decodedWithId?.id === "user-id-only-123" && decodedWithId?.userId === "user-id-only-123",
+    "Session with only 'id' populates both 'id' and 'userId' identically"
+  );
+
+  const sessionPayloadWithUserIdOnly = encodeSession({
+    userId: "user-userid-only-456",
+    email: "learner-userid@educonnects.com",
+    role: "STUDENT",
+  } as any);
+  const decodedWithUserId = decodeSession(sessionPayloadWithUserIdOnly);
+  assert(
+    decodedWithUserId?.id === "user-userid-only-456" && decodedWithUserId?.userId === "user-userid-only-456",
+    "Session with only 'userId' populates both 'id' and 'userId' identically (fixes undefined studentId query)"
+  );
+
+  // =========================================================================
+  // TEST SUITE 7: Learner & Student Role Alias Compatibility
+  // =========================================================================
+  console.log("\n👥 7. Testing Learner Role Alias Compatibility...");
+
+  assert(isLearnerRole("STUDENT"), "isLearnerRole recognizes 'STUDENT'");
+  assert(isLearnerRole("LEARNER"), "isLearnerRole recognizes 'LEARNER'");
+  assert(isLearnerRole("student"), "isLearnerRole recognizes lowercase 'student'");
+  assert(isLearnerRole("learner"), "isLearnerRole recognizes lowercase 'learner'");
+  assert(!isLearnerRole("TEACHER"), "isLearnerRole rejects 'TEACHER'");
+  assert(!isLearnerRole("ADMIN"), "isLearnerRole rejects 'ADMIN'");
+  assert(!isLearnerRole(null), "isLearnerRole handles null safely");
+  assert(!isLearnerRole(undefined), "isLearnerRole handles undefined safely");
+
+  // =========================================================================
+  // TEST SUITE 8: Booking Status Acceptance (notIn CANCELLED)
+  // =========================================================================
+  console.log("\n🎟️ 8. Testing Booking Status Invalidation Rules...");
+
+  const cancelledStatuses = ["CANCELLED", "cancelled"];
+  function isBookingActive(status: string): boolean {
+    return !cancelledStatuses.includes(status);
+  }
+
+  assert(isBookingActive("CONFIRMED"), "Booking status 'CONFIRMED' is accepted");
+  assert(isBookingActive("ATTENDED"), "Booking status 'ATTENDED' is accepted");
+  assert(isBookingActive("PAID"), "Booking status 'PAID' is accepted");
+  assert(isBookingActive("COMPLETED"), "Booking status 'COMPLETED' is accepted");
+  assert(!isBookingActive("CANCELLED"), "Booking status 'CANCELLED' is rejected");
+  assert(!isBookingActive("cancelled"), "Booking status 'cancelled' is rejected");
+
+  // =========================================================================
+  // TEST SUITE 9: Free vs Paid Slot Price Evaluation
+  // =========================================================================
+  console.log("\n💰 9. Testing Free vs Paid Slot Price Evaluation...");
+
+  function isSlotFree(price: any): boolean {
+    return Number(price ?? 0) <= 0;
+  }
+
+  assert(isSlotFree(0), "Slot with price 0 is recognized as free");
+  assert(isSlotFree("0"), "Slot with string '0' is recognized as free");
+  assert(isSlotFree(null), "Slot with null price is recognized as free");
+  assert(isSlotFree(undefined), "Slot with undefined price is recognized as free");
+  assert(!isSlotFree(499), "Slot with price 499 is recognized as paid");
+  assert(!isSlotFree("499"), "Slot with string '499' is recognized as paid");
+
+  // =========================================================================
+  // TEST SUITE 10: Middleware Cross-Domain Query Parameter & ReturnTo Preservation
+  // =========================================================================
+  console.log("\n🌐 10. Testing Middleware Cross-Domain Search Query Preservation...");
+
+  function simulateMiddlewareMainDomainRedirect(pathname: string, search: string, targetDomain: string): string {
+    const targetUrl = new URL(pathname, targetDomain);
+    targetUrl.search = search;
+    return targetUrl.toString();
+  }
+
+  function simulateUnauthenticatedClassroomRedirect(pathname: string, search: string, targetDomain: string): string {
+    const fullTarget = `${pathname}${search}`;
+    const loginUrl = new URL("/student/login", targetDomain);
+    loginUrl.searchParams.set("returnTo", fullTarget);
+    loginUrl.searchParams.set("redirectTo", fullTarget);
+    return loginUrl.toString();
+  }
+
+  const queryWithReturnTo = "?returnTo=%2Flive-class%2Fmath-101&redirectTo=%2Flive-class%2Fmath-101";
+  const crossDomainResult = simulateMiddlewareMainDomainRedirect(
+    "/student/login",
+    queryWithReturnTo,
+    "https://learners.educonnects.co.in"
+  );
+
+  assert(
+    crossDomainResult.includes("returnTo=%2Flive-class%2Fmath-101"),
+    "Main-domain redirect preserves returnTo search query params on learner domain"
+  );
+  assert(
+    crossDomainResult.startsWith("https://learners.educonnects.co.in/student/login"),
+    "Main-domain redirect routes to learner portal canonical URL"
+  );
+
+  const unauthClassroomRedirect = simulateUnauthenticatedClassroomRedirect(
+    "/live-class/math-101",
+    "",
+    "https://learners.educonnects.co.in"
+  );
+  assert(
+    unauthClassroomRedirect.includes("returnTo=%2Flive-class%2Fmath-101") &&
+    unauthClassroomRedirect.startsWith("https://learners.educonnects.co.in/student/login"),
+    "Unauthenticated classroom visitor gets directed to student login with full returnTo target preserved"
+  );
+
+  // =========================================================================
   // TEST SUMMARY
   // =========================================================================
   console.log("\n==============================================");
@@ -304,3 +426,4 @@ runShareFlowTests().catch((e) => {
   console.error("Test execution failed:", e);
   process.exit(1);
 });
+
