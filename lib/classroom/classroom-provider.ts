@@ -8,6 +8,9 @@ export type ClassroomEventType =
   | "active-speaker-changed"
   | "screen-share-changed"
   | "device-permission-denied"
+  | "participants-changed"
+  | "peer-media-state-changed"
+  | "remote-screen-changed"
   | "error";
 
 export type ClassroomEventHandler = (data: any) => void;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PreJoinScreen } from "@/components/classroom/prejoin-screen";
 import { ClassroomHeader } from "@/components/classroom/classroom-header";
@@ -24,9 +24,6 @@ import {
 } from "@/types/classroom";
 import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
 
-import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
-import "@livekit/components-styles";
-
 export default function VirtualClassroomPage() {
   const params = useParams();
   const router = useRouter();
@@ -46,13 +43,17 @@ export default function VirtualClassroomPage() {
 
   // Media states
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStreams, setRemoteStreams] = useState<Record<string, MediaStream>>({});
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+  const [screenPresenterName, setScreenPresenterName] = useState<string | null>(null);
   const [isAudioOn, setIsAudioOn] = useState(true);
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isLocalScreenSharing, setIsLocalScreenSharing] = useState(false);
   const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>("CONNECTING");
   const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null);
   const [permissionError, setPermissionError] = useState<string | null>(null);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
   // Drawers & Modals
   const [activeDrawer, setActiveDrawer] = useState<"participants" | "chat" | "whiteboard" | "files" | null>(null);
@@ -89,7 +90,6 @@ export default function VirtualClassroomPage() {
 
         if (!data.success) {
           const reason = data.error || data.data?.reason || "Failed to load classroom session.";
-          // If the session exists and requires booking/enrollment, redirect to live-class entry page
           if (data.data?.requiresBooking || reason.includes("booking") || reason.includes("book") || reason.includes("not have a confirmed booking")) {
             const targetId = data.data?.sessionDetails?.liveClassSlotId || data.data?.sessionDetails?.id || sessionId;
             window.location.replace(`/live-class/${targetId}`);
@@ -131,6 +131,82 @@ export default function VirtualClassroomPage() {
     loadSession();
   }, [sessionId]);
 
+  // Merge signaling peers into participant list
+  const handleSignalingPeersUpdate = useCallback((peers: any[]) => {
+    if (!sessionDetails) return;
+
+    setParticipants((prev) => {
+      // Find or build self participant
+      const me: ClassroomParticipant = {
+        userId: currentUserId,
+        name: currentUserName || (isTeacher ? "Teacher" : "Student"),
+        role: isTeacher ? "TEACHER" : "STUDENT",
+        isCameraOn: isVideoOn,
+        isMicOn: isAudioOn,
+        isScreenSharing,
+        isMutedByTeacher: false,
+        isSpotlighted: false,
+        canDrawOnWhiteboard: isTeacher || studentCanDraw,
+        connectionQuality,
+        joinedAt: new Date().toISOString(),
+      };
+
+      const others: ClassroomParticipant[] = [];
+
+      peers.forEach((peer) => {
+        if (peer.userId === currentUserId) return;
+        others.push({
+          userId: peer.userId,
+          name: peer.userName || (peer.role === "TEACHER" ? "Teacher" : "Student"),
+          role: peer.role || (peer.userId === sessionDetails.teacherId ? "TEACHER" : "STUDENT"),
+          isCameraOn: peer.isVideoOn ?? true,
+          isMicOn: peer.isAudioOn ?? true,
+          isScreenSharing: peer.isScreenSharing ?? false,
+          isMutedByTeacher: false,
+          isSpotlighted: false,
+          canDrawOnWhiteboard: peer.role === "TEACHER" || studentCanDraw,
+          connectionQuality: "CONNECTED",
+          joinedAt: new Date().toISOString(),
+        });
+      });
+
+      // If educator is not currently connected via signaling yet, keep placeholder so student sees stage
+      if (!isTeacher && !others.some((p) => p.role === "TEACHER") && sessionDetails.teacherId) {
+        others.unshift({
+          userId: sessionDetails.teacherId,
+          name: sessionDetails.teacherName || "Teacher",
+          role: "TEACHER",
+          isCameraOn: false,
+          isMicOn: false,
+          isScreenSharing: false,
+          isMutedByTeacher: false,
+          isSpotlighted: false,
+          canDrawOnWhiteboard: true,
+          connectionQuality: "CONNECTING",
+          joinedAt: sessionDetails.scheduledStartAt,
+        });
+      }
+
+      return [me, ...others];
+    });
+  }, [sessionDetails, currentUserId, currentUserName, isTeacher, isVideoOn, isAudioOn, isScreenSharing, studentCanDraw, connectionQuality]);
+
+  const handlePeerMediaStateUpdate = useCallback((data: any) => {
+    setParticipants((prev) =>
+      prev.map((p) => {
+        if (p.userId === data.userId) {
+          return {
+            ...p,
+            isMicOn: data.isAudioOn ?? p.isMicOn,
+            isCameraOn: data.isVideoOn ?? p.isCameraOn,
+            isScreenSharing: data.isScreenSharing ?? p.isScreenSharing,
+          };
+        }
+        return p;
+      })
+    );
+  }, []);
+
   // 2. Handle Joining Classroom
   const handleJoinClassroom = async (
     devices: DeviceSelection,
@@ -140,7 +216,7 @@ export default function VirtualClassroomPage() {
     try {
       setLoading(true);
 
-      // Get LiveKit Access Token
+      // Get Access Token
       const tokenRes = await fetch(`/api/classroom/${sessionId}/token`, { method: "POST" });
       const tokenData = await tokenRes.json();
       if (!tokenData.success) {
@@ -163,9 +239,55 @@ export default function VirtualClassroomPage() {
         if (typeof data.isVideoOn === "boolean") setIsVideoOn(data.isVideoOn);
       });
 
+      adapter.on("remote-stream-added", (data) => {
+        if (data.userId && data.stream) {
+          setRemoteStreams((prev) => ({
+            ...prev,
+            [data.userId]: data.stream,
+          }));
+        }
+      });
+
+      adapter.on("remote-stream-removed", (data) => {
+        if (data.userId) {
+          setRemoteStreams((prev) => {
+            const next = { ...prev };
+            delete next[data.userId];
+            return next;
+          });
+        }
+      });
+
       adapter.on("screen-share-changed", (data) => {
         setIsScreenSharing(data.isSharing);
         setScreenStream(data.stream);
+        setIsLocalScreenSharing(data.isSharing);
+        setScreenPresenterName(data.isSharing ? "You" : null);
+      });
+
+      adapter.on("remote-screen-changed", (data) => {
+        setIsScreenSharing(data.isSharing);
+        setScreenStream(data.stream);
+        setIsLocalScreenSharing(false);
+        if (data.isSharing) {
+          setParticipants((currentParticipants) => {
+            const presenter = currentParticipants.find((p) => p.userId === data.presenterId);
+            setScreenPresenterName(presenter ? presenter.name : "Participant");
+            return currentParticipants;
+          });
+        } else {
+          setScreenPresenterName(null);
+        }
+      });
+
+      adapter.on("participants-changed", (data) => {
+        if (Array.isArray(data.peers)) {
+          handleSignalingPeersUpdate(data.peers);
+        }
+      });
+
+      adapter.on("peer-media-state-changed", (data) => {
+        handlePeerMediaStateUpdate(data);
       });
 
       adapter.on("connection-state-changed", (data) => {
@@ -238,73 +360,7 @@ export default function VirtualClassroomPage() {
     pollTimerRef.current = setInterval(() => {
       fetchChatMessages();
       fetchWhiteboardState();
-
-      // Update Participant list
-      updateRoster();
     }, 4000);
-  };
-
-  const updateRoster = async () => {
-    if (!sessionDetails) return;
-    const me: ClassroomParticipant = {
-      userId: currentUserId,
-      name: currentUserName || (isTeacher ? "Teacher" : "Student"),
-      role: isTeacher ? "TEACHER" : "STUDENT",
-      isCameraOn: isVideoOn,
-      isMicOn: isAudioOn,
-      isScreenSharing,
-      isMutedByTeacher: false,
-      isSpotlighted: false,
-      canDrawOnWhiteboard: isTeacher || studentCanDraw,
-      connectionQuality,
-      joinedAt: new Date().toISOString(),
-    };
-
-    const peerParticipants: ClassroomParticipant[] = [];
-
-    // If current participant is student, include the educator in roster
-    if (!isTeacher && sessionDetails.teacherId) {
-      peerParticipants.push({
-        userId: sessionDetails.teacherId,
-        name: sessionDetails.teacherName || "Teacher",
-        role: "TEACHER",
-        isCameraOn: true,
-        isMicOn: true,
-        isScreenSharing: false,
-        isMutedByTeacher: false,
-        isSpotlighted: false,
-        canDrawOnWhiteboard: true,
-        connectionQuality: "CONNECTED",
-        joinedAt: sessionDetails.scheduledStartAt,
-      });
-    }
-
-    // Fetch active student attendance records
-    try {
-      const attRes = await fetch(`/api/classroom/${sessionId}/attendance`);
-      const attData = await attRes.json();
-      if (attData.success && Array.isArray(attData.data?.attendances)) {
-        attData.data.attendances.forEach((att: any) => {
-          if (att.studentId && att.studentId !== currentUserId) {
-            peerParticipants.push({
-              userId: att.studentId,
-              name: att.studentName || "Student",
-              role: "STUDENT",
-              isCameraOn: true,
-              isMicOn: true,
-              isScreenSharing: false,
-              isMutedByTeacher: false,
-              isSpotlighted: false,
-              canDrawOnWhiteboard: studentCanDraw,
-              connectionQuality: "CONNECTED",
-              joinedAt: att.joinedAt,
-            });
-          }
-        });
-      }
-    } catch {}
-
-    setParticipants([me, ...peerParticipants]);
   };
 
   // Fetch Chat
@@ -373,27 +429,25 @@ export default function VirtualClassroomPage() {
 
   const handleToggleScreenShare = async () => {
     if (!providerRef.current) return;
-    if (isScreenSharing) {
+    if (isScreenSharing && isLocalScreenSharing) {
       await providerRef.current.stopScreenShare();
     } else {
       await providerRef.current.startScreenShare();
     }
   };
 
-  const handleStartClass = async () => {
-    try {
-      const res = await fetch(`/api/classroom/${sessionId}/start`, { method: "POST" });
-      const data = await res.json();
-      if (data.success && sessionDetails) {
-        setSessionDetails({
-          ...sessionDetails,
-          status: "LIVE",
-          actualStartAt: data.data.actualStartAt,
-        });
-      }
-    } catch (e) {
-      console.error("Failed to start class:", e);
+  const handleUnlockAutoplay = () => {
+    setAutoplayBlocked(false);
+    if (typeof document !== "undefined") {
+      document.querySelectorAll("audio, video").forEach((el) => {
+        (el as HTMLMediaElement).play().catch(() => {});
+      });
     }
+  };
+
+  const handleLeaveClass = async () => {
+    if (providerRef.current) await providerRef.current.disconnect();
+    router.push(isTeacher ? "/teacher/dashboard" : "/student/dashboard");
   };
 
   const handleEndClass = async () => {
@@ -407,11 +461,6 @@ export default function VirtualClassroomPage() {
     } catch (e) {
       console.error("Failed to end class:", e);
     }
-  };
-
-  const handleLeaveClass = async () => {
-    if (providerRef.current) await providerRef.current.disconnect();
-    router.push(isTeacher ? "/teacher/dashboard" : "/student/dashboard");
   };
 
   const handleSendMessage = async (text: string) => {
@@ -525,7 +574,7 @@ export default function VirtualClassroomPage() {
   }
 
   return (
-    <div className="min-h-screen h-screen bg-slate-950 flex flex-col overflow-hidden text-slate-100 font-sans">
+    <div className="h-[100dvh] bg-slate-950 flex flex-col overflow-hidden text-slate-100 font-sans select-none">
       {/* Top Header */}
       <ClassroomHeader
         title={sessionDetails.title}
@@ -544,59 +593,74 @@ export default function VirtualClassroomPage() {
         <VideoStage
           participants={participants}
           localStream={localStream}
+          remoteStreams={remoteStreams}
           screenStream={screenStream}
+          screenPresenterName={screenPresenterName}
+          isScreenSharing={isScreenSharing}
+          isLocalScreenSharing={isLocalScreenSharing}
           currentUserId={currentUserId}
           isTeacher={isTeacher}
           activeSpeakerId={activeSpeakerId}
           permissionError={permissionError}
+          autoplayBlocked={autoplayBlocked}
+          onUnlockAutoplay={handleUnlockAutoplay}
+          onStopScreenShare={handleToggleScreenShare}
         />
 
-        {/* Right Drawer Panel */}
+        {/* Right Drawer Panel with Mobile Overlay Backdrop */}
         {activeDrawer && (
-          <div className="w-full md:w-96 h-full absolute right-0 top-0 bottom-0 z-20 shadow-2xl">
-            {activeDrawer === "participants" && (
-              <ParticipantsPanel
-                participants={participants}
-                currentUserId={currentUserId}
-                isTeacher={isTeacher}
-                studentCanDraw={studentCanDraw}
-                onToggleStudentDraw={handleToggleStudentDraw}
-                onMuteStudent={() => {}}
-                onSpotlightParticipant={() => {}}
-                onRemoveStudent={() => {}}
-                onClose={() => setActiveDrawer(null)}
-              />
-            )}
+          <>
+            {/* Backdrop for small screens */}
+            <div
+              className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
+              onClick={() => setActiveDrawer(null)}
+            />
 
-            {activeDrawer === "chat" && (
-              <ChatPanel
-                messages={messages}
-                currentUserId={currentUserId}
-                onSendMessage={handleSendMessage}
-                onClose={() => setActiveDrawer(null)}
-              />
-            )}
+            <div className="w-full md:w-96 h-full absolute right-0 top-0 bottom-0 z-40 shadow-2xl bg-slate-900 border-l border-slate-800 flex flex-col animate-in slide-in-from-right duration-200">
+              {activeDrawer === "participants" && (
+                <ParticipantsPanel
+                  participants={participants}
+                  currentUserId={currentUserId}
+                  isTeacher={isTeacher}
+                  studentCanDraw={studentCanDraw}
+                  onToggleStudentDraw={handleToggleStudentDraw}
+                  onMuteStudent={() => {}}
+                  onSpotlightParticipant={() => {}}
+                  onRemoveStudent={() => {}}
+                  onClose={() => setActiveDrawer(null)}
+                />
+              )}
 
-            {activeDrawer === "whiteboard" && (
-              <WhiteboardPanel
-                initialElements={whiteboardElements}
-                canDraw={isTeacher || studentCanDraw}
-                isTeacher={isTeacher}
-                onSaveState={handleSaveWhiteboardState}
-                onClose={() => setActiveDrawer(null)}
-              />
-            )}
+              {activeDrawer === "chat" && (
+                <ChatPanel
+                  messages={messages}
+                  currentUserId={currentUserId}
+                  onSendMessage={handleSendMessage}
+                  onClose={() => setActiveDrawer(null)}
+                />
+              )}
 
-            {activeDrawer === "files" && (
-              <FilesPanel
-                files={files}
-                sessionId={sessionId}
-                isTeacher={isTeacher}
-                onUploadFile={handleUploadFile}
-                onClose={() => setActiveDrawer(null)}
-              />
-            )}
-          </div>
+              {activeDrawer === "whiteboard" && (
+                <WhiteboardPanel
+                  initialElements={whiteboardElements}
+                  canDraw={isTeacher || studentCanDraw}
+                  isTeacher={isTeacher}
+                  onSaveState={handleSaveWhiteboardState}
+                  onClose={() => setActiveDrawer(null)}
+                />
+              )}
+
+              {activeDrawer === "files" && (
+                <FilesPanel
+                  files={files}
+                  sessionId={sessionId}
+                  isTeacher={isTeacher}
+                  onUploadFile={handleUploadFile}
+                  onClose={() => setActiveDrawer(null)}
+                />
+              )}
+            </div>
+          </>
         )}
       </div>
 
@@ -605,9 +669,10 @@ export default function VirtualClassroomPage() {
         isTeacher={isTeacher}
         isAudioOn={isAudioOn}
         isVideoOn={isVideoOn}
-        isScreenSharing={isScreenSharing}
+        isScreenSharing={isScreenSharing && isLocalScreenSharing}
         activeDrawer={activeDrawer}
         unreadCount={unreadCount}
+        participantCount={participants.length}
         onToggleAudio={handleToggleAudio}
         onToggleVideo={handleToggleVideo}
         onToggleScreenShare={handleToggleScreenShare}

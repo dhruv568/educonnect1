@@ -39,11 +39,11 @@ export function PreJoinScreen({
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
 
-  // Check join window: allow joining 10 minutes before start time
+  // Check join window: allow joining 10 minutes before start time or anytime when class is LIVE
   const scheduledStart = new Date(sessionDetails.scheduledStartAt).getTime();
   const now = Date.now();
   const minutesToStart = Math.ceil((scheduledStart - now) / (1000 * 60));
-  const isEarly = !isTeacher && minutesToStart > 10;
+  const isEarly = !isTeacher && sessionDetails.status !== "LIVE" && minutesToStart > 10;
 
   useEffect(() => {
     async function initPreview() {
