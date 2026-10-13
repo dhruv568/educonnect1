@@ -83,7 +83,7 @@ export default function TeacherDashboardPage() {
       <div className="space-y-8 pb-16">
         {/* Dynamic Verification Status Banner */}
         {data.verificationStatus === "VERIFIED" ? (
-          <div className="bg-[#16805B] text-white rounded-3xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="bg-[#0F766E] text-white rounded-3xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-white/10 rounded-2xl">
                 <ShieldCheck className="h-8 w-8 text-white" />
@@ -93,7 +93,7 @@ export default function TeacherDashboardPage() {
                   <h2 className="text-xl font-bold">Verification Status: Verified Educator</h2>
                   <StatusBadge status="VERIFIED" />
                 </div>
-                <p className="text-xs text-emerald-100 mt-1">
+                <p className="text-xs text-teal-100 mt-1">
                   Your profile is published on the EduConnects platform. You are eligible for demo bookings, live classes, and courses.
                 </p>
               </div>
@@ -165,24 +165,24 @@ export default function TeacherDashboardPage() {
             title="Today's Classes"
             value={loading ? "..." : data.metrics.todayClassesCount}
             subtitle={`${data.metrics.upcomingClassesCount} upcoming total`}
-            icon={<Video className="h-5 w-5 text-[#16805B]" />}
-            variant="blue"
+            icon={<Video className="h-5 w-5 text-[#0F766E]" />}
+            variant="teal"
           />
 
           <MetricCard
             title="Active Students"
             value={loading ? "..." : data.metrics.activeStudentsCount}
             subtitle="Enrolled in your courses"
-            icon={<Users className="h-5 w-5 text-[#16805B]" />}
-            variant="emerald"
+            icon={<Users className="h-5 w-5 text-[#0F766E]" />}
+            variant="teal"
           />
 
           <MetricCard
             title="Published Courses"
             value={loading ? "..." : data.metrics.activeCoursesCount}
             subtitle="Self-paced LMS courses"
-            icon={<BookOpen className="h-5 w-5 text-purple-600" />}
-            variant="purple"
+            icon={<BookOpen className="h-5 w-5 text-teal-600" />}
+            variant="teal"
           />
 
           <MetricCard
@@ -197,10 +197,10 @@ export default function TeacherDashboardPage() {
         {/* Schedule & Upcoming Sessions Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Today's Schedule */}
-          <Card className="p-6 space-y-4 border-l-4 border-l-[#16805B]">
+          <Card className="p-6 space-y-4 border-l-4 border-l-[#0F766E]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-[#16805B]" />
+                <Calendar className="h-5 w-5 text-[#0F766E]" />
                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   Today's Schedule
                 </h3>
@@ -256,10 +256,10 @@ export default function TeacherDashboardPage() {
           </Card>
 
           {/* Upcoming Live Classes */}
-          <Card className="p-6 space-y-4 border-l-4 border-l-emerald-600">
+          <Card className="p-6 space-y-4 border-l-4 border-l-[#0F766E]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Video className="h-5 w-5 text-emerald-600" />
+                <Video className="h-5 w-5 text-[#0F766E]" />
                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   Upcoming Classes
                 </h3>
@@ -281,7 +281,7 @@ export default function TeacherDashboardPage() {
 
             {loading ? (
               <div className="p-6 text-center">
-                <Loader2 className="h-6 w-6 text-emerald-600 animate-spin mx-auto" />
+                <Loader2 className="h-6 w-6 text-[#0F766E] animate-spin mx-auto" />
               </div>
             ) : data.upcomingClasses.length === 0 ? (
               <div className="p-6 text-center bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/80">
@@ -332,8 +332,8 @@ export default function TeacherDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {data.verificationStatus === "VERIFIED" ? (
             <Link href="/teacher/live-classes">
-              <Card className="p-5 hover:border-blue-500 transition cursor-pointer space-y-2">
-                <Video className="h-6 w-6 text-blue-600" />
+              <Card className="p-5 hover:border-teal-500 transition cursor-pointer space-y-2">
+                <Video className="h-6 w-6 text-[#0F766E]" />
                 <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">Create Live Class</h4>
                 <p className="text-xs text-slate-500">Schedule 1-on-1 or group live sessions.</p>
               </Card>
@@ -355,8 +355,8 @@ export default function TeacherDashboardPage() {
 
           {data.verificationStatus === "VERIFIED" ? (
             <Link href="/teacher/courses">
-              <Card className="p-5 hover:border-emerald-500 transition cursor-pointer space-y-2">
-                <BookOpen className="h-6 w-6 text-emerald-600" />
+              <Card className="p-5 hover:border-teal-500 transition cursor-pointer space-y-2">
+                <BookOpen className="h-6 w-6 text-[#0F766E]" />
                 <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">Create Course</h4>
                 <p className="text-xs text-slate-500">Upload video lessons & study materials.</p>
               </Card>
@@ -377,15 +377,15 @@ export default function TeacherDashboardPage() {
           )}
 
           <Link href="/teacher/analytics">
-            <Card className="p-5 hover:border-purple-500 transition cursor-pointer space-y-2">
-              <BarChart2 className="h-6 w-6 text-purple-600" />
+            <Card className="p-5 hover:border-teal-500 transition cursor-pointer space-y-2">
+              <BarChart2 className="h-6 w-6 text-[#0F766E]" />
               <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">View Analytics</h4>
               <p className="text-xs text-slate-500">Course completion & class attendance stats.</p>
             </Card>
           </Link>
 
           <Link href="/teacher/earnings">
-            <Card className="p-5 hover:border-amber-500 transition cursor-pointer space-y-2">
+            <Card className="p-5 hover:border-teal-500 transition cursor-pointer space-y-2">
               <IndianRupee className="h-6 w-6 text-amber-500" />
               <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100">View Earnings</h4>
               <p className="text-xs text-slate-500">Financial ledger entries & Cashfree payouts.</p>

@@ -8,12 +8,12 @@ import { LearnerRegistrationFlow } from "@/components/learner/learner-registrati
 
 export default function StudentRegistrationPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#F0FAF5]">
+    <div className="min-h-screen flex flex-col bg-[#EFF6FF]">
       <FloatingNavbar variant="student" />
 
       <main className="flex-1 pt-32 sm:pt-36 pb-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8">
         <BackButton
-          fallbackUrl="/login"
+          fallbackUrl="/student/login"
           label="Back to Sign In"
           variant="default"
         />
@@ -21,7 +21,7 @@ export default function StudentRegistrationPage() {
         <Suspense
           fallback={
             <div className="min-h-[400px] flex items-center justify-center">
-              <div className="w-10 h-10 border-4 border-[#16805B]/30 border-t-[#16805B] rounded-full animate-spin" />
+              <div className="w-10 h-10 border-4 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin" />
             </div>
           }
         >

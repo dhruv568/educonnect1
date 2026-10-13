@@ -8,7 +8,7 @@ import { EducatorRegistrationFlow } from "@/components/educator/educator-registr
 
 export default function TeacherRegisterPage() {
   return (
-    <div data-theme="educator" className="min-h-screen flex flex-col bg-[#F0FAF5]/40 relative overflow-hidden font-sans">
+    <div data-theme="educator" className="min-h-screen flex flex-col bg-[#F0FDFA]/40 relative overflow-hidden font-sans">
       <FloatingNavbar variant="teacher" />
 
       <main className="flex-1 pt-28 sm:pt-32 pb-20 max-w-4xl mx-auto px-4 sm:px-6 w-full space-y-6">

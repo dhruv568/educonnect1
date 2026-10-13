@@ -15,5 +15,9 @@ export default function TeacherLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <div data-theme="educator" className="theme-educator min-h-screen text-slate-900">
+      {children}
+    </div>
+  );
 }

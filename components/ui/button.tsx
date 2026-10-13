@@ -44,8 +44,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ghost: "text-[#0F172A] hover:bg-[#F0FAF5] hover:text-[#16805B] active:bg-[#DCFCE7]",
       danger: "bg-[#EF4444] text-white hover:bg-[#DC2626] active:bg-[#B91C1C] shadow-md shadow-rose-500/20",
       success: "bg-[#10B981] text-white hover:bg-[#059669] active:bg-[#047857] shadow-md shadow-emerald-500/20",
-      teacher: "bg-[#16805B] text-white hover:bg-[#0D5C41] active:bg-[#094732] shadow-md shadow-[#16805B]/20",
-      student: "bg-[#16805B] text-white hover:bg-[#0D5C41] active:bg-[#094732] shadow-md shadow-[#16805B]/20",
+      teacher: "bg-[#0F766E] text-white hover:bg-[#115E59] active:bg-[#042F2E] shadow-md shadow-[#0F766E]/20",
+      student: "bg-[#2563EB] text-white hover:bg-[#1E40AF] active:bg-[#1E3A8A] shadow-md shadow-[#2563EB]/20",
       gradient: "bg-gradient-to-r from-[#16805B] to-[#0D5C41] text-white hover:opacity-95 shadow-lg shadow-[#16805B]/20",
     };
 

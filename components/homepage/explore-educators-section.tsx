@@ -80,31 +80,31 @@ export function ExploreEducatorsSection() {
             {teachers.map((t) => (
               <div
                 key={t.id}
-                className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-sm hover:shadow-xl transition-all space-y-4 flex flex-col justify-between"
+                className="p-6 rounded-3xl bg-white border border-[#E2E8F0] shadow-sm hover:shadow-xl transition-all space-y-4 flex flex-col justify-between overflow-hidden min-w-0"
               >
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
+                <div className="space-y-4 min-w-0">
+                  <div className="flex items-center gap-4 min-w-0">
                     <img
                       src={t.avatarUrl}
                       alt={t.name}
                       className="w-14 h-14 rounded-full object-cover ring-2 ring-[#16805B]/20 shadow-sm shrink-0 aspect-square"
                     />
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="text-base font-extrabold text-[#0F172A] truncate">{t.name}</h3>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <h3 className="text-base font-extrabold text-[#0F172A] truncate min-w-0" title={t.name}>{t.name}</h3>
                         {t.verificationStatus === "VERIFIED" && (
                           <ShieldCheck className="h-4 w-4 text-[#16805B] shrink-0" />
                         )}
                       </div>
-                      <p className="text-xs font-bold text-[#16805B] truncate">{t.headline}</p>
+                      <p className="text-xs font-bold text-[#16805B] truncate mt-0.5" title={t.headline}>{t.headline}</p>
                     </div>
                   </div>
 
                   {/* Subjects */}
                   {t.subjects && t.subjects.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1.5 min-w-0">
                       {t.subjects.slice(0, 3).map((sub, idx) => (
-                        <span key={idx} className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0]">
+                        <span key={idx} className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0] max-w-full truncate">
                           {sub}
                         </span>
                       ))}
@@ -112,22 +112,22 @@ export function ExploreEducatorsSection() {
                   )}
 
                   {/* Stats Row */}
-                  <div className="flex items-center justify-between text-xs bg-[#F8FAFC] p-3 rounded-2xl border border-[#E2E8F0]">
+                  <div className="flex items-center justify-between text-xs bg-[#F8FAFC] p-3 rounded-2xl border border-[#E2E8F0] gap-2">
                     {t.rating ? (
-                      <div className="flex items-center gap-1 text-[#B8860B] font-black">
+                      <div className="flex items-center gap-1 text-[#B8860B] font-black shrink-0">
                         <Star className="h-3.5 w-3.5 fill-[#F2C14E] text-[#F2C14E]" />
                         <span>{t.rating.toFixed(1)}</span>
                       </div>
                     ) : (
-                      <span className="text-[11px] text-[#64748B] font-semibold">New Educator</span>
+                      <span className="text-[11px] text-[#64748B] font-semibold shrink-0">New Educator</span>
                     )}
 
                     {t.experienceYears ? (
-                      <span className="text-[#64748B] font-semibold">{t.experienceYears} yrs exp</span>
+                      <span className="text-[#64748B] font-semibold shrink-0">{t.experienceYears} yrs exp</span>
                     ) : null}
 
                     {t.hourlyRate ? (
-                      <span className="font-extrabold text-[#0F172A]">₹{t.hourlyRate}/hr</span>
+                      <span className="font-extrabold text-[#0F172A] shrink-0">₹{t.hourlyRate}/hr</span>
                     ) : null}
                   </div>
                 </div>

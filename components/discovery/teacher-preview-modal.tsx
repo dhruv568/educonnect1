@@ -37,7 +37,7 @@ export function TeacherPreviewModal({ teacher, isOpen, onClose, onOpenAuth }: Te
           </button>
 
           {/* Teacher Header */}
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-4 min-w-0">
             <img
               src={teacher.avatarUrl}
               alt={teacher.name}
@@ -47,23 +47,23 @@ export function TeacherPreviewModal({ teacher, isOpen, onClose, onOpenAuth }: Te
               }}
             />
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-slate-900 truncate">{teacher.name}</h2>
+              <div className="flex items-center gap-2 min-w-0">
+                <h2 className="text-xl font-bold text-slate-900 truncate min-w-0" title={teacher.name}>{teacher.name}</h2>
                 <GlassBadge variant="emerald" size="sm" className="flex items-center gap-1 shrink-0">
                   <ShieldCheck className="h-3 w-3" /> Verified
                 </GlassBadge>
               </div>
-              <p className="text-xs font-bold text-emerald-700 mt-0.5">{teacher.headline}</p>
+              <p className="text-xs font-bold text-emerald-700 mt-0.5 truncate" title={teacher.headline}>{teacher.headline}</p>
               {teacher.location && (
-                <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5 font-medium">
+                <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5 font-medium min-w-0">
                   <MapPin className="h-3 w-3 shrink-0" />
-                  <span>{teacher.location}</span>
+                  <span className="truncate min-w-0">{teacher.location}</span>
                 </div>
               )}
               <div className="flex items-center gap-2 text-xs text-slate-500 mt-1.5 font-semibold">
-                <span className="text-amber-500">★ {typeof teacher.rating === "number" ? teacher.rating.toFixed(2) : teacher.rating}</span>
-                <span>• {teacher.experienceYears} Years Exp</span>
-                <span>• {formatCurrency(teacher.hourlyRate)}/hr</span>
+                <span className="text-amber-500 shrink-0">★ {typeof teacher.rating === "number" ? teacher.rating.toFixed(2) : teacher.rating}</span>
+                <span className="shrink-0">• {teacher.experienceYears} Years Exp</span>
+                <span className="shrink-0">• {formatCurrency(teacher.hourlyRate)}/hr</span>
               </div>
             </div>
           </div>

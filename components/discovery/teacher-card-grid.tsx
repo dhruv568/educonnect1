@@ -47,11 +47,11 @@ export function TeacherCardGrid({ teachers, loading = false, onOpenAuth }: Teach
           <GlassCard
             key={t.id}
             glowColor="rgba(16, 128, 91, 0.15)"
-            className="group cursor-pointer flex flex-col justify-between h-full border-2 border-white/90 hover:border-emerald-300 transition-all p-6"
+            className="group cursor-pointer flex flex-col justify-between h-full border-2 border-white/90 hover:border-emerald-300 transition-all p-6 min-w-0 overflow-hidden"
             onClick={() => setSelectedTeacher(t)}
           >
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
+            <div className="space-y-4 min-w-0">
+              <div className="flex items-start gap-4 min-w-0">
                 <img
                   src={t.avatarUrl}
                   alt={t.name}
@@ -61,36 +61,36 @@ export function TeacherCardGrid({ teachers, loading = false, onOpenAuth }: Teach
                   }}
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-1">
-                    <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors truncate">
+                  <div className="flex items-center justify-between gap-1.5 min-w-0">
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors truncate min-w-0" title={t.name}>
                       {t.name}
                     </h3>
                     <GlassBadge variant="emerald" size="sm" className="shrink-0 flex items-center gap-1">
                       <ShieldCheck className="h-3 w-3" /> Verified
                     </GlassBadge>
                   </div>
-                  <p className="text-xs font-bold text-emerald-700 truncate mt-0.5">{t.headline}</p>
+                  <p className="text-xs font-bold text-emerald-700 truncate mt-0.5" title={t.headline}>{t.headline}</p>
                   {t.location && (
-                    <div className="flex items-center gap-1 text-[11px] text-slate-400 font-medium mt-1">
+                    <div className="flex items-center gap-1 text-[11px] text-slate-400 font-medium mt-1 min-w-0">
                       <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
-                      <span className="truncate">{t.location}</span>
+                      <span className="truncate min-w-0">{t.location}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 min-w-0">
                 {t.subjects && t.subjects.map((sub: string, idx: number) => (
-                  <span key={idx} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                  <span key={idx} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 max-w-full truncate">
                     {sub}
                   </span>
                 ))}
               </div>
 
-              <div className="flex items-center justify-between text-xs bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                <span className="font-bold text-amber-500">★ {typeof t.rating === "number" ? t.rating.toFixed(2) : t.rating}</span>
-                <span className="font-semibold text-slate-600">{t.experienceYears} Years Exp</span>
-                <span className="font-black text-slate-900">{formatCurrency(t.hourlyRate)}/hr</span>
+              <div className="flex items-center justify-between text-xs bg-slate-50 p-3 rounded-2xl border border-slate-100 gap-2">
+                <span className="font-bold text-amber-500 shrink-0">★ {typeof t.rating === "number" ? t.rating.toFixed(2) : t.rating}</span>
+                <span className="font-semibold text-slate-600 shrink-0">{t.experienceYears} Years Exp</span>
+                <span className="font-black text-slate-900 shrink-0">{formatCurrency(t.hourlyRate)}/hr</span>
               </div>
             </div>
 

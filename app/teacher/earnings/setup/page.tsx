@@ -65,7 +65,7 @@ export default function TeacherPayoutSetupPage() {
 
         <div className="bg-slate-900/80 border border-slate-800/90 rounded-3xl p-8 backdrop-blur-xl shadow-2xl space-y-6">
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center mx-auto mb-2">
+            <div className="w-14 h-14 rounded-full bg-teal-500/20 text-teal-400 border border-teal-500/30 flex items-center justify-center mx-auto mb-2">
               <CreditCard className="w-7 h-7" />
             </div>
             <h1 className="text-2xl font-bold text-white tracking-tight">Set Up Teacher Payouts</h1>
@@ -89,7 +89,7 @@ export default function TeacherPayoutSetupPage() {
                 <div
                   className={`w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center ${
                     account?.status === "ACTIVE" || s.step <= 2
-                      ? "bg-purple-500 text-white"
+                      ? "bg-[#0F766E] text-white"
                       : "bg-slate-800 text-slate-400"
                   }`}
                 >
@@ -121,7 +121,7 @@ export default function TeacherPayoutSetupPage() {
             <button
               onClick={handleStartOnboarding}
               disabled={onboarding}
-              className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 text-white font-bold rounded-2xl shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 text-sm transition-all disabled:opacity-50"
+              className="w-full py-4 bg-gradient-to-r from-[#0F766E] to-[#115E59] hover:from-[#115E59] hover:to-[#0F766E] text-white font-bold rounded-2xl shadow-lg shadow-teal-700/25 flex items-center justify-center gap-2 text-sm transition-all disabled:opacity-50 cursor-pointer"
             >
               {onboarding ? "Connecting Cashfree Split..." : "Activate Cashfree Split Payout Account"}
             </button>

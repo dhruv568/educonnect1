@@ -104,7 +104,7 @@ export default function TeacherLoginPage() {
   };
 
   return (
-    <div data-theme="educator" className="min-h-screen flex flex-col bg-[#F0FAF5]/40 relative overflow-hidden font-sans">
+    <div data-theme="educator" className="min-h-screen flex flex-col bg-[#F0FDFA]/40 relative overflow-hidden font-sans">
       {/* Educator Navbar */}
       <FloatingNavbar variant="teacher" />
 
@@ -112,15 +112,15 @@ export default function TeacherLoginPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
           {/* Left Column: Educator Highlights */}
           <div className="lg:col-span-6 space-y-6 hidden lg:block">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F0FAF5] border border-[#A7F3D0] text-[#0D5C41] text-xs font-black uppercase tracking-wider shadow-2xs">
-              <Sparkles className="h-3.5 w-3.5 text-[#16805B]" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F0FDFA] border border-[#99F6E4] text-[#115E59] text-xs font-black uppercase tracking-wider shadow-2xs">
+              <Sparkles className="h-3.5 w-3.5 text-[#0F766E]" />
               <span>Verified Educator Portal</span>
             </div>
 
             <div className="space-y-3">
               <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-tight">
                 Manage Your <br />
-                <span className="bg-gradient-to-r from-[#16805B] via-[#0D5C41] to-[#16805B] bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#0F766E] via-[#115E59] to-[#0F766E] bg-clip-text text-transparent">
                   Teaching Business
                 </span>
               </h1>
@@ -132,19 +132,19 @@ export default function TeacherLoginPage() {
             {/* Feature Bullets */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-3 text-xs font-bold text-slate-700">
-                <div className="p-2 rounded-xl bg-[#F0FAF5] text-[#16805B] border border-[#A7F3D0]">
+                <div className="p-2 rounded-xl bg-[#F0FDFA] text-[#0F766E] border border-[#99F6E4]">
                   <IndianRupee className="h-4 w-4" />
                 </div>
                 <span>Keep 85%+ of your revenue with automated Cashfree bank transfers</span>
               </div>
               <div className="flex items-center gap-3 text-xs font-bold text-slate-700">
-                <div className="p-2 rounded-xl bg-[#F0FAF5] text-[#16805B] border border-[#A7F3D0]">
+                <div className="p-2 rounded-xl bg-[#F0FDFA] text-[#0F766E] border border-[#99F6E4]">
                   <Video className="h-4 w-4" />
                 </div>
                 <span>Built-in HD interactive classroom with whiteboards &amp; attendance tracking</span>
               </div>
               <div className="flex items-center gap-3 text-xs font-bold text-slate-700">
-                <div className="p-2 rounded-xl bg-[#F0FAF5] text-[#16805B] border border-[#A7F3D0]">
+                <div className="p-2 rounded-xl bg-[#F0FDFA] text-[#0F766E] border border-[#99F6E4]">
                   <ShieldCheck className="h-4 w-4" />
                 </div>
                 <span>Verified educator trust badge to stand out in platform discovery</span>
@@ -157,7 +157,7 @@ export default function TeacherLoginPage() {
                 <img
                   src="/images/educators/male-1.png"
                   alt="Prof. Vikramaditya Sen"
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-[#16805B]/30"
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-[#0F766E]/30"
                 />
                 <div>
                   <div className="text-xs font-black text-slate-900">Prof. Vikramaditya Sen</div>
@@ -185,7 +185,7 @@ export default function TeacherLoginPage() {
             </div>
 
             <GlassCard
-              glowColor="rgba(22, 128, 91, 0.15)"
+              glowColor="rgba(15, 118, 110, 0.15)"
               className="p-7 sm:p-8 border border-white/90 shadow-xl space-y-6 bg-white/95"
             >
               <form onSubmit={handleLogin} className="space-y-4">
@@ -196,7 +196,7 @@ export default function TeacherLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  leftIcon={<Mail className="h-4 w-4 text-[#16805B]" />}
+                  leftIcon={<Mail className="h-4 w-4 text-[#0F766E]" />}
                 />
 
                 <Input
@@ -206,14 +206,14 @@ export default function TeacherLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  leftIcon={<Lock className="h-4 w-4 text-[#16805B]" />}
+                  leftIcon={<Lock className="h-4 w-4 text-[#0F766E]" />}
                 />
 
                 <div className="flex items-center justify-between text-xs font-bold">
-                  <Link href="/forgot-password" className="text-[#16805B] hover:text-[#0D5C41] hover:underline">
+                  <Link href="/forgot-password" className="text-[#0F766E] hover:text-[#115E59] hover:underline">
                     Forgot password?
                   </Link>
-                  <Link href="/teacher/register" className="text-slate-600 hover:text-[#0D5C41]">
+                  <Link href="/teacher/register" className="text-slate-600 hover:text-[#115E59]">
                     Become an Educator →
                   </Link>
                 </div>
@@ -231,7 +231,7 @@ export default function TeacherLoginPage() {
 
               <div className="pt-2 text-center text-xs text-slate-500 border-t border-slate-100 font-medium">
                 New to EduConnects?{" "}
-                <Link href="/teacher/register" className="text-[#16805B] hover:text-[#0D5C41] hover:underline font-bold">
+                <Link href="/teacher/register" className="text-[#0F766E] hover:text-[#115E59] hover:underline font-bold">
                   Register as an Educator →
                 </Link>
               </div>

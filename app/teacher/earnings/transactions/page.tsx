@@ -52,7 +52,7 @@ export default function TeacherTransactionsPage() {
             <BackToHomeButton variant="dark" />
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-            <ListFilter className="w-8 h-8 text-purple-400" /> Educator Sales Ledger
+            <ListFilter className="w-8 h-8 text-teal-400" /> Educator Sales Ledger
           </h1>
           <p className="text-sm text-slate-400 mt-1">
             Itemized breakdown of student purchases, gross revenue, platform fee deductions, and net share.
@@ -68,14 +68,14 @@ export default function TeacherTransactionsPage() {
           placeholder="Search by student, product, or ref..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500 transition-colors"
+          className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-teal-500 transition-colors"
         />
       </div>
 
       {/* Table */}
       {loading ? (
         <div className="p-12 text-center text-slate-400 bg-slate-900/40 rounded-3xl border border-slate-800/60">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-xs">Loading sales ledger...</p>
         </div>
       ) : filtered.length === 0 ? (

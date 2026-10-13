@@ -206,7 +206,7 @@ export default function StudentFindTeachersPage() {
         />
 
         {/* Header Banner */}
-        <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-1 max-w-xl">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white text-[11px] font-bold uppercase tracking-wider mb-1">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Verified Educator Discovery
@@ -512,33 +512,33 @@ export default function StudentFindTeachersPage() {
                 {teachers.map((t) => (
                   <Card
                     key={t.id}
-                    className="p-6 bg-white rounded-3xl border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all flex flex-col justify-between space-y-5"
+                    className="p-6 bg-white rounded-3xl border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all flex flex-col justify-between space-y-5 min-w-0 overflow-hidden"
                   >
-                    <div className="space-y-4">
+                    <div className="space-y-4 min-w-0">
                       {/* Teacher Profile Top */}
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 min-w-0">
                         <img
                           src={t.avatarUrl}
                           alt={t.name}
-                          className="w-16 h-16 rounded-2xl object-cover ring-2 ring-blue-100 shrink-0"
+                          className="w-16 h-16 rounded-2xl object-cover ring-2 ring-blue-100 shrink-0 aspect-square"
                         />
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-1">
-                            <h3 className="text-base font-extrabold text-slate-900 truncate">
+                          <div className="flex items-center justify-between gap-1.5 min-w-0">
+                            <h3 className="text-base font-extrabold text-slate-900 truncate min-w-0" title={t.name}>
                               {t.name}
                             </h3>
                             <Badge variant="success" size="sm" className="shrink-0 flex items-center gap-1">
                               <ShieldCheck className="h-3 w-3" /> Verified
                             </Badge>
                           </div>
-                          <p className="text-xs font-bold text-blue-600 truncate mt-0.5">
+                          <p className="text-xs font-bold text-blue-600 truncate mt-0.5" title={t.headline}>
                             {t.headline}
                           </p>
                           <div className="flex items-center gap-3 text-xs text-slate-500 font-semibold mt-1">
-                            <span className="flex items-center text-amber-500 font-bold">
+                            <span className="flex items-center text-amber-500 font-bold shrink-0">
                               ★ {t.rating.toFixed(1)}
                             </span>
-                            <span>• {t.experienceYears}y Exp</span>
+                            <span className="shrink-0">• {t.experienceYears}y Exp</span>
                           </div>
                         </div>
                       </div>

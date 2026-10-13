@@ -126,16 +126,16 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                             onClose();
                             router.push(`/find-teachers?search=${encodeURIComponent(t.name)}`);
                           }}
-                          className="p-3 rounded-2xl bg-[#F8FAFC] hover:bg-[#F0FAF5] border border-[#E2E8F0] transition-all cursor-pointer flex items-center justify-between"
+                          className="p-3 rounded-2xl bg-[#F8FAFC] hover:bg-[#F0FAF5] border border-[#E2E8F0] transition-all cursor-pointer flex items-center justify-between gap-3 min-w-0 overflow-hidden"
                         >
-                          <div className="flex items-center gap-3">
-                            <img src={t.avatarUrl} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
-                            <div>
-                              <h5 className="text-xs font-bold text-[#0F172A]">{t.name}</h5>
-                              <p className="text-[11px] text-[#475569]">{t.headline}</p>
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <img src={t.avatarUrl} alt={t.name} className="w-10 h-10 rounded-full object-cover shrink-0 aspect-square" />
+                            <div className="min-w-0 flex-1">
+                              <h5 className="text-xs font-bold text-[#0F172A] truncate min-w-0" title={t.name}>{t.name}</h5>
+                              <p className="text-[11px] text-[#475569] truncate" title={t.headline}>{t.headline}</p>
                             </div>
                           </div>
-                          <span className="text-xs font-bold text-[#16805B]">{formatCurrency(t.hourlyRate)}/hr</span>
+                          <span className="text-xs font-bold text-[#16805B] shrink-0">{formatCurrency(t.hourlyRate)}/hr</span>
                         </div>
                       ))}
                     </div>

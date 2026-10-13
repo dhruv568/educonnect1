@@ -90,7 +90,7 @@ export default function StudentCoursesDashboardPage() {
         />
 
         {/* Top Header Banner */}
-        <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white text-[11px] font-bold uppercase tracking-wider mb-1">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Self-Paced Video Academy
@@ -129,16 +129,16 @@ export default function StudentCoursesDashboardPage() {
             title="In Progress"
             value={loading ? "..." : inProgressCount}
             subtitle="Active learning tracks"
-            icon={<Clock className="h-5 w-5 text-emerald-600" />}
-            variant="emerald"
+            icon={<Clock className="h-5 w-5 text-sky-600" />}
+            variant="blue"
           />
 
           <MetricCard
             title="Completed Courses"
             value={loading ? "..." : completedCount}
             subtitle="100% finished courses"
-            icon={<CheckCircle2 className="h-5 w-5 text-purple-600" />}
-            variant="purple"
+            icon={<CheckCircle2 className="h-5 w-5 text-emerald-600" />}
+            variant="emerald"
           />
 
           <MetricCard
@@ -152,7 +152,7 @@ export default function StudentCoursesDashboardPage() {
 
         {/* Continue Learning Featured Hero Card */}
         {continueLearning && (
-          <Card className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-900/90 via-indigo-900/90 to-purple-900/90 text-white border-0 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <Card className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white border-0 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-3 max-w-xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[10px] font-bold uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Resume Where You Left Off

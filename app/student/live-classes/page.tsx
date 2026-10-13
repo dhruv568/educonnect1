@@ -87,7 +87,7 @@ export default function StudentLiveClassesPage() {
         />
 
         {/* Header Banner */}
-        <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white text-[11px] font-bold uppercase tracking-wider mb-1">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Interactive Video Classrooms
@@ -126,16 +126,16 @@ export default function StudentLiveClassesPage() {
             title="Today's Classes"
             value={loading ? "..." : data.stats.todayCount}
             subtitle="Happening today"
-            icon={<Clock className="h-5 w-5 text-emerald-600" />}
-            variant="emerald"
+            icon={<Clock className="h-5 w-5 text-sky-600" />}
+            variant="blue"
           />
 
           <MetricCard
             title="Completed Sessions"
             value={loading ? "..." : data.stats.completedCount}
             subtitle="Classes attended or finished"
-            icon={<CheckCircle2 className="h-5 w-5 text-purple-600" />}
-            variant="purple"
+            icon={<CheckCircle2 className="h-5 w-5 text-emerald-600" />}
+            variant="emerald"
           />
 
           <MetricCard
@@ -329,7 +329,7 @@ export default function StudentLiveClassesPage() {
                           <Button
                             variant="primary"
                             size="md"
-                            className="w-full md:w-48 bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-lg shadow-emerald-600/20 animate-bounce-subtle"
+                            className="w-full md:w-48 bg-[#2563EB] hover:bg-[#1E40AF] text-white font-black shadow-lg shadow-blue-600/20 animate-bounce-subtle"
                             rightIcon={<ExternalLink className="w-4 h-4" />}
                           >
                             Join Live Classroom

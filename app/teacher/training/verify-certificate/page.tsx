@@ -133,7 +133,7 @@ export default function EducatorVerifyCertificatePage() {
     return (
       <DashboardLayout role="TEACHER">
         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
-          <Loader2 className="h-9 w-9 animate-spin text-[#16805B]" />
+          <Loader2 className="h-9 w-9 animate-spin text-[#0F766E]" />
           <p className="text-sm font-semibold text-slate-650">Verifying training progress and eligibility...</p>
         </div>
       </DashboardLayout>
@@ -166,7 +166,7 @@ export default function EducatorVerifyCertificatePage() {
 
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/teacher/training/learn">
-                <Button className="bg-[#16805B] hover:bg-[#0D5C41] text-white font-bold rounded-2xl px-6 py-2.5">
+                <Button className="bg-[#0F766E] hover:bg-[#115E59] text-white font-bold rounded-2xl px-6 py-2.5">
                   Continue Training Roadmap →
                 </Button>
               </Link>
@@ -194,15 +194,15 @@ export default function EducatorVerifyCertificatePage() {
       <DashboardLayout role="TEACHER">
         <div className="max-w-4xl mx-auto py-8 px-4 space-y-8 pb-20">
           {/* Celebratory Hero Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0D5C41] via-[#16805B] to-[#0A4732] text-white p-8 sm:p-12 shadow-2xl">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#115E59] via-[#0F766E] to-[#042F2E] text-white p-8 sm:p-12 shadow-2xl">
             <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
             <div className="relative z-10 flex flex-col items-center text-center space-y-4">
               <div className="w-20 h-20 rounded-3xl bg-amber-400 text-slate-950 flex items-center justify-center shadow-xl transform rotate-3 animate-bounce">
                 <Award className="h-10 w-10" />
               </div>
 
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/20 text-emerald-200 text-xs font-black uppercase tracking-wider">
-                <ShieldCheck className="h-4 w-4 text-emerald-300" />
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/20 text-teal-200 text-xs font-black uppercase tracking-wider">
+                <ShieldCheck className="h-4 w-4 text-teal-300" />
                 <span>Officially Certified Educator</span>
               </div>
 
@@ -210,13 +210,13 @@ export default function EducatorVerifyCertificatePage() {
                 Congratulations, {confirmedName || data?.fullName}!
               </h1>
 
-              <p className="text-emerald-100 max-w-xl text-sm sm:text-base leading-relaxed">
+              <p className="text-teal-100 max-w-xl text-sm sm:text-base leading-relaxed">
                 You have successfully mastered the 15-Day Educator Training Program. Your high-resolution vector PDF certificate has been generated and dispatched to your email address.
               </p>
 
               {/* Certificate ID Pill */}
               <div className="bg-black/30 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/20 flex items-center gap-3 mt-2">
-                <span className="text-xs text-emerald-300 font-bold uppercase tracking-wider">Certificate ID:</span>
+                <span className="text-xs text-teal-300 font-bold uppercase tracking-wider">Certificate ID:</span>
                 <code className="text-sm sm:text-base font-black text-white font-mono">{certNumber}</code>
               </div>
 
@@ -236,7 +236,7 @@ export default function EducatorVerifyCertificatePage() {
                   target="_blank"
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white border border-white/30 font-bold text-sm backdrop-blur-md shadow-lg transition-transform hover:-translate-y-0.5 cursor-pointer"
                 >
-                  <ExternalLink className="h-4 w-4 text-emerald-300" />
+                  <ExternalLink className="h-4 w-4 text-teal-300" />
                   <span>Public Verification Ledger</span>
                 </Link>
               </div>
@@ -247,7 +247,7 @@ export default function EducatorVerifyCertificatePage() {
           <Card className="p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-md space-y-6">
             <div>
               <h2 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
-                <Share2 className="h-5 w-5 text-[#16805B]" />
+                <Share2 className="h-5 w-5 text-[#0F766E]" />
                 <span>Share Your Credential &amp; Build Authority</span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-650 mt-1">
@@ -325,9 +325,9 @@ export default function EducatorVerifyCertificatePage() {
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Card className="p-6 rounded-3xl border border-slate-200 hover:border-emerald-300 transition-all shadow-sm flex flex-col justify-between space-y-4">
+              <Card className="p-6 rounded-3xl border border-slate-200 hover:border-teal-300 transition-all shadow-sm flex flex-col justify-between space-y-4">
                 <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-[#16805B] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-100 text-[#0F766E] flex items-center justify-center">
                     <BookOpen className="h-5 w-5" />
                   </div>
                   <h3 className="font-extrabold text-slate-900 text-sm">Launch Your First Course</h3>
@@ -336,15 +336,15 @@ export default function EducatorVerifyCertificatePage() {
                   </p>
                 </div>
                 <Link href="/teacher/courses">
-                  <Button variant="outline" className="w-full text-xs font-bold rounded-xl border-emerald-200 text-[#16805B] hover:bg-emerald-50">
+                  <Button variant="outline" className="w-full text-xs font-bold rounded-xl border-teal-200 text-[#0F766E] hover:bg-teal-50">
                     Open Course Studio →
                   </Button>
                 </Link>
               </Card>
 
-              <Card className="p-6 rounded-3xl border border-slate-200 hover:border-emerald-300 transition-all shadow-sm flex flex-col justify-between space-y-4">
+              <Card className="p-6 rounded-3xl border border-slate-200 hover:border-teal-300 transition-all shadow-sm flex flex-col justify-between space-y-4">
                 <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-100 text-[#0F766E] flex items-center justify-center">
                     <Video className="h-5 w-5" />
                   </div>
                   <h3 className="font-extrabold text-slate-900 text-sm">Host an Interactive Live Class</h3>
@@ -353,7 +353,7 @@ export default function EducatorVerifyCertificatePage() {
                   </p>
                 </div>
                 <Link href="/teacher/classes">
-                  <Button variant="outline" className="w-full text-xs font-bold rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50">
+                  <Button variant="outline" className="w-full text-xs font-bold rounded-xl border-teal-200 text-[#0F766E] hover:bg-teal-50">
                     Schedule Live Class →
                   </Button>
                 </Link>
@@ -386,7 +386,7 @@ export default function EducatorVerifyCertificatePage() {
       <div className="max-w-2xl mx-auto py-10 px-4 space-y-8 pb-20">
         {/* Header */}
         <div className="space-y-2 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-[#16805B] text-xs font-black uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-100 text-[#0F766E] text-xs font-black uppercase tracking-wider">
             <GraduationCap className="h-4 w-4" />
             <span>Step 2 of 2: Credential Issuance</span>
           </div>
@@ -400,11 +400,11 @@ export default function EducatorVerifyCertificatePage() {
 
         {/* Verification Form Card */}
         <Card className="p-8 rounded-3xl border border-slate-200 shadow-xl bg-white space-y-6">
-          <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-900 flex items-start gap-3">
-            <ShieldCheck className="h-5 w-5 text-[#16805B] shrink-0 mt-0.5" />
+          <div className="bg-teal-50/70 border border-teal-200 rounded-2xl p-4 text-xs text-teal-900 flex items-start gap-3">
+            <ShieldCheck className="h-5 w-5 text-[#0F766E] shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="font-extrabold">Permanent Identity Registration</p>
-              <p className="text-emerald-800">
+              <p className="text-teal-800">
                 Your certificate will be minted in the EduConnects Public Verification Ledger with a tamper-evident serial ID. Please ensure your legal name is spelled exactly as you wish it to appear.
               </p>
             </div>
@@ -422,7 +422,7 @@ export default function EducatorVerifyCertificatePage() {
                 value={confirmedName}
                 onChange={(e) => setConfirmedName(e.target.value)}
                 placeholder="e.g. Dr. Rajesh Kumar Sharma"
-                className="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:outline-none focus:border-[#16805B] focus:ring-2 focus:ring-emerald-200 font-semibold text-slate-900 text-sm"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:outline-none focus:border-[#0F766E] focus:ring-2 focus:ring-teal-200 font-semibold text-slate-900 text-sm"
               />
               <p className="text-[11px] text-slate-650">
                 This name will be rendered on your vector PDF certificate and verified in public records.
@@ -440,7 +440,7 @@ export default function EducatorVerifyCertificatePage() {
                 value={confirmedEmail}
                 onChange={(e) => setConfirmedEmail(e.target.value)}
                 placeholder="you@domain.com"
-                className="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:outline-none focus:border-[#16805B] focus:ring-2 focus:ring-emerald-200 font-semibold text-slate-900 text-sm"
+                className="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:outline-none focus:border-[#0F766E] focus:ring-2 focus:ring-teal-200 font-semibold text-slate-900 text-sm"
               />
               <p className="text-[11px] text-slate-650">
                 Your high-resolution PDF certificate will be emailed directly to this address.
@@ -454,7 +454,7 @@ export default function EducatorVerifyCertificatePage() {
                   type="checkbox"
                   checked={hasConfirmedCheckbox}
                   onChange={(e) => setHasConfirmedCheckbox(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#16805B] focus:ring-[#16805B]"
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#0F766E] focus:ring-[#0F766E]"
                 />
                 <span className="text-xs text-slate-700 font-medium leading-relaxed">
                   I confirm that I have personally completed all 15 days of training and required quizzes, and that the name and email address provided above are accurate.
@@ -467,7 +467,7 @@ export default function EducatorVerifyCertificatePage() {
               <Button
                 type="submit"
                 disabled={issuing || !hasConfirmedCheckbox || !confirmedName.trim()}
-                className="w-full py-6 rounded-2xl bg-[#16805B] hover:bg-[#0D5C41] text-white font-black text-sm shadow-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-6 rounded-2xl bg-[#0F766E] hover:bg-[#115E59] text-white font-black text-sm shadow-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {issuing ? (
                   <>

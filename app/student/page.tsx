@@ -148,14 +148,14 @@ export default function StudentLandingPage() {
       title: "Interactive Live Classes",
       desc: "Join real-time video classrooms with digital whiteboard, live chat, and instant educator feedback.",
       badge: "Real-Time WebRTC",
-      color: "emerald",
+      color: "blue",
     },
     {
       icon: Play,
       title: "Recorded On-Demand LMS",
       desc: "Watch crystal-clear video lessons at your own pace with downloadable notes and milestone quizzes.",
       badge: "24/7 Access",
-      color: "purple",
+      color: "sky",
     },
     {
       icon: Target,
@@ -379,7 +379,7 @@ export default function StudentLandingPage() {
   };
 
   return (
-    <div data-theme="learner" className="min-h-screen flex flex-col bg-[#F0FAF5]/30 relative overflow-hidden font-sans text-slate-900">
+    <div data-theme="learner" className="min-h-screen flex flex-col bg-[#EFF6FF]/40 relative overflow-hidden font-sans text-slate-900">
       {/* 1. Learner-Oriented Role Navbar */}
       <FloatingNavbar variant="student" />
 
@@ -388,7 +388,7 @@ export default function StudentLandingPage() {
         <PromotionalBannerCarousel placement="LEARNERS" />
 
         {/* ========================================================================= */}
-        <section className="relative pt-6 sm:pt-10 lg:pt-12 pb-16 lg:pb-24 overflow-hidden bg-[#F0FAF5]">
+        <section className="relative pt-6 sm:pt-10 lg:pt-12 pb-16 lg:pb-24 overflow-hidden bg-[#EFF6FF]">
           <LearnerHeroSlideshow />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -396,15 +396,15 @@ export default function StudentLandingPage() {
               {/* Hero Left Column: Copy & CTAs */}
               <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
                 <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
-                  <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-white border border-emerald-200 text-[#16805B] shadow-2xs">
+                  <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-white border border-blue-200 text-[#2563EB] shadow-2xs">
                     <Image
                       src={photo3}
                       alt="EduConnects - Find an Educator"
                       className="h-8 w-auto object-contain"
                       priority
                     />
-                    <div className="border-l border-emerald-100 pl-2.5 text-left">
-                      <span className="block text-[10px] font-black text-[#16805B] uppercase tracking-wider">
+                    <div className="border-l border-blue-100 pl-2.5 text-left">
+                      <span className="block text-[10px] font-black text-[#2563EB] uppercase tracking-wider">
                         EduConnects
                       </span>
                       <span className="block text-[11px] font-semibold text-slate-700">
@@ -413,14 +413,14 @@ export default function StudentLandingPage() {
                     </div>
                   </div>
 
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-[#16805B] text-xs font-extrabold uppercase tracking-wider shadow-2xs">
-                    <Sparkles className="h-3.5 w-3.5 text-[#16805B]" />
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-[#2563EB] text-xs font-extrabold uppercase tracking-wider shadow-2xs">
+                    <Sparkles className="h-3.5 w-3.5 text-[#2563EB]" />
                     <span>Ambitious Learners</span>
                   </div>
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
-                  Learn from the <span className="bg-gradient-to-r from-[#16805B] via-[#0D5C41] to-[#12684A] bg-clip-text text-transparent">right teacher.</span> <br />
+                  Learn from the <span className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#3B82F6] bg-clip-text text-transparent">right teacher.</span> <br />
                   Build the skills for your future.
                 </h1>
 
@@ -429,9 +429,9 @@ export default function StudentLandingPage() {
                 </p>
 
                 {/* About EduConnects Company Info Block */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-white/95 border border-emerald-100 shadow-sm space-y-2 text-left max-w-2xl mx-auto lg:mx-0 backdrop-blur-xs">
-                  <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#16805B]">
-                    <Info className="h-4 w-4 text-[#16805B] shrink-0" />
+                <div className="p-4 sm:p-5 rounded-2xl bg-white/95 border border-blue-100 shadow-sm space-y-2 text-left max-w-2xl mx-auto lg:mx-0 backdrop-blur-xs">
+                  <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#2563EB]">
+                    <Info className="h-4 w-4 text-[#2563EB] shrink-0" />
                     <span>About EduConnects</span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
@@ -440,7 +440,7 @@ export default function StudentLandingPage() {
                   <div className="pt-1">
                     <Link
                       href="/about"
-                      className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#16805B] hover:text-[#0D5C41] hover:underline transition-all group"
+                      className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#2563EB] hover:text-[#1E40AF] hover:underline transition-all group"
                     >
                       <span>See More</span>
                       <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -455,7 +455,7 @@ export default function StudentLandingPage() {
                       <GlassButton
                         variant="learner"
                         size="lg"
-                        className="w-full sm:w-auto shadow-xl shadow-emerald-700/25 text-sm"
+                        className="w-full sm:w-auto shadow-xl shadow-blue-600/25 text-sm"
                         leftIcon={<LayoutDashboard className="h-4 w-4" />}
                       >
                         Go to Learner Dashboard
@@ -466,7 +466,7 @@ export default function StudentLandingPage() {
                       <GlassButton
                         variant="learner"
                         size="lg"
-                        className="w-full sm:w-auto shadow-xl shadow-emerald-700/25 text-sm"
+                        className="w-full sm:w-auto shadow-xl shadow-blue-600/25 text-sm"
                         rightIcon={<ArrowRight className="h-4 w-4" />}
                       >
                         Start Learning
@@ -488,11 +488,11 @@ export default function StudentLandingPage() {
                     <div className="text-xs text-slate-500 font-medium">Active Learners</div>
                   </div>
                   <div>
-                    <div className="text-2xl lg:text-3xl font-black text-[#16805B]">850+</div>
+                    <div className="text-2xl lg:text-3xl font-black text-[#2563EB]">850+</div>
                     <div className="text-xs text-slate-500 font-medium">Verified Educators</div>
                   </div>
                   <div>
-                    <div className="text-2xl lg:text-3xl font-black text-emerald-600">4.95 ★</div>
+                    <div className="text-2xl lg:text-3xl font-black text-blue-600">4.95 ★</div>
                     <div className="text-xs text-slate-500 font-medium">Learner Rating</div>
                   </div>
                 </div>
@@ -501,8 +501,8 @@ export default function StudentLandingPage() {
               {/* Hero Right Column: Photo 2 Learner Experience Showcase Card */}
               <div className="lg:col-span-5 relative">
                 <div className="relative mx-auto max-w-sm sm:max-w-md lg:max-w-[400px]">
-                  {/* Subtle Emerald Glow Backdrop */}
-                  <div className="absolute -inset-2 bg-gradient-to-tr from-emerald-600/20 via-teal-500/20 to-emerald-400/20 rounded-[2.2rem] blur-xl -z-10" />
+                  {/* Subtle Blue Glow Backdrop */}
+                  <div className="absolute -inset-2 bg-gradient-to-tr from-blue-600/20 via-sky-500/20 to-blue-400/20 rounded-[2.2rem] blur-xl -z-10" />
 
                   {/* Main Card Graphic Preserving 1:1 Aspect Ratio */}
                   <div className="p-3 sm:p-4 rounded-3xl bg-white border-2 border-white/80 shadow-2xl space-y-3 relative overflow-hidden backdrop-blur-md">
@@ -518,12 +518,12 @@ export default function StudentLandingPage() {
 
                     {/* Bottom Feature Badges Strip */}
                     <div className="grid grid-cols-2 gap-2 pt-0.5 text-xs">
-                      <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-100 flex items-center gap-2 text-slate-900">
-                        <ShieldCheck className="w-4 h-4 text-[#16805B] shrink-0" />
+                      <div className="p-2.5 rounded-xl bg-blue-50/80 border border-blue-100 flex items-center gap-2 text-slate-900">
+                        <ShieldCheck className="w-4 h-4 text-[#2563EB] shrink-0" />
                         <span className="font-bold text-[11px] leading-tight">Verified Educators</span>
                       </div>
-                      <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-100 flex items-center gap-2 text-slate-900">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <div className="p-2.5 rounded-xl bg-blue-50/80 border border-blue-100 flex items-center gap-2 text-slate-900">
+                        <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
                         <span className="font-bold text-[11px] leading-tight">Safe & Trusted</span>
                       </div>
                     </div>
@@ -531,7 +531,7 @@ export default function StudentLandingPage() {
 
                   {/* Floating Trust Chip Badge */}
                   <div className="absolute -bottom-5 -left-5 bg-white p-3.5 rounded-2xl shadow-xl border border-slate-200/90 flex items-center gap-3 hidden sm:flex">
-                    <div className="p-2 bg-emerald-100 text-[#16805B] rounded-xl">
+                    <div className="p-2 bg-blue-100 text-[#2563EB] rounded-xl">
                       <CheckCircle2 className="h-5 w-5" />
                     </div>
                     <div className="text-left">
@@ -566,11 +566,11 @@ export default function StudentLandingPage() {
                 return (
                   <GlassCard
                     key={idx}
-                    className="p-7 rounded-3xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-emerald-300 hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                    className="p-7 rounded-3xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-blue-300 hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
                   >
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <div className="p-3.5 rounded-2xl bg-emerald-100 text-[#16805B] w-fit">
+                        <div className="p-3.5 rounded-2xl bg-blue-100 text-[#2563EB] w-fit">
                           <IconComp className="h-6 w-6" />
                         </div>
                         <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-slate-200/80 text-slate-700">
@@ -621,7 +621,7 @@ export default function StudentLandingPage() {
                   onClick={() => setActiveCategory(cat.value)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                     activeCategory === cat.value
-                      ? "bg-[#16805B] text-white shadow-md shadow-emerald-700/25"
+                      ? "bg-[#2563EB] text-white shadow-md shadow-blue-600/25"
                       : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"
                   }`}
                 >
@@ -647,7 +647,7 @@ export default function StudentLandingPage() {
                 <div className="pt-2 flex justify-center gap-3">
                   <button
                     onClick={() => setActiveCategory("ALL")}
-                    className="px-4 py-2 bg-[#16805B] text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-700/25"
+                    className="px-4 py-2 bg-[#2563EB] text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/25"
                   >
                     Reset Filter
                   </button>
@@ -697,7 +697,7 @@ export default function StudentLandingPage() {
               <div className="space-y-3 max-w-2xl">
                 <div className="flex items-center gap-3">
                   <GlassBadge variant="learner">TOP VERIFIED FACULTY</GlassBadge>
-                  <div className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-[#16805B]">
+                  <div className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[11px] font-bold text-[#2563EB]">
                     <Image
                       src={photo3}
                       alt="EduConnects - Find an Educator"
@@ -725,38 +725,38 @@ export default function StudentLandingPage() {
               {(featuredTeachers.length > 0 ? featuredTeachers : fallbackTeachers).map((teacher) => (
                 <GlassCard
                   key={teacher.id}
-                  className="p-6 rounded-3xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-emerald-300 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                  className="p-6 rounded-3xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-blue-300 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group min-w-0 overflow-hidden"
                 >
-                  <div className="space-y-4">
+                  <div className="space-y-4 min-w-0">
                     {/* Educator Avatar & Verification */}
                     <div className="relative w-fit">
                       <img
                         src={teacher.avatarUrl}
                         alt={teacher.name}
-                        className="w-16 h-16 rounded-2xl object-cover ring-2 ring-emerald-500/20 group-hover:ring-[#16805B] transition-all shadow-sm"
+                        className="w-16 h-16 rounded-2xl object-cover ring-2 ring-blue-500/20 group-hover:ring-[#2563EB] transition-all shadow-sm aspect-square shrink-0"
                       />
-                      <div className="absolute -bottom-1.5 -right-1.5 p-1 bg-emerald-600 text-white rounded-full shadow-xs" title="Identity & Degree Verified">
+                      <div className="absolute -bottom-1.5 -right-1.5 p-1 bg-blue-600 text-white rounded-full shadow-xs" title="Identity & Degree Verified">
                         <ShieldCheck className="h-3.5 w-3.5" />
                       </div>
                     </div>
 
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-base font-black text-slate-900 group-hover:text-[#16805B] transition-colors">
+                    <div className="min-w-0">
+                      <div className="flex items-center justify-between min-w-0">
+                        <h3 className="text-base font-black text-slate-900 group-hover:text-[#2563EB] transition-colors truncate min-w-0" title={teacher.name}>
                           {teacher.name}
                         </h3>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium line-clamp-2 mt-0.5">
+                      <p className="text-xs text-slate-500 font-medium truncate mt-0.5" title={teacher.headline}>
                         {teacher.headline}
                       </p>
                     </div>
 
                     {/* Subject Badges */}
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 min-w-0">
                       {(teacher.subjects || []).slice(0, 3).map((sub: string, sIdx: number) => (
                         <span
                           key={sIdx}
-                          className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-[#16805B] border border-emerald-100"
+                          className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-[#2563EB] border border-blue-100"
                         >
                           {sub}
                         </span>
@@ -781,7 +781,7 @@ export default function StudentLandingPage() {
 
                   <div className="pt-5 mt-4 border-t border-slate-100">
                     <Link href={`/student/register?educatorId=${teacher.id}&trial=true`} className="w-full block">
-                      <button className="w-full py-2.5 px-3 rounded-xl bg-[#16805B] hover:bg-[#0D5C41] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1 shadow-sm cursor-pointer">
+                      <button className="w-full py-2.5 px-3 rounded-xl bg-[#2563EB] hover:bg-[#1E40AF] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1 shadow-sm cursor-pointer">
                         <span>Book Trial Lesson</span>
                         <ArrowRight className="h-3.5 w-3.5" />
                       </button>
@@ -806,12 +806,12 @@ export default function StudentLandingPage() {
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-rose-500" />
                       <div className="w-3 h-3 rounded-full bg-amber-500" />
-                      <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                      <div className="w-3 h-3 rounded-full bg-blue-500" />
                       <span className="text-[11px] font-mono font-bold text-slate-400 ml-2">
                         EduConnects Classroom
                       </span>
                     </div>
-                    <span className="text-[10px] font-bold bg-emerald-600 text-white px-2.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold bg-blue-600 text-white px-2.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                       Live
                     </span>
@@ -820,16 +820,16 @@ export default function StudentLandingPage() {
                   <div className="p-5 space-y-4 text-white">
                     {/* Simulated Whiteboard Drawing Canvas */}
                     <div className="bg-slate-900 rounded-2xl p-4 border border-slate-800 space-y-3">
-                      <div className="h-36 flex flex-col justify-center items-center text-center space-y-2 font-mono text-emerald-400 text-sm">
+                      <div className="h-36 flex flex-col justify-center items-center text-center space-y-2 font-mono text-blue-400 text-sm">
                         <div>f'(x) = lim(h→0) [f(x+h) - f(x)] / h</div>
-                        <div className="text-xs text-emerald-300">d/dx [sin(x)] = cos(x)</div>
+                        <div className="text-xs text-sky-300">d/dx [sin(x)] = cos(x)</div>
                         <div className="text-[11px] text-amber-300">Educator has granted drawing permissions</div>
                       </div>
                     </div>
 
                     {/* Chat Bubble simulation */}
                     <div className="p-3 bg-slate-900/90 rounded-xl border border-slate-800 flex items-start gap-3 text-xs">
-                      <div className="w-6 h-6 rounded-full bg-[#16805B] text-white font-bold flex items-center justify-center text-[10px] shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-[#2563EB] text-white font-bold flex items-center justify-center text-[10px] shrink-0">
                         M
                       </div>
                       <div>
@@ -853,7 +853,7 @@ export default function StudentLandingPage() {
 
                 <div className="space-y-4 pt-2">
                   <div className="flex items-start gap-3.5">
-                    <div className="p-2 rounded-xl bg-emerald-100 text-[#16805B] mt-1 shrink-0">
+                    <div className="p-2 rounded-xl bg-blue-100 text-[#2563EB] mt-1 shrink-0">
                       <Check className="h-4 w-4 stroke-[3]" />
                     </div>
                     <div>
@@ -863,7 +863,7 @@ export default function StudentLandingPage() {
                   </div>
 
                   <div className="flex items-start gap-3.5">
-                    <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600 mt-1 shrink-0">
+                    <div className="p-2 rounded-xl bg-blue-100 text-blue-600 mt-1 shrink-0">
                       <Check className="h-4 w-4 stroke-[3]" />
                     </div>
                     <div>
@@ -873,7 +873,7 @@ export default function StudentLandingPage() {
                   </div>
 
                   <div className="flex items-start gap-3.5">
-                    <div className="p-2 rounded-xl bg-purple-100 text-purple-600 mt-1 shrink-0">
+                    <div className="p-2 rounded-xl bg-sky-100 text-sky-600 mt-1 shrink-0">
                       <Check className="h-4 w-4 stroke-[3]" />
                     </div>
                     <div>
@@ -916,14 +916,14 @@ export default function StudentLandingPage() {
                 return (
                   <div
                     key={idx}
-                    className="p-7 rounded-3xl bg-slate-50 border border-slate-200 hover:border-[#16805B]/40 hover:shadow-lg transition-all space-y-4 relative flex flex-col justify-between group"
+                    className="p-7 rounded-3xl bg-slate-50 border border-slate-200 hover:border-[#2563EB]/40 hover:shadow-lg transition-all space-y-4 relative flex flex-col justify-between group"
                   >
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-2xl font-black text-[#16805B]/30 group-hover:text-[#16805B]/70 transition-colors">
+                        <span className="text-2xl font-black text-[#2563EB]/30 group-hover:text-[#2563EB]/70 transition-colors">
                           {s.step}
                         </span>
-                        <div className="p-3 rounded-2xl bg-emerald-100 text-[#16805B]">
+                        <div className="p-3 rounded-2xl bg-blue-100 text-[#2563EB]">
                           <IconComp className="h-5 w-5" />
                         </div>
                       </div>
@@ -931,7 +931,7 @@ export default function StudentLandingPage() {
                       <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{s.desc}</p>
                     </div>
 
-                    <div className="pt-4 border-t border-slate-200/60 flex items-center text-xs font-bold text-[#16805B]">
+                    <div className="pt-4 border-t border-slate-200/60 flex items-center text-xs font-bold text-[#2563EB]">
                       <span>Step {s.step}</span>
                     </div>
                   </div>
@@ -974,7 +974,7 @@ export default function StudentLandingPage() {
                       &ldquo;{t.quote}&rdquo;
                     </p>
 
-                    <div className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold w-fit">
+                    <div className="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold w-fit">
                       🎯 {t.achievement}
                     </div>
                   </div>
@@ -983,12 +983,12 @@ export default function StudentLandingPage() {
                     <img
                       src={t.avatar}
                       alt={t.name}
-                      className="w-11 h-11 rounded-full object-cover ring-2 ring-[#16805B]/20"
+                      className="w-11 h-11 rounded-full object-cover ring-2 ring-[#2563EB]/20"
                     />
                     <div>
                       <div className="text-xs font-extrabold text-slate-900">{t.name}</div>
                       <div className="text-[10px] text-slate-500">{t.role}</div>
-                      <div className="text-[10px] text-[#16805B] font-semibold">{t.subject}</div>
+                      <div className="text-[10px] text-[#2563EB] font-semibold">{t.subject}</div>
                     </div>
                   </div>
                 </GlassCard>
@@ -1018,7 +1018,7 @@ export default function StudentLandingPage() {
                 <div className="grid grid-cols-12 bg-slate-100/90 border-b border-slate-200 text-xs font-black uppercase tracking-wider text-slate-700 py-5 px-6 sm:px-10">
                   <div className="col-span-4">Category</div>
                   <div className="col-span-4 text-slate-700 font-medium">Traditional Coaching</div>
-                  <div className="col-span-4 text-[#16805B] font-extrabold flex items-center gap-1">
+                  <div className="col-span-4 text-[#2563EB] font-extrabold flex items-center gap-1">
                     <span>EduConnects</span>
                   </div>
                 </div>
@@ -1038,8 +1038,8 @@ export default function StudentLandingPage() {
                         <X className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
                         <span className="text-xs sm:text-sm leading-relaxed text-slate-700 font-medium">{item.traditional}</span>
                       </div>
-                      <div className="col-span-4 font-semibold text-slate-900 flex items-start gap-2.5 bg-emerald-50/60 -my-6 py-6 px-5 rounded-xl border-l border-emerald-200/60">
-                        <Check className="h-4 w-4 text-[#16805B] shrink-0 mt-0.5 stroke-[3]" />
+                      <div className="col-span-4 font-semibold text-slate-900 flex items-start gap-2.5 bg-blue-50/60 -my-6 py-6 px-5 rounded-xl border-l border-blue-200/60">
+                        <Check className="h-4 w-4 text-[#2563EB] shrink-0 mt-0.5 stroke-[3]" />
                         <span className="text-xs sm:text-sm leading-relaxed text-slate-900 font-bold">
                           {item.educonnects}
                         </span>
@@ -1077,12 +1077,12 @@ export default function StudentLandingPage() {
                   >
                     <button
                       onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                      className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 hover:text-[#16805B] transition-colors"
+                      className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 hover:text-[#2563EB] transition-colors"
                     >
                       <span>{faq.question}</span>
                       <ChevronDown
                         className={`w-5 h-5 text-slate-500 shrink-0 transition-transform duration-300 ${
-                          isOpen ? "rotate-180 text-[#16805B]" : ""
+                          isOpen ? "rotate-180 text-[#2563EB]" : ""
                         }`}
                       />
                     </button>
@@ -1101,11 +1101,11 @@ export default function StudentLandingPage() {
         {/* ========================================================================= */}
         {/* 7. FINAL CALL TO ACTION */}
         {/* ========================================================================= */}
-        <section className="py-24 lg:py-32 bg-gradient-to-r from-[#0D5C41] via-[#16805B] to-[#0A4732] text-white relative overflow-hidden">
+        <section className="py-24 lg:py-32 bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] text-white relative overflow-hidden">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-7 text-center lg:text-left space-y-6">
-                <span className="px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-emerald-200 text-xs font-bold uppercase tracking-wider border border-white/20 inline-block">
+                <span className="px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-blue-200 text-xs font-bold uppercase tracking-wider border border-white/20 inline-block">
                   Start Today with Zero Risk
                 </span>
 
@@ -1113,7 +1113,7 @@ export default function StudentLandingPage() {
                   Start Your Learning Journey
                 </h2>
 
-                <p className="text-sm sm:text-base text-emerald-100 max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed">
+                <p className="text-sm sm:text-base text-blue-100 max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed">
                   Join 15,000+ learners mastering difficult subjects, passing competitive entrance exams, and building practical skills with verified educators.
                 </p>
 
@@ -1140,7 +1140,7 @@ export default function StudentLandingPage() {
                   </Link>
                 </div>
 
-                <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 text-xs text-emerald-200">
+                <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 text-xs text-blue-200">
                   <span>✓ Verified Educators</span>
                   <span>•</span>
                   <span>✓ Instant demo sessions</span>

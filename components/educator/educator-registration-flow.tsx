@@ -523,7 +523,7 @@ function EducatorRegistrationFlowContent() {
       </div>
 
       {/* 6-Step Multi-Step Progress Indicator Card */}
-      <div className="bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-[#A7F3D0]/70 sm:border-slate-200/90 shadow-sm">
+      <div className="bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-[#99F6E4]/70 sm:border-slate-200/90 shadow-sm">
         <div className="grid grid-cols-6 gap-1 sm:gap-2 relative">
           {STEPS.map((s, idx) => {
             const isCompleted = state.step > s.number;
@@ -534,7 +534,7 @@ function EducatorRegistrationFlowContent() {
                 {idx > 0 && (
                   <div
                     className={`absolute top-4 sm:top-4.5 -left-1/2 right-1/2 h-0.5 -translate-y-1/2 z-0 transition-colors duration-300 ${
-                      state.step >= s.number ? "bg-[#16805B]" : "bg-slate-200"
+                      state.step >= s.number ? "bg-[#0F766E]" : "bg-slate-200"
                     }`}
                   />
                 )}
@@ -542,7 +542,7 @@ function EducatorRegistrationFlowContent() {
                 {idx < STEPS.length - 1 && (
                   <div
                     className={`absolute top-4 sm:top-4.5 left-1/2 -right-1/2 h-0.5 -translate-y-1/2 z-0 transition-colors duration-300 ${
-                      state.step > s.number ? "bg-[#16805B]" : "bg-slate-200"
+                      state.step > s.number ? "bg-[#0F766E]" : "bg-slate-200"
                     }`}
                   />
                 )}
@@ -551,9 +551,9 @@ function EducatorRegistrationFlowContent() {
                 <div
                   className={`relative z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs font-black transition-all duration-300 select-none ${
                     isCompleted
-                      ? "bg-[#16805B] text-white shadow-sm"
+                      ? "bg-[#0F766E] text-white shadow-sm"
                       : isCurrent
-                      ? "bg-[#16805B] text-white shadow-md shadow-[#16805B]/30 ring-4 ring-[#16805B]/20 scale-105"
+                      ? "bg-[#0F766E] text-white shadow-md shadow-[#0F766E]/30 ring-4 ring-[#0F766E]/20 scale-105"
                       : "bg-white text-slate-400 border-2 border-slate-200"
                   }`}
                   title={`Step ${s.number}: ${s.label}`}
@@ -570,9 +570,9 @@ function EducatorRegistrationFlowContent() {
                   <p
                     className={`text-[10px] sm:text-xs leading-tight transition-colors ${
                       isCurrent
-                        ? "text-[#0D5C41] font-black"
+                        ? "text-[#115E59] font-black"
                         : isCompleted
-                        ? "text-[#16805B] font-bold"
+                        ? "text-[#0F766E] font-bold"
                         : "text-slate-400 font-medium"
                     }`}
                   >
@@ -613,7 +613,7 @@ function EducatorRegistrationFlowContent() {
                 placeholder="ananya.sharma@example.com"
                 value={state.email}
                 onChange={(e) => setState((p) => ({ ...p, email: e.target.value }))}
-                leftIcon={<Mail className="h-4 w-4 text-[#16805B]" />}
+                leftIcon={<Mail className="h-4 w-4 text-[#0F766E]" />}
                 required
               />
               <Input
@@ -622,7 +622,7 @@ function EducatorRegistrationFlowContent() {
                 placeholder="9876543210"
                 value={state.phone}
                 onChange={(e) => setState((p) => ({ ...p, phone: e.target.value }))}
-                leftIcon={<Phone className="h-4 w-4 text-[#16805B]" />}
+                leftIcon={<Phone className="h-4 w-4 text-[#0F766E]" />}
                 required
                 helperText="For session notifications and payout updates"
               />
@@ -635,7 +635,7 @@ function EducatorRegistrationFlowContent() {
                 placeholder="••••••••"
                 value={state.password}
                 onChange={(e) => setState((p) => ({ ...p, password: e.target.value }))}
-                leftIcon={<Lock className="h-4 w-4 text-[#16805B]" />}
+                leftIcon={<Lock className="h-4 w-4 text-[#0F766E]" />}
                 required
                 helperText="Minimum 8 characters"
               />
@@ -645,7 +645,7 @@ function EducatorRegistrationFlowContent() {
                 placeholder="••••••••"
                 value={state.confirmPassword}
                 onChange={(e) => setState((p) => ({ ...p, confirmPassword: e.target.value }))}
-                leftIcon={<Lock className="h-4 w-4 text-[#16805B]" />}
+                leftIcon={<Lock className="h-4 w-4 text-[#0F766E]" />}
                 required
               />
             </div>
@@ -662,7 +662,7 @@ function EducatorRegistrationFlowContent() {
               <button
                 type="submit"
                 disabled={submittingStep}
-                className="w-full h-11 px-6 rounded-xl text-sm font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
+                className="w-full h-11 px-6 rounded-xl text-sm font-bold text-white bg-[#0F766E] hover:bg-[#115E59] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
               >
                 {submittingStep ? (
                   <>
@@ -681,7 +681,7 @@ function EducatorRegistrationFlowContent() {
 
           <div className="pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
             Already have an Educator account?{" "}
-            <Link href="/teacher/login" className="font-bold text-[#16805B] hover:text-[#0D5C41] hover:underline">
+            <Link href="/teacher/login" className="font-bold text-[#0F766E] hover:text-[#115E59] hover:underline">
               Educator Login →
             </Link>
           </div>
@@ -691,8 +691,8 @@ function EducatorRegistrationFlowContent() {
       {/* STEP 2: Email Verification (OTP) */}
       {state.step === 2 && (
         <GlassCard className="p-6 sm:p-8 rounded-3xl border border-slate-200/90 bg-white shadow-xl space-y-6">
-          <div className="p-4 rounded-2xl bg-[#F0FAF5] border border-[#A7F3D0] flex items-center gap-3">
-            <Mail className="h-6 w-6 text-[#16805B] shrink-0" />
+          <div className="p-4 rounded-2xl bg-[#F0FDFA] border border-[#99F6E4] flex items-center gap-3">
+            <Mail className="h-6 w-6 text-[#0F766E] shrink-0" />
             <div className="text-xs">
               <span className="font-bold text-slate-900">Verification Code Sent:</span>
               <p className="text-slate-600">
@@ -724,7 +724,7 @@ function EducatorRegistrationFlowContent() {
                 type="button"
                 onClick={handleResendOtp}
                 disabled={state.otpCooldown > 0}
-                className="text-[#16805B] hover:text-[#0D5C41] disabled:text-slate-400 cursor-pointer"
+                className="text-[#0F766E] hover:text-[#115E59] disabled:text-slate-400 cursor-pointer"
               >
                 {state.otpCooldown > 0 ? `Resend Code in ${state.otpCooldown}s` : "Resend Verification Code"}
               </button>
@@ -741,7 +741,7 @@ function EducatorRegistrationFlowContent() {
               <button
                 type="submit"
                 disabled={submittingStep}
-                className="w-full h-11 px-6 rounded-xl text-sm font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
+                className="w-full h-11 px-6 rounded-xl text-sm font-bold text-white bg-[#0F766E] hover:bg-[#115E59] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
               >
                 {submittingStep ? (
                   <>
@@ -874,7 +874,7 @@ function EducatorRegistrationFlowContent() {
               <button
                 type="submit"
                 disabled={submittingStep}
-                className="flex-1 h-11 px-6 rounded-xl text-sm font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
+                className="flex-1 h-11 px-6 rounded-xl text-sm font-bold text-white bg-[#0F766E] hover:bg-[#115E59] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
               >
                 {submittingStep ? (
                   <>
@@ -897,9 +897,9 @@ function EducatorRegistrationFlowContent() {
       {state.step === 4 && (
         <GlassCard className="p-6 sm:p-8 rounded-3xl border border-slate-200/90 bg-white shadow-xl space-y-6">
           {/* Main ₹99 Banner */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#0D5C41] via-[#16805B] to-[#083827] text-white space-y-4 shadow-lg">
+          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#115E59] via-[#0F766E] to-[#042F2E] text-white space-y-4 shadow-lg">
             <div className="flex items-center justify-between">
-              <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-emerald-100 border border-white/25">
+              <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-teal-100 border border-white/25">
                 MANDATORY EDUCATOR FEE
               </span>
               <span className="text-3xl sm:text-4xl font-black text-white">₹99</span>
@@ -907,7 +907,7 @@ function EducatorRegistrationFlowContent() {
 
             <div className="space-y-1">
               <h3 className="text-xl font-black text-white">Educator Registration Fee — ₹99</h3>
-              <p className="text-xs text-emerald-50 leading-relaxed font-normal">
+              <p className="text-xs text-teal-50 leading-relaxed font-normal">
                 To maintain authentic educational standards, verify educator credentials, and provision your dedicated browser-based HD live classroom and course distribution infrastructure, a nominal one-time registration charge of ₹99 applies.
               </p>
             </div>
@@ -915,18 +915,18 @@ function EducatorRegistrationFlowContent() {
 
           {/* Value Highlights */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div className="p-4 rounded-2xl bg-[#F0FAF5] border border-[#A7F3D0] space-y-1">
-              <ShieldCheck className="h-5 w-5 text-[#16805B]" />
+            <div className="p-4 rounded-2xl bg-[#F0FDFA] border border-[#99F6E4] space-y-1">
+              <ShieldCheck className="h-5 w-5 text-[#0F766E]" />
               <div className="font-extrabold text-slate-900">Verified Educator Badge</div>
               <div className="text-[11px] text-slate-600">Priority listing in student searches</div>
             </div>
-            <div className="p-4 rounded-2xl bg-[#F0FAF5] border border-[#A7F3D0] space-y-1">
-              <Video className="h-5 w-5 text-[#16805B]" />
+            <div className="p-4 rounded-2xl bg-[#F0FDFA] border border-[#99F6E4] space-y-1">
+              <Video className="h-5 w-5 text-[#0F766E]" />
               <div className="font-extrabold text-slate-900">HD Live Classroom</div>
               <div className="text-[11px] text-slate-600">Built-in whiteboard &amp; screen sharing</div>
             </div>
-            <div className="p-4 rounded-2xl bg-[#F0FAF5] border border-[#A7F3D0] space-y-1">
-              <CreditCard className="h-5 w-5 text-[#16805B]" />
+            <div className="p-4 rounded-2xl bg-[#F0FDFA] border border-[#99F6E4] space-y-1">
+              <CreditCard className="h-5 w-5 text-[#0F766E]" />
               <div className="font-extrabold text-slate-900">Direct Bank Payouts</div>
               <div className="text-[11px] text-slate-600">Automated Cashfree weekly transfers</div>
             </div>
@@ -940,11 +940,11 @@ function EducatorRegistrationFlowContent() {
             </div>
             <div className="flex justify-between text-slate-600">
               <span>Payment Processing &amp; Taxes:</span>
-              <span className="font-bold text-[#16805B]">Included</span>
+              <span className="font-bold text-[#0F766E]">Included</span>
             </div>
             <div className="pt-2 border-t border-slate-200 flex justify-between font-black text-sm text-slate-900">
               <span>Total Payable Amount:</span>
-              <span className="text-[#0D5C41]">₹99.00 INR</span>
+              <span className="text-[#115E59]">₹99.00 INR</span>
             </div>
           </div>
 
@@ -961,7 +961,7 @@ function EducatorRegistrationFlowContent() {
             <button
               type="button"
               onClick={handleInitiatePayment}
-              className="w-full sm:flex-1 h-12 px-6 rounded-xl text-sm font-black text-white bg-[#16805B] hover:bg-[#0D5C41] shadow-lg shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              className="w-full sm:flex-1 h-12 px-6 rounded-xl text-sm font-black text-white bg-[#0F766E] hover:bg-[#115E59] shadow-lg shadow-teal-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
             >
               <CreditCard className="h-4 w-4" />
               <span>Proceed to Pay ₹99 via Cashfree</span>
@@ -976,7 +976,7 @@ function EducatorRegistrationFlowContent() {
         <GlassCard className="p-8 rounded-3xl border border-slate-200/90 bg-white shadow-xl space-y-6 text-center">
           {state.paymentLoading ? (
             <div className="py-10 space-y-4">
-              <Loader2 className="h-10 w-10 text-[#16805B] animate-spin mx-auto" />
+              <Loader2 className="h-10 w-10 text-[#0F766E] animate-spin mx-auto" />
               <div className="space-y-1">
                 <h3 className="text-lg font-black text-slate-900">
                   Connecting to Cashfree Payment Gateway...
@@ -1008,7 +1008,7 @@ function EducatorRegistrationFlowContent() {
                 </button>
                 <button
                   onClick={handleInitiatePayment}
-                  className="h-11 px-6 rounded-xl text-xs font-black text-white bg-[#16805B] hover:bg-[#0D5C41] flex items-center gap-2 shadow-md cursor-pointer"
+                  className="h-11 px-6 rounded-xl text-xs font-black text-white bg-[#0F766E] hover:bg-[#115E59] flex items-center gap-2 shadow-md cursor-pointer"
                 >
                   <RotateCcw className="h-4 w-4" />
                   <span>Retry ₹99 Payment</span>
@@ -1024,7 +1024,7 @@ function EducatorRegistrationFlowContent() {
         <GlassCard className="p-8 rounded-3xl border border-slate-200/90 bg-white shadow-xl space-y-6 text-center">
           {state.paymentLoading ? (
             <div className="py-10 space-y-4">
-              <Loader2 className="h-10 w-10 text-[#16805B] animate-spin mx-auto" />
+              <Loader2 className="h-10 w-10 text-[#0F766E] animate-spin mx-auto" />
               <div className="space-y-1">
                 <h3 className="text-lg font-black text-slate-900">Verifying Payment with Cashfree...</h3>
                 <p className="text-xs text-slate-500">
@@ -1054,7 +1054,7 @@ function EducatorRegistrationFlowContent() {
                 </button>
                 <button
                   onClick={() => handleVerifyPayment(state.orderData?.orderId, state.email)}
-                  className="h-11 px-6 rounded-xl text-xs font-black text-white bg-[#16805B] hover:bg-[#0D5C41] flex items-center gap-2 shadow-md cursor-pointer"
+                  className="h-11 px-6 rounded-xl text-xs font-black text-white bg-[#0F766E] hover:bg-[#115E59] flex items-center gap-2 shadow-md cursor-pointer"
                 >
                   <RotateCcw className="h-4 w-4" />
                   <span>Retry Verification</span>
@@ -1069,8 +1069,8 @@ function EducatorRegistrationFlowContent() {
             </div>
           ) : (
             <div className="py-8 space-y-4">
-              <div className="p-3.5 bg-[#F0FAF5] text-[#16805B] border border-[#A7F3D0] rounded-3xl w-fit mx-auto">
-                <CheckCircle2 className="h-12 w-12 text-[#16805B]" />
+              <div className="p-3.5 bg-[#F0FDFA] text-[#0F766E] border border-[#99F6E4] rounded-3xl w-fit mx-auto">
+                <CheckCircle2 className="h-12 w-12 text-[#0F766E]" />
               </div>
 
               <div className="space-y-2">
@@ -1085,7 +1085,7 @@ function EducatorRegistrationFlowContent() {
               <div className="pt-4">
                 <Link
                   href="/teacher/dashboard"
-                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm font-black text-white bg-[#16805B] hover:bg-[#0D5C41] shadow-lg shadow-emerald-700/20 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm font-black text-white bg-[#0F766E] hover:bg-[#115E59] shadow-lg shadow-teal-700/20 transition-all cursor-pointer"
                 >
                   <LayoutDashboard className="h-4 w-4" />
                   <span>Go to Educator Dashboard</span>
@@ -1104,7 +1104,7 @@ export function EducatorRegistrationFlow() {
     <Suspense
       fallback={
         <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin text-[#16805B]" />
+          <Loader2 className="h-6 w-6 animate-spin text-[#0F766E]" />
           <span className="text-sm font-bold">Loading Educator Registration...</span>
         </div>
       }

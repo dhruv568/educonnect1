@@ -189,7 +189,7 @@ export default function EducatorTrainingLearnPage() {
     return (
       <DashboardLayout role="TEACHER">
         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-[#16805B]" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#0F766E]" />
           <p className="text-sm font-semibold text-slate-650">Loading your 15-Day Training Program...</p>
         </div>
       </DashboardLayout>
@@ -204,13 +204,13 @@ export default function EducatorTrainingLearnPage() {
     <DashboardLayout role="TEACHER">
       <div className="space-y-8 pb-16">
         {/* Top Progress & Certification Header */}
-        <div className="bg-gradient-to-r from-[#0D5C41] via-[#16805B] to-[#0D5C41] text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+        <div className="bg-gradient-to-r from-[#115E59] via-[#0F766E] to-[#115E59] text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/20 text-emerald-200 text-xs font-extrabold uppercase tracking-wider">
-                <GraduationCap className="h-4 w-4 text-[#35A979]" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/20 text-teal-200 text-xs font-extrabold uppercase tracking-wider">
+                <GraduationCap className="h-4 w-4 text-[#2DD4BF]" />
                 <span>EduConnects Educator Academy</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#35A979]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2DD4BF]" />
                 <span>15-Day Intensive</span>
               </div>
 
@@ -220,12 +220,12 @@ export default function EducatorTrainingLearnPage() {
 
               {/* Progress Indicator */}
               <div className="flex items-center gap-3 pt-1">
-                <span className="text-sm sm:text-base font-bold text-emerald-100">
+                <span className="text-sm sm:text-base font-bold text-teal-100">
                   {enrollment?.completedDaysCount || 0} / 15 Days Completed — {enrollment?.completionPercentage || 0}%
                 </span>
                 <div className="w-32 sm:w-48 bg-white/20 h-2.5 rounded-full overflow-hidden">
                   <div
-                    className="bg-[#35A979] h-full rounded-full transition-all duration-500"
+                    className="bg-[#2DD4BF] h-full rounded-full transition-all duration-500"
                     style={{ width: `${enrollment?.completionPercentage || 0}%` }}
                   />
                 </div>
@@ -237,9 +237,9 @@ export default function EducatorTrainingLearnPage() {
               {hasCertificate ? (
                 <Link
                   href={`/certificate/verify/${enrollment.certificateNumber}`}
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white text-[#0D5C41] hover:bg-emerald-50 font-black text-xs sm:text-sm shadow-xl transition-transform hover:-translate-y-0.5 cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white text-[#115E59] hover:bg-teal-50 font-black text-xs sm:text-sm shadow-xl transition-transform hover:-translate-y-0.5 cursor-pointer"
                 >
-                  <ShieldCheck className="h-5 w-5 text-[#16805B]" />
+                  <ShieldCheck className="h-5 w-5 text-[#0F766E]" />
                   <span>View Verified Certificate</span>
                 </Link>
               ) : isCertificateEligible ? (
@@ -251,8 +251,8 @@ export default function EducatorTrainingLearnPage() {
                   <span>Claim Certificate →</span>
                 </Link>
               ) : (
-                <div className="bg-white/10 px-4 py-2.5 rounded-2xl border border-white/20 text-xs font-semibold text-emerald-200 flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-[#35A979]" />
+                <div className="bg-white/10 px-4 py-2.5 rounded-2xl border border-white/20 text-xs font-semibold text-teal-200 flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-[#2DD4BF]" />
                   <span>Complete all 15 days to unlock official certification</span>
                 </div>
               )}
@@ -279,7 +279,7 @@ export default function EducatorTrainingLearnPage() {
 
             <Link
               href="/teacher/training/verify-certificate"
-              className="px-6 py-3 rounded-2xl bg-[#16805B] text-white hover:bg-[#0D5C41] font-extrabold text-xs sm:text-sm shrink-0 shadow-md flex items-center gap-2"
+              className="px-6 py-3 rounded-2xl bg-[#0F766E] text-white hover:bg-[#115E59] font-extrabold text-xs sm:text-sm shrink-0 shadow-md flex items-center gap-2"
             >
               <span>Verify Name &amp; Claim Certificate</span>
               <ArrowRight className="h-4 w-4" />
@@ -311,9 +311,9 @@ export default function EducatorTrainingLearnPage() {
                     onClick={() => handleSelectDay(day)}
                     className={`w-full text-left p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                       isSelected
-                        ? "border-[#16805B] bg-emerald-50/80 shadow-md ring-1 ring-[#16805B]"
+                        ? "border-[#0F766E] bg-teal-50/80 shadow-md ring-1 ring-[#0F766E]"
                         : isCompleted
-                        ? "border-emerald-200 bg-white hover:border-emerald-400"
+                        ? "border-teal-200 bg-white hover:border-teal-400"
                         : isUnlocked
                         ? "border-slate-200 bg-white hover:border-slate-400"
                         : "border-slate-100 bg-slate-50/70 opacity-60 cursor-not-allowed"
@@ -323,9 +323,9 @@ export default function EducatorTrainingLearnPage() {
                       <div
                         className={`w-8 h-8 rounded-xl font-mono text-xs font-black flex items-center justify-center shrink-0 ${
                           isCompleted
-                            ? "bg-[#16805B] text-white"
+                            ? "bg-[#0F766E] text-white"
                             : isSelected
-                            ? "bg-emerald-200 text-[#0D5C41]"
+                            ? "bg-teal-200 text-[#115E59]"
                             : isUnlocked
                             ? "bg-slate-100 text-slate-800"
                             : "bg-slate-200 text-slate-650"
@@ -344,7 +344,7 @@ export default function EducatorTrainingLearnPage() {
 
                     <div className="shrink-0">
                       {isCompleted ? (
-                        <span className="text-[10px] font-bold text-[#16805B] bg-emerald-100 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-bold text-[#0F766E] bg-teal-100 px-2 py-0.5 rounded-full">
                           ✓ Completed
                         </span>
                       ) : isUnlocked ? (
@@ -353,7 +353,7 @@ export default function EducatorTrainingLearnPage() {
                             Quiz Due
                           </span>
                         ) : (
-                          <span className="text-[10px] font-bold text-[#16805B] bg-emerald-100 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] font-bold text-[#0F766E] bg-teal-100 px-2 py-0.5 rounded-full">
                             Available
                           </span>
                         )
@@ -373,7 +373,7 @@ export default function EducatorTrainingLearnPage() {
           <div className="lg:col-span-8 space-y-6">
             {loadingDay ? (
               <Card className="p-16 text-center text-slate-650 flex items-center justify-center gap-3">
-                <Loader2 className="h-6 w-6 animate-spin text-[#16805B]" />
+                <Loader2 className="h-6 w-6 animate-spin text-[#0F766E]" />
                 <span className="text-sm font-semibold">Loading Day {selectedDayNumber}...</span>
               </Card>
             ) : dayDetails ? (
@@ -382,11 +382,11 @@ export default function EducatorTrainingLearnPage() {
                 <Card className="p-6 border-slate-200 space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 rounded-full bg-emerald-100 text-[#0D5C41] font-mono text-xs font-black">
+                      <span className="px-3 py-1 rounded-full bg-teal-100 text-[#115E59] font-mono text-xs font-black">
                         DAY {dayDetails.dayNumber} OF 15
                       </span>
                       {dayDetails.isCompleted && (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200">
                           <CheckCircle2 className="h-3.5 w-3.5" /> Day Completed
                         </span>
                       )}
@@ -408,14 +408,14 @@ export default function EducatorTrainingLearnPage() {
 
                   {/* Learning Objectives */}
                   {dayDetails.learningObjectives?.length > 0 && (
-                    <div className="p-4 rounded-2xl bg-[#F0FAF5] border border-emerald-100 space-y-2">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#0D5C41]">
+                    <div className="p-4 rounded-2xl bg-[#F0FDFA] border border-teal-100 space-y-2">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#115E59]">
                         Today&apos;s Learning Objectives
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {dayDetails.learningObjectives.map((obj: string, i: number) => (
                           <div key={i} className="flex items-start gap-2 text-xs text-slate-700">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-[#16805B] shrink-0 mt-0.5" />
+                            <CheckCircle2 className="h-3.5 w-3.5 text-[#0F766E] shrink-0 mt-0.5" />
                             <span>{obj}</span>
                           </div>
                         ))}
@@ -436,11 +436,11 @@ export default function EducatorTrainingLearnPage() {
                 <Card className="p-5 border-slate-200 space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                      <Video className="h-4 w-4 text-[#16805B]" /> Training Video
+                      <Video className="h-4 w-4 text-[#0F766E]" /> Training Video
                     </h3>
 
                     {dayDetails.progress?.videoWatched ? (
-                      <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                      <span className="text-xs font-bold text-teal-700 flex items-center gap-1">
                         <CheckCircle2 className="h-3.5 w-3.5" /> Video Watched
                       </span>
                     ) : (
@@ -462,7 +462,7 @@ export default function EducatorTrainingLearnPage() {
                     ) : (
                       /* Demo / Placeholder Player */
                       <div className="text-center p-8 space-y-3">
-                        <div className="w-16 h-16 rounded-full bg-white/10 text-emerald-300 flex items-center justify-center mx-auto shadow-md">
+                        <div className="w-16 h-16 rounded-full bg-white/10 text-teal-300 flex items-center justify-center mx-auto shadow-md">
                           <PlayCircle className="h-8 w-8" />
                         </div>
                         <div className="space-y-1">
@@ -478,7 +478,7 @@ export default function EducatorTrainingLearnPage() {
                             size="sm"
                             onClick={handleCompleteContent}
                             disabled={completingContent || dayDetails.progress?.videoWatched}
-                            className="bg-[#16805B] hover:bg-[#0D5C41] text-white font-bold text-xs"
+                            className="bg-[#0F766E] hover:bg-[#115E59] text-white font-bold text-xs"
                           >
                             {completingContent ? (
                               <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
@@ -499,7 +499,7 @@ export default function EducatorTrainingLearnPage() {
                 {dayDetails.resources?.length > 0 && (
                   <Card className="p-5 border-slate-200 space-y-3">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-650 flex items-center gap-1.5">
-                      <FileText className="h-4 w-4 text-[#16805B]" /> Supporting Resources &amp; Guides
+                      <FileText className="h-4 w-4 text-[#0F766E]" /> Supporting Resources &amp; Guides
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {dayDetails.resources.map((res: any, idx: number) => (
@@ -508,7 +508,7 @@ export default function EducatorTrainingLearnPage() {
                           className="p-3 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-2"
                         >
                           <div className="min-w-0">
-                            <span className="text-[10px] font-bold text-[#16805B] block uppercase">
+                            <span className="text-[10px] font-bold text-[#0F766E] block uppercase">
                               {res.type || "GUIDE"}
                             </span>
                             <span className="text-xs font-bold text-slate-900 truncate block">
@@ -529,7 +529,7 @@ export default function EducatorTrainingLearnPage() {
                   <Card className="p-6 border-slate-200 space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                       <div>
-                        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#16805B] bg-emerald-50 px-2.5 py-0.5 rounded-full mb-1">
+                        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0F766E] bg-teal-50 px-2.5 py-0.5 rounded-full mb-1">
                           <Sparkles className="h-3.5 w-3.5" /> Day {dayDetails.dayNumber} Concept Quiz
                         </div>
                         <h3 className="text-lg font-black text-slate-900">{quiz.title}</h3>
@@ -539,7 +539,7 @@ export default function EducatorTrainingLearnPage() {
                       </div>
 
                       {dayDetails.progress?.quizPassed && (
-                        <Badge className="bg-emerald-100 text-[#0D5C41] border border-emerald-200 text-xs font-bold self-start sm:self-center">
+                        <Badge className="bg-teal-100 text-[#115E59] border border-teal-200 text-xs font-bold self-start sm:self-center">
                           ✓ Quiz Passed ({dayDetails.progress.bestScore}%)
                         </Badge>
                       )}
@@ -551,7 +551,7 @@ export default function EducatorTrainingLearnPage() {
                         <div
                           className={`p-5 rounded-2xl border text-center space-y-2 ${
                             quizResult.passed
-                              ? "bg-emerald-50 border-emerald-200 text-[#0D5C41]"
+                              ? "bg-emerald-50 border-emerald-200 text-emerald-900"
                               : "bg-amber-50 border-amber-200 text-amber-900"
                           }`}
                         >
@@ -579,7 +579,7 @@ export default function EducatorTrainingLearnPage() {
                               <Button
                                 size="sm"
                                 onClick={() => handleSelectDay({ dayNumber: selectedDayNumber + 1, isUnlocked: true })}
-                                className="bg-[#16805B] hover:bg-[#0D5C41] text-white font-bold text-xs"
+                                className="bg-[#0F766E] hover:bg-[#115E59] text-white font-bold text-xs"
                               >
                                 <span>Continue to Day {selectedDayNumber + 1}</span>
                                 <ArrowRight className="h-3.5 w-3.5 ml-1" />
@@ -633,7 +633,7 @@ export default function EducatorTrainingLearnPage() {
                         {quiz.questions?.map((q: any, qIdx: number) => (
                           <div key={q.id || qIdx} className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                             <div className="flex items-start gap-2 text-sm font-bold text-slate-900">
-                              <span className="w-6 h-6 rounded-lg bg-emerald-100 text-[#0D5C41] flex items-center justify-center text-xs shrink-0 mt-0.5 font-bold">
+                              <span className="w-6 h-6 rounded-lg bg-teal-100 text-[#115E59] flex items-center justify-center text-xs shrink-0 mt-0.5 font-bold">
                                 {qIdx + 1}
                               </span>
                               <span>{q.question}</span>
@@ -647,7 +647,7 @@ export default function EducatorTrainingLearnPage() {
                                     key={opt.key}
                                     className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-colors ${
                                       isChecked
-                                        ? "border-[#16805B] bg-emerald-50/70 text-[#0D5C41] font-bold"
+                                        ? "border-[#0F766E] bg-teal-50/70 text-[#115E59] font-bold"
                                         : "border-slate-200 bg-white hover:bg-slate-100/70 text-slate-800 text-xs font-medium"
                                     }`}
                                   >
@@ -658,7 +658,7 @@ export default function EducatorTrainingLearnPage() {
                                       onChange={() =>
                                         setSelectedAnswers((prev) => ({ ...prev, [q.id]: opt.key }))
                                       }
-                                      className="accent-[#16805B] h-4 w-4 shrink-0"
+                                      className="accent-[#0F766E] h-4 w-4 shrink-0"
                                     />
                                     <span className="w-5 font-bold">{opt.key}.</span>
                                     <span className="text-xs leading-relaxed">{opt.text}</span>
@@ -677,7 +677,7 @@ export default function EducatorTrainingLearnPage() {
                           <Button
                             onClick={handleSubmitQuiz}
                             disabled={submittingQuiz}
-                            className="bg-[#16805B] hover:bg-[#0D5C41] text-white font-black text-xs px-6 py-2.5 rounded-xl shadow-md cursor-pointer"
+                            className="bg-[#0F766E] hover:bg-[#115E59] text-white font-black text-xs px-6 py-2.5 rounded-xl shadow-md cursor-pointer"
                           >
                             {submittingQuiz ? (
                               <>

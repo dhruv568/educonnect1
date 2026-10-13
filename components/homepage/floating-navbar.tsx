@@ -307,12 +307,12 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isLearner
             ? scrolled
-              ? "bg-[#0D5C41]/95 backdrop-blur-md border-b border-[#16805B]/50 shadow-md py-2 sm:py-2.5"
-              : "bg-[#0D5C41] border-b border-[#16805B]/30 shadow-xs py-2.5 sm:py-3"
+              ? "bg-[#1E40AF]/95 backdrop-blur-md border-b border-[#2563EB]/50 shadow-md py-2 sm:py-2.5"
+              : "bg-[#1E40AF] border-b border-[#2563EB]/30 shadow-xs py-2.5 sm:py-3"
             : isEducator
             ? scrolled
-              ? "bg-[#0D5C41]/95 backdrop-blur-md border-b border-[#16805B]/50 shadow-md py-2 sm:py-2.5"
-              : "bg-[#0D5C41] border-b border-[#16805B]/30 shadow-xs py-2.5 sm:py-3"
+              ? "bg-[#115E59]/95 backdrop-blur-md border-b border-[#0F766E]/50 shadow-md py-2 sm:py-2.5"
+              : "bg-[#115E59] border-b border-[#0F766E]/30 shadow-xs py-2.5 sm:py-3"
             : isMainWebsite
             ? scrolled
               ? "bg-[#0D5C41]/95 backdrop-blur-md border-b border-[#16805B]/50 shadow-md py-2 sm:py-2.5"
@@ -330,7 +330,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
             <Link
               href="/teacher"
               onClick={() => setMobileOpen(false)}
-              className="group flex items-center gap-2 sm:gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded-xl select-none shrink-0"
+              className="group flex items-center gap-2 sm:gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded-xl select-none shrink-0"
               aria-label="EduConnects Educator Home"
             >
               <div className="relative h-10 sm:h-11 md:h-12 w-auto aspect-[3/2] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-[1.03]">
@@ -346,9 +346,9 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               </div>
               <div className="flex flex-col justify-center min-w-0 text-left">
                 <span className="text-base sm:text-lg font-black tracking-tight leading-none text-white transition-opacity group-hover:opacity-95">
-                  Edu<span className="text-[#35A979]">Connects</span>
+                  Edu<span className="text-[#2DD4BF]">Connects</span>
                 </span>
-                <span className="text-[10px] sm:text-xs font-bold text-emerald-200 tracking-wide whitespace-nowrap mt-0.5">
+                <span className="text-[10px] sm:text-xs font-bold text-teal-200 tracking-wide whitespace-nowrap mt-0.5">
                   Educator Portal
                 </span>
               </div>
@@ -357,7 +357,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
             <Link
               href="/student"
               onClick={() => setMobileOpen(false)}
-              className="group flex items-center gap-2 sm:gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded-xl select-none shrink-0"
+              className="group flex items-center gap-2 sm:gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded-xl select-none shrink-0"
               aria-label="EduConnects Learner Home"
             >
               <div className="relative h-10 sm:h-11 md:h-12 w-auto aspect-[3/2] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-[1.03]">
@@ -373,9 +373,9 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               </div>
               <div className="flex flex-col justify-center min-w-0 text-left">
                 <span className="text-base sm:text-lg font-black tracking-tight leading-none text-white transition-opacity group-hover:opacity-95">
-                  Edu<span className="text-[#35A979]">Connects</span>
+                  Edu<span className="text-[#60A5FA]">Connects</span>
                 </span>
-                <span className="text-[10px] sm:text-xs font-bold text-emerald-200 tracking-wide whitespace-nowrap mt-0.5">
+                <span className="text-[10px] sm:text-xs font-bold text-blue-200 tracking-wide whitespace-nowrap mt-0.5">
                   Learner Portal
                 </span>
               </div>
@@ -434,8 +434,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       }}
                       className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                         isActive
-                          ? "bg-[#16805B] text-white font-semibold shadow-xs"
-                          : "text-emerald-100/90 hover:text-white hover:bg-white/10"
+                          ? "bg-[#0F766E] text-white font-semibold shadow-xs"
+                          : "text-teal-100/90 hover:text-white hover:bg-white/10"
                       }`}
                     >
                       {item.label}
@@ -450,8 +450,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/student"
                   className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/student" || pathname === "/"
-                      ? "bg-[#16805B] text-white font-bold shadow-xs"
-                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/50"
+                      ? "bg-[#2563EB] text-white font-bold shadow-xs"
+                      : "text-blue-100 hover:text-white hover:bg-[#2563EB]/50"
                   }`}
                 >
                   Home
@@ -460,8 +460,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/about"
                   className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/about"
-                      ? "bg-[#16805B] text-white font-bold shadow-xs"
-                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/50"
+                      ? "bg-[#2563EB] text-white font-bold shadow-xs"
+                      : "text-blue-100 hover:text-white hover:bg-[#2563EB]/50"
                   }`}
                 >
                   About Us
@@ -470,8 +470,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/find-teachers"
                   className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/find-teachers"
-                      ? "bg-[#16805B] text-white font-bold shadow-xs"
-                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/50"
+                      ? "bg-[#2563EB] text-white font-bold shadow-xs"
+                      : "text-blue-100 hover:text-white hover:bg-[#2563EB]/50"
                   }`}
                 >
                   Find Educators
@@ -480,8 +480,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/courses"
                   className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/courses"
-                      ? "bg-[#16805B] text-white font-bold shadow-xs"
-                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/50"
+                      ? "bg-[#2563EB] text-white font-bold shadow-xs"
+                      : "text-blue-100 hover:text-white hover:bg-[#2563EB]/50"
                   }`}
                 >
                   Explore Courses
@@ -490,15 +490,15 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   href="/exam"
                   className={`px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                     pathname === "/exam"
-                      ? "bg-[#16805B] text-white font-bold shadow-xs"
-                      : "text-emerald-100 hover:text-white hover:bg-[#16805B]/50"
+                      ? "bg-[#2563EB] text-white font-bold shadow-xs"
+                      : "text-blue-100 hover:text-white hover:bg-[#2563EB]/50"
                   }`}
                 >
                   Take Test
                 </Link>
                 <Link
                   href="/student#benefits"
-                  className="px-3.5 py-1.5 rounded-lg text-emerald-100 hover:text-white hover:bg-[#16805B]/50 transition-colors whitespace-nowrap"
+                  className="px-3.5 py-1.5 rounded-lg text-blue-100 hover:text-white hover:bg-[#2563EB]/50 transition-colors whitespace-nowrap"
                 >
                   Why EduConnects?
                 </Link>
@@ -632,7 +632,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   </Link>
                   <Link
                     href="/teacher/register"
-                    className="h-10 px-5 rounded-xl text-sm font-semibold text-white bg-[#16805B] hover:bg-[#12684A] shadow-sm hover:shadow-md hover:shadow-emerald-950/25 transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer active:scale-[0.98] border border-emerald-400/30 group"
+                    className="h-10 px-5 rounded-xl text-sm font-semibold text-white bg-[#0F766E] hover:bg-[#115E59] shadow-sm hover:shadow-md hover:shadow-teal-950/25 transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 cursor-pointer active:scale-[0.98] border border-teal-400/30 group"
                   >
                     <span>Become an Educator</span>
                     <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -666,17 +666,17 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   {(userSession.role === "STUDENT" || isLearnerRole(userSession.role)) ? (
                     <Link
                       href={getLearnerSubdomainUrl("/student/dashboard")}
-                      className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+                      className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#2563EB] hover:bg-[#1E40AF] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
                     >
-                      <LayoutDashboard className="h-4 w-4 text-emerald-100" />
+                      <LayoutDashboard className="h-4 w-4 text-blue-100" />
                       <span>Learner Portal</span>
                     </Link>
                   ) : (userSession.role === "TEACHER" || isEducatorRole(userSession.role)) ? (
                     <Link
                       href={getEducatorSubdomainUrl("/teacher/dashboard")}
-                      className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+                      className="h-9 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#0F766E] hover:bg-[#115E59] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
                     >
-                      <LayoutDashboard className="h-4 w-4 text-emerald-100" />
+                      <LayoutDashboard className="h-4 w-4 text-teal-100" />
                       <span>Educator Portal</span>
                     </Link>
                   ) : userSession.role === "ADMIN" ? (
@@ -934,14 +934,18 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
               className={`relative top-16 mx-3 sm:mx-6 rounded-3xl shadow-2xl p-5 space-y-4 max-h-[calc(100vh-5rem)] overflow-y-auto ${
-                isEducator || isLearner || isMainWebsite
+                isEducator
+                  ? "bg-[#115E59] border border-[#0F766E]/60 text-white"
+                  : isLearner
+                  ? "bg-[#1E40AF] border border-[#2563EB]/60 text-white"
+                  : isMainWebsite
                   ? "bg-[#0D5C41] border border-[#16805B]/60 text-white"
                   : "bg-white border border-slate-200"
               }`}
             >
               {/* Educator Mobile Drawer Brand Header */}
               {isEducator && (
-                <div className="pb-3 mb-1 border-b border-[#16805B]/50 flex items-center justify-between">
+                <div className="pb-3 mb-1 border-b border-[#0F766E]/50 flex items-center justify-between">
                   <Link
                     href="/teacher"
                     onClick={() => setMobileOpen(false)}
@@ -959,11 +963,40 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       />
                     </div>
                     <span className="text-base font-black tracking-tight leading-none text-white">
-                      Edu<span className="text-[#35A979]">Connects</span>
+                      Edu<span className="text-[#2DD4BF]">Connects</span>
                     </span>
                   </Link>
-                  <span className="text-[10px] font-bold text-emerald-200 bg-[#16805B]/60 px-2.5 py-1 rounded-full border border-emerald-400/30">
+                  <span className="text-[10px] font-bold text-teal-200 bg-[#0F766E]/60 px-2.5 py-1 rounded-full border border-teal-400/30">
                     Educator Portal
+                  </span>
+                </div>
+              )}
+
+              {/* Learner Mobile Drawer Brand Header */}
+              {isLearner && (
+                <div className="pb-3 mb-1 border-b border-[#2563EB]/50 flex items-center justify-between">
+                  <Link
+                    href="/student"
+                    onClick={() => setMobileOpen(false)}
+                    className="group flex items-center gap-2.5"
+                    aria-label="EduConnects Learner Home"
+                  >
+                    <div className="relative h-9 w-auto aspect-[3/2] flex items-center justify-center select-none shrink-0">
+                      <Image
+                        src={officialLogo}
+                        alt="EduConnects"
+                        width={1536}
+                        height={1024}
+                        priority
+                        className="h-full w-auto max-h-full object-contain filter drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)]"
+                      />
+                    </div>
+                    <span className="text-base font-black tracking-tight leading-none text-white">
+                      Edu<span className="text-[#60A5FA]">Connects</span>
+                    </span>
+                  </Link>
+                  <span className="text-[10px] font-bold text-blue-200 bg-[#2563EB]/60 px-2.5 py-1 rounded-full border border-blue-400/30">
+                    Learner Portal
                   </span>
                 </div>
               )}
@@ -986,42 +1019,42 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
 
               {/* Authenticated User Card in Mobile Drawer */}
               {isEducator && userSession && isEducatorRole(userSession.role) && (
-                <div className="p-3.5 rounded-2xl flex items-center justify-between bg-[#16805B]/40 border border-[#16805B]/60 text-white">
+                <div className="p-3.5 rounded-2xl flex items-center justify-between bg-[#0F766E]/40 border border-[#0F766E]/60 text-white">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl text-white font-black text-sm flex items-center justify-center bg-[#16805B]">
+                    <div className="w-10 h-10 rounded-xl text-white font-black text-sm flex items-center justify-center bg-[#0F766E]">
                       {getUserInitials(userSession)}
                     </div>
                     <div>
                       <div className="text-xs font-extrabold text-white">
                         {getUserDisplayName(userSession)}
                       </div>
-                      <div className="text-[11px] truncate max-w-[160px] text-emerald-200">
+                      <div className="text-[11px] truncate max-w-[160px] text-teal-200">
                         {userSession.email}
                       </div>
                     </div>
                   </div>
-                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">
                     Educator
                   </span>
                 </div>
               )}
 
               {isLearner && userSession && isLearnerRole(userSession.role) && (
-                <div className="p-3.5 rounded-2xl flex items-center justify-between bg-[#0D5C41] border border-emerald-400/30 text-white">
+                <div className="p-3.5 rounded-2xl flex items-center justify-between bg-[#1D4ED8]/50 border border-blue-400/30 text-white">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl text-white font-black text-sm flex items-center justify-center bg-[#16805B]">
+                    <div className="w-10 h-10 rounded-xl text-white font-black text-sm flex items-center justify-center bg-[#2563EB]">
                       {getUserInitials(userSession)}
                     </div>
                     <div>
                       <div className="text-xs font-extrabold text-white">
                         {getUserDisplayName(userSession)}
                       </div>
-                      <div className="text-[11px] truncate max-w-[160px] text-emerald-200">
+                      <div className="text-[11px] truncate max-w-[160px] text-blue-200">
                         {userSession.email}
                       </div>
                     </div>
                   </div>
-                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
                     Learner
                   </span>
                 </div>
@@ -1063,12 +1096,12 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                           }}
                           className={`py-2.5 px-3.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-between ${
                             isActive
-                              ? "bg-[#16805B] text-white font-semibold shadow-xs"
-                              : "text-emerald-100/90 hover:text-white hover:bg-white/10"
+                              ? "bg-[#0F766E] text-white font-semibold shadow-xs"
+                              : "text-teal-100/90 hover:text-white hover:bg-white/10"
                           }`}
                         >
                           <span>{item.label}</span>
-                          {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />}
+                          {isActive && <span className="w-1.5 h-1.5 rounded-full bg-teal-300" />}
                         </Link>
                       );
                     })}
@@ -1080,8 +1113,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       onClick={() => setMobileOpen(false)}
                       className={`py-2.5 px-3.5 rounded-xl font-semibold transition-colors ${
                         pathname === "/student" || pathname === "/"
-                          ? "bg-[#16805B] text-white font-bold"
-                          : "text-emerald-100 hover:bg-[#16805B]/50 hover:text-white"
+                          ? "bg-[#2563EB] text-white font-bold"
+                          : "text-blue-100 hover:bg-[#2563EB]/50 hover:text-white"
                       }`}
                     >
                       Home
@@ -1091,8 +1124,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       onClick={() => setMobileOpen(false)}
                       className={`py-2.5 px-3.5 rounded-xl font-semibold transition-colors ${
                         pathname === "/about"
-                          ? "bg-[#16805B] text-white font-bold"
-                          : "text-emerald-100 hover:bg-[#16805B]/50 hover:text-white"
+                          ? "bg-[#2563EB] text-white font-bold"
+                          : "text-blue-100 hover:bg-[#2563EB]/50 hover:text-white"
                       }`}
                     >
                       About Us
@@ -1102,8 +1135,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       onClick={() => setMobileOpen(false)}
                       className={`py-2.5 px-3.5 rounded-xl font-semibold transition-colors ${
                         pathname === "/find-teachers"
-                          ? "bg-[#16805B] text-white font-bold"
-                          : "text-emerald-100 hover:bg-[#16805B]/50 hover:text-white"
+                          ? "bg-[#2563EB] text-white font-bold"
+                          : "text-blue-100 hover:bg-[#2563EB]/50 hover:text-white"
                       }`}
                     >
                       Find Educators
@@ -1113,8 +1146,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       onClick={() => setMobileOpen(false)}
                       className={`py-2.5 px-3.5 rounded-xl font-semibold transition-colors ${
                         pathname === "/courses"
-                          ? "bg-[#16805B] text-white font-bold"
-                          : "text-emerald-100 hover:bg-[#16805B]/50 hover:text-white"
+                          ? "bg-[#2563EB] text-white font-bold"
+                          : "text-blue-100 hover:bg-[#2563EB]/50 hover:text-white"
                       }`}
                     >
                       Explore Courses
@@ -1124,8 +1157,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       onClick={() => setMobileOpen(false)}
                       className={`py-2.5 px-3.5 rounded-xl font-semibold transition-colors ${
                         pathname === "/exam"
-                          ? "bg-[#16805B] text-white font-bold"
-                          : "text-emerald-100 hover:bg-[#16805B]/50 hover:text-white"
+                          ? "bg-[#2563EB] text-white font-bold"
+                          : "text-blue-100 hover:bg-[#2563EB]/50 hover:text-white"
                       }`}
                     >
                       Take Test
@@ -1133,7 +1166,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                     <Link
                       href="/student#benefits"
                       onClick={() => setMobileOpen(false)}
-                      className="py-2.5 px-3.5 rounded-xl font-semibold text-emerald-100 hover:bg-[#16805B]/50 hover:text-white transition-colors"
+                      className="py-2.5 px-3.5 rounded-xl font-semibold text-blue-100 hover:bg-[#2563EB]/50 hover:text-white transition-colors"
                     >
                       Why EduConnects?
                     </Link>
@@ -1231,20 +1264,20 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                     <Link
                       href="/student/login"
                       onClick={() => setMobileOpen(false)}
-                      className="w-full py-2.5 rounded-xl bg-[#16805B] hover:bg-[#0D5C41] text-white text-sm font-bold transition-colors text-center cursor-pointer block shadow-xs"
+                      className="w-full py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1E40AF] text-white text-sm font-bold transition-colors text-center cursor-pointer block shadow-xs"
                     >
                       Login
                     </Link>
                   )}
                 </div>
               ) : isEducator ? (
-                <div className="pt-3 border-t border-[#16805B]/40 flex flex-col gap-2.5">
+                <div className="pt-3 border-t border-[#0F766E]/40 flex flex-col gap-2.5">
                   {userSession && isEducatorRole(userSession.role) ? (
                     <>
                       <Link
                         href={getEducatorSubdomainUrl("/teacher/dashboard")}
                         onClick={() => setMobileOpen(false)}
-                        className="w-full py-2.5 rounded-xl text-white text-sm font-semibold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer bg-[#16805B] hover:bg-[#12684A] border border-emerald-400/30"
+                        className="w-full py-2.5 rounded-xl text-white text-sm font-semibold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer bg-[#0F766E] hover:bg-[#115E59] border border-teal-400/30"
                       >
                         <LayoutDashboard className="h-4 w-4" />
                         <span>Educator Dashboard</span>
@@ -1257,7 +1290,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                           handleLogout(e);
                         }}
                         disabled={isLoggingOut}
-                        className="w-full py-2 rounded-xl text-emerald-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 border border-white/20 hover:bg-white/10 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="w-full py-2 rounded-xl text-teal-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 border border-white/20 hover:bg-white/10 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         {isLoggingOut ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
@@ -1279,7 +1312,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       <Link
                         href="/teacher/register"
                         onClick={() => setMobileOpen(false)}
-                        className="w-full py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer bg-[#16805B] hover:bg-[#12684A] border border-emerald-400/30"
+                        className="w-full py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer bg-[#0F766E] hover:bg-[#115E59] border border-teal-400/30"
                       >
                         <span>Become an Educator</span>
                         <ArrowRight className="h-4 w-4" />

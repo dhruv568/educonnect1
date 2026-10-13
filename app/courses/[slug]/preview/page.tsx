@@ -518,14 +518,14 @@ export default function DedicatedCoursePreviewPage() {
                     <User className="w-6 h-6" />
                   )}
                 </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-                    {course.teacher.name}
+                <div className="space-y-1 min-w-0 flex-1">
+                  <h4 className="text-sm font-bold text-slate-100 flex items-center gap-1.5 min-w-0">
+                    <span className="truncate min-w-0" title={course.teacher.name}>{course.teacher.name}</span>
                     {course.teacher.isVerified && (
-                      <span title="Verified Instructor"><CheckCircle2 className="w-4 h-4 text-blue-400 fill-blue-400/20" /></span>
+                      <span title="Verified Instructor" className="shrink-0"><CheckCircle2 className="w-4 h-4 text-blue-400 fill-blue-400/20" /></span>
                     )}
                   </h4>
-                  <p className="text-xs text-blue-400 font-medium">{course.teacher.headline}</p>
+                  <p className="text-xs text-blue-400 font-medium truncate" title={course.teacher.headline}>{course.teacher.headline}</p>
                 </div>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">{course.teacher.bio}</p>

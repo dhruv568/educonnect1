@@ -141,19 +141,64 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
     },
   ].filter((item) => item.url && item.url.trim() !== "");
 
+  const t = isEducator
+    ? {
+        bg: "bg-[#042F2E] border-t border-[#0F766E]/40",
+        glow: "bg-[#0F766E]/25",
+        borderSubtle: "border-[#0F766E]/40",
+        headingBorder: "border-[#0F766E]/50",
+        cardBg: "bg-[#083344]/50 border border-[#0F766E]/60",
+        cardSubtext: "text-teal-300/85",
+        codeText: "text-teal-200",
+        bodyText: "text-teal-100/90",
+        iconColor: "text-[#2DD4BF]",
+        socialBg: "bg-[#0F766E]/60 border border-[#2DD4BF]/40 hover:bg-[#0F766E]",
+        accentText: "text-[#2DD4BF]",
+        bottomText: "text-teal-200",
+      }
+    : isLearner
+    ? {
+        bg: "bg-[#0F172A] border-t border-[#2563EB]/40",
+        glow: "bg-[#2563EB]/25",
+        borderSubtle: "border-[#2563EB]/40",
+        headingBorder: "border-[#2563EB]/50",
+        cardBg: "bg-[#1E293B]/70 border border-[#2563EB]/50",
+        cardSubtext: "text-blue-300/85",
+        codeText: "text-blue-200",
+        bodyText: "text-blue-100/90",
+        iconColor: "text-[#60A5FA]",
+        socialBg: "bg-[#2563EB]/60 border border-[#60A5FA]/40 hover:bg-[#2563EB]",
+        accentText: "text-[#60A5FA]",
+        bottomText: "text-blue-200",
+      }
+    : {
+        bg: "bg-[#0D5C41] border-t border-[#16805B]/40",
+        glow: "bg-[#16805B]/25",
+        borderSubtle: "border-[#16805B]/40",
+        headingBorder: "border-[#16805B]/50",
+        cardBg: "bg-[#09422F] border border-[#16805B]/60",
+        cardSubtext: "text-emerald-300/85",
+        codeText: "text-emerald-200",
+        bodyText: "text-emerald-100/90",
+        iconColor: "text-[#35A979]",
+        socialBg: "bg-[#16805B]/60 border border-[#35A979]/40 hover:bg-[#16805B]",
+        accentText: "text-[#35A979]",
+        bottomText: "text-emerald-200",
+      };
+
   return (
     <footer
-      className="bg-[#0D5C41] border-t border-[#16805B]/40 text-white pt-16 pb-12 relative overflow-hidden font-sans"
+      className={`${t.bg} text-white pt-16 pb-12 relative overflow-hidden font-sans`}
     >
       {/* Background Subtle Accent Glow */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-[#16805B]/25 blur-3xl rounded-full pointer-events-none"
+        className={`absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 ${t.glow} blur-3xl rounded-full pointer-events-none`}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-12">
         {/* Main Grid: Brand + 3 Organized Columns */}
         <div
-          className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10 pb-12 border-b border-[#16805B]/40"
+          className={`grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10 pb-12 border-b ${t.borderSubtle}`}
         >
           {/* Brand & Legal Info (md:col-span-4) */}
           <div className="space-y-4 md:col-span-4">
@@ -166,26 +211,26 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
               showTagline
               tagline="Learn • Grow • Belong"
             />
-            <p className="text-xs sm:text-[13px] text-emerald-100 leading-relaxed font-normal">
+            <p className={`text-xs sm:text-[13px] ${t.bodyText} leading-relaxed font-normal`}>
               {isEducator
                 ? "EduConnects empowers educators across India to teach, earn, and mentor the next generation with verified credentials, modern virtual tools, and dedicated student reach."
                 : "EduConnects is India's premier educational platform connecting learners with verified educators for personalized 1-on-1 sessions, interactive group workshops, and accredited courses."}
             </p>
 
             {/* Official Legal Details Card */}
-            <div className="p-4 rounded-2xl bg-[#09422F] border border-[#16805B]/60 text-xs space-y-1.5 shadow-sm">
+            <div className={`p-4 rounded-2xl ${t.cardBg} text-xs space-y-1.5 shadow-sm`}>
               <div className="space-y-0.5">
-                <p className="text-[11px] font-medium tracking-wide text-emerald-300/85">
+                <p className={`text-[11px] font-medium tracking-wide ${t.cardSubtext}`}>
                   Parent Company
                 </p>
                 <p className="font-bold text-white text-xs sm:text-sm">
                   Shrivastava ProFunnels Ventures Pvt Ltd
                 </p>
               </div>
-              <p className="font-mono text-emerald-200 text-xs font-semibold">
+              <p className={`font-mono ${t.codeText} text-xs font-semibold`}>
                 CIN: U85499UP2024PTC212061
               </p>
-              <p className="text-emerald-100 leading-relaxed font-normal text-xs">
+              <p className={`${t.bodyText} leading-relaxed font-normal text-xs`}>
                 Registered Office: Bard No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403
               </p>
             </div>
@@ -193,7 +238,7 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
             {/* Social Media Links */}
             {socialLinks.length > 0 && (
               <div className="pt-2">
-                <p className="text-[11px] uppercase tracking-wider font-extrabold text-emerald-200 mb-2.5">
+                <p className={`text-[11px] uppercase tracking-wider font-extrabold ${t.codeText} mb-2.5`}>
                   Connect With Us
                 </p>
                 <div className="flex items-center gap-2.5">
@@ -206,7 +251,7 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`EduConnects on ${item.name}`}
-                        className="h-9 w-9 rounded-xl bg-[#16805B]/60 border border-[#35A979]/40 hover:bg-[#16805B] flex items-center justify-center text-white transition-all duration-200 hover:border-white shadow-xs"
+                        className={`h-9 w-9 rounded-xl ${t.socialBg} flex items-center justify-center text-white transition-all duration-200 hover:border-white shadow-xs`}
                       >
                         <Icon className="h-4 w-4" />
                       </a>
@@ -219,7 +264,7 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
 
           {/* Column 1: Explore (md:col-span-2) */}
           <div className="md:col-span-2">
-            <h4 className="text-xs font-extrabold text-white uppercase tracking-wider mb-4 border-b border-[#16805B]/50 pb-2.5">
+            <h4 className={`text-xs font-extrabold text-white uppercase tracking-wider mb-4 border-b ${t.headingBorder} pb-2.5`}>
               Explore
             </h4>
             <ul className="space-y-3.5 text-xs sm:text-[13px] font-medium">
@@ -228,27 +273,27 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
                   <li>
                     <Link
                       href="/teacher#benefits"
-                      className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                      <Sparkles className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Educator Benefits</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/teacher#how-it-works"
-                      className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <Compass className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                      <Compass className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>How It Works?</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/teacher#success-stories"
-                      className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <Award className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                      <Award className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Success Stories</span>
                     </Link>
                   </li>
@@ -258,33 +303,27 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
                   <li>
                     <Link
                       href="/find-teachers"
-                      className={`${
-                        isLearner ? "text-blue-100 hover:text-white" : "text-teal-100 hover:text-white"
-                      } hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <Users className={`h-3.5 w-3.5 ${isLearner ? "text-blue-300" : "text-[#2A8C84]"} shrink-0`} />
+                      <Users className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Find an Educator</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/courses"
-                      className={`${
-                        isLearner ? "text-blue-100 hover:text-white" : "text-teal-100 hover:text-white"
-                      } hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <BookOpen className={`h-3.5 w-3.5 ${isLearner ? "text-blue-300" : "text-[#2A8C84]"} shrink-0`} />
+                      <BookOpen className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Explore Courses</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/courses"
-                      className={`${
-                        isLearner ? "text-blue-100 hover:text-white" : "text-teal-100 hover:text-white"
-                      } hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <Compass className={`h-3.5 w-3.5 ${isLearner ? "text-blue-300" : "text-[#2A8C84]"} shrink-0`} />
+                      <Compass className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Browse Subjects</span>
                     </Link>
                   </li>
@@ -295,7 +334,7 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
 
           {/* Column 2: For Educators / Learning Resources / Portals */}
           <div className="md:col-span-3">
-            <h4 className="text-xs font-extrabold text-white uppercase tracking-wider mb-4 border-b border-[#16805B]/50 pb-2.5">
+            <h4 className={`text-xs font-extrabold text-white uppercase tracking-wider mb-4 border-b ${t.headingBorder} pb-2.5`}>
               {isEducator
                 ? "For Educators"
                 : isLearner
@@ -308,45 +347,45 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
                   <li>
                     <Link
                       href="/teacher/register"
-                      className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <GraduationCap className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                      <GraduationCap className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Become an Educator</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/teacher/login"
-                      className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <Users className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                      <Users className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Educator Login</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/teacher/register"
-                      className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <CreditCard className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                      <CreditCard className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Educator Registration</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/teacher/training"
-                      className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <Award className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                      <Award className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>15-Day Training Program</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/teacher"
-                      className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                      <Sparkles className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Educator Portal</span>
                     </Link>
                   </li>
@@ -354,26 +393,26 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
               ) : isLearner ? (
                 <>
                   <li>
-                    <Link href="/find-teachers" className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5">
-                      <Users className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <Link href="/find-teachers" className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}>
+                      <Users className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Find Verified Educators</span>
                     </Link>
                   </li>
                   <li>
-                    <Link href="/courses" className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5">
-                      <BookOpen className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <Link href="/courses" className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}>
+                      <BookOpen className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Explore Courses</span>
                     </Link>
                   </li>
                   <li>
-                    <Link href="/exam" className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5">
-                      <Award className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <Link href="/exam" className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}>
+                      <Award className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Take Test</span>
                     </Link>
                   </li>
                   <li>
-                    <Link href="/how-it-works" className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5">
-                      <Compass className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <Link href="/how-it-works" className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}>
+                      <Compass className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>How Learning Works</span>
                     </Link>
                   </li>
@@ -385,9 +424,9 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
                       href="https://learners.educonnects.co.in"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <GraduationCap className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                      <GraduationCap className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Learner Portal</span>
                     </a>
                   </li>
@@ -396,15 +435,15 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
                       href="https://educators.educonnects.co.in"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                      className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                      <Sparkles className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>Educator Portal</span>
                     </a>
                   </li>
                   <li>
-                    <Link href="/how-it-works" className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5">
-                      <Compass className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <Link href="/how-it-works" className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}>
+                      <Compass className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                       <span>How It Works</span>
                     </Link>
                   </li>
@@ -416,70 +455,70 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
           {/* Column 3: Company & Policies (md:col-span-3) */}
           <div className="md:col-span-3 space-y-6">
             <div>
-              <h4 className="text-xs font-extrabold text-white uppercase tracking-wider mb-4 border-b border-[#16805B]/50 pb-2.5">
+              <h4 className={`text-xs font-extrabold text-white uppercase tracking-wider mb-4 border-b ${t.headingBorder} pb-2.5`}>
                 Company
               </h4>
               <ul className="space-y-3 text-xs sm:text-[13px] font-medium">
                 <li>
                   <Link
                     href="/about"
-                    className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                    className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                   >
-                    <Info className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <Info className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                     <span>About Us</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/contact"
-                    className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                    className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                   >
-                    <Mail className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <Mail className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                     <span>Contact Us</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href={isEducator ? "/teacher#success-stories" : "/#success-stories"}
-                    className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                    className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                   >
-                    <Award className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <Award className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                     <span>Success Stories</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/terms-and-conditions"
-                    className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                    className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                   >
-                    <FileText className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <FileText className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                     <span>Terms & Conditions</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/privacy-policy"
-                    className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                    className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                   >
-                    <ShieldCheck className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <ShieldCheck className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                     <span>Privacy Policy</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/refund-policy"
-                    className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                    className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                   >
-                    <RefreshCw className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <RefreshCw className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                     <span>Cancellation & Refund</span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/shipping-policy"
-                    className="text-emerald-100 hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5"
+                    className={`${t.bodyText} hover:text-white hover:translate-x-0.5 transition-all flex items-center gap-2.5`}
                   >
-                    <Truck className="h-3.5 w-3.5 text-[#35A979] shrink-0" />
+                    <Truck className={`h-3.5 w-3.5 ${t.iconColor} shrink-0`} />
                     <span>Shipping Policy</span>
                   </Link>
                 </li>
@@ -487,18 +526,18 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
             </div>
 
             {/* Cashfree Payment Gateway Card */}
-            <div className="p-4 bg-[#09422F] border border-[#16805B]/60 rounded-2xl text-xs space-y-2.5 shadow-sm">
+            <div className={`p-4 ${t.cardBg} rounded-2xl text-xs space-y-2.5 shadow-sm`}>
               <div className="flex items-center gap-2 font-bold text-white text-xs">
-                <CreditCard className="h-4 w-4 text-[#35A979] shrink-0" />
+                <CreditCard className={`h-4 w-4 ${t.iconColor} shrink-0`} />
                 <span>Cashfree Payment Gateway</span>
               </div>
-              <p className="text-[12px] text-emerald-100/90 leading-relaxed font-normal">
+              <p className={`text-[12px] ${t.bodyText} leading-relaxed font-normal`}>
                 Secure online payments.
               </p>
 
               {/* Payment Methods */}
               <div className="pt-2.5 border-t border-white/10 space-y-1.5">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-emerald-200/70">
+                <span className={`block text-[10px] font-bold uppercase tracking-wider ${t.cardSubtext}`}>
                   Payment Methods
                 </span>
                 <div
@@ -619,7 +658,7 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
         </div>
 
         {/* Bottom Copyright & Powered by */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-emerald-200 pt-4">
+        <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 text-xs ${t.bottomText} pt-4`}>
           <p className="text-center sm:text-left font-medium">
             &copy; 2026 EduConnects. All rights reserved.
           </p>
@@ -629,7 +668,7 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
               href="https://automation.myprofunnels.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-bold text-[#35A979] hover:text-white hover:underline transition-colors inline-flex items-center gap-1"
+              className={`font-bold ${t.accentText} hover:text-white hover:underline transition-colors inline-flex items-center gap-1`}
             >
               MyProFunnels
               <span className="text-red-500" role="img" aria-label="love">

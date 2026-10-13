@@ -71,7 +71,7 @@ export default function TeacherVerificationStatusPage() {
     return (
       <DashboardLayout role="TEACHER">
         <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-          <Loader2 className="h-10 w-10 text-[#0B4F4B] animate-spin" />
+          <Loader2 className="h-10 w-10 text-[#0F766E] animate-spin" />
           <p className="text-sm font-semibold text-slate-600">Loading Verification Status...</p>
         </div>
       </DashboardLayout>
@@ -101,7 +101,7 @@ export default function TeacherVerificationStatusPage() {
           </div>
           <button
             onClick={fetchStatus}
-            className="p-3 rounded-2xl bg-white border border-slate-200 text-slate-600 hover:text-[#0B4F4B] hover:border-[#0B4F4B] transition-colors shadow-2xs"
+            className="p-3 rounded-2xl bg-white border border-slate-200 text-slate-600 hover:text-[#0F766E] hover:border-[#0F766E] transition-colors shadow-2xs cursor-pointer"
             title="Refresh Status"
           >
             <RefreshCw className="h-5 w-5" />
@@ -112,38 +112,38 @@ export default function TeacherVerificationStatusPage() {
         {/* 1. VERIFIED STATE */}
         {/* ========================================================================= */}
         {verificationStatus === "VERIFIED" && (
-          <div className="bg-white rounded-3xl border border-emerald-200 shadow-sm p-6 sm:p-8 space-y-6 overflow-hidden">
-            <div className="bg-emerald-50/80 border border-emerald-100 p-6 rounded-2xl flex items-start gap-4 sm:gap-5">
-              <div className="p-3.5 bg-emerald-600 text-white rounded-2xl shadow-md shadow-emerald-600/20 shrink-0">
+          <div className="bg-white rounded-3xl border border-teal-200 shadow-sm p-6 sm:p-8 space-y-6 overflow-hidden">
+            <div className="bg-teal-50/80 border border-teal-100 p-6 rounded-2xl flex items-start gap-4 sm:gap-5">
+              <div className="p-3.5 bg-[#0F766E] text-white rounded-2xl shadow-md shadow-teal-700/20 shrink-0">
                 <ShieldCheck className="h-8 w-8" />
               </div>
               <div className="space-y-2 flex-1">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-xl sm:text-2xl font-black text-emerald-950">
+                  <h2 className="text-xl sm:text-2xl font-black text-teal-950">
                     Congratulations! You are a Verified Educator
                   </h2>
                   <StatusBadge status="VERIFIED" />
                 </div>
-                <p className="text-xs sm:text-sm text-emerald-800 leading-relaxed font-medium">
+                <p className="text-xs sm:text-sm text-teal-800 leading-relaxed font-medium">
                   Your identity documents, educational qualifications, and teacher credentials have been thoroughly reviewed and approved by EduConnects Platform Governance.
                 </p>
                 {verifiedAt && (
-                  <p className="text-xs font-bold text-emerald-700">
+                  <p className="text-xs font-bold text-teal-700">
                     Verified Date: {new Date(verifiedAt).toLocaleDateString()}
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-emerald-950 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+            <div className="p-5 rounded-2xl bg-[#042F2E] text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-                <span className="text-xs font-bold text-emerald-100">
+                <CheckCircle2 className="h-5 w-5 text-[#2DD4BF] shrink-0" />
+                <span className="text-xs font-bold text-teal-100">
                   Your profile is published on the Public Teacher Platform catalog!
                 </span>
               </div>
               <Link href="/teacher/dashboard">
-                <button className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-extrabold transition-colors shadow-sm whitespace-nowrap">
+                <button className="px-6 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-extrabold transition-colors shadow-sm whitespace-nowrap cursor-pointer">
                   Go to Teacher Dashboard
                 </button>
               </Link>
@@ -255,8 +255,8 @@ export default function TeacherVerificationStatusPage() {
         {/* 4. SUSPENDED STATE */}
         {/* ========================================================================= */}
         {verificationStatus === "SUSPENDED" && (
-          <div className="bg-[#073F3C] text-white rounded-3xl border border-[#1B6863] shadow-xl p-6 sm:p-8 space-y-6 overflow-hidden">
-            <div className="bg-[#052C2A] border border-[#1B6863] p-6 rounded-2xl flex items-start gap-4 sm:gap-5">
+          <div className="bg-[#042F2E] text-white rounded-3xl border border-teal-800 shadow-xl p-6 sm:p-8 space-y-6 overflow-hidden">
+            <div className="bg-[#021E1D] border border-teal-800 p-6 rounded-2xl flex items-start gap-4 sm:gap-5">
               <div className="p-3.5 bg-rose-600 text-white rounded-2xl shadow-md shrink-0">
                 <AlertOctagon className="h-8 w-8" />
               </div>
@@ -274,7 +274,7 @@ export default function TeacherVerificationStatusPage() {
             </div>
 
             {suspensionReason && (
-              <div className="p-5 rounded-2xl bg-[#0B4F4B]/80 border border-rose-500/40 space-y-2">
+              <div className="p-5 rounded-2xl bg-[#0F766E]/80 border border-rose-500/40 space-y-2">
                 <span className="text-xs font-black text-rose-400 uppercase tracking-wider block">
                   Administrative Reason:
                 </span>
@@ -282,7 +282,7 @@ export default function TeacherVerificationStatusPage() {
               </div>
             )}
 
-            <div className="p-5 rounded-2xl bg-[#052C2A] border border-[#1B6863] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="p-5 rounded-2xl bg-[#021E1D] border border-teal-800 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-xs text-slate-300">
                 <strong className="text-white">Account Data Preserved:</strong> Your course data, qualifications, and history remain intact.
               </div>
@@ -302,7 +302,7 @@ export default function TeacherVerificationStatusPage() {
         <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-6 sm:p-8 space-y-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-[#E6F0EF] text-[#0B4F4B]">
+              <div className="p-2.5 rounded-xl bg-[#F0FDFA] text-[#0F766E]">
                 <History className="h-5 w-5" />
               </div>
               <div>
@@ -324,7 +324,7 @@ export default function TeacherVerificationStatusPage() {
               {history.map((item, idx) => (
                 <div key={item.id || idx} className="relative group">
                   {/* Connected Bullet */}
-                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-2 border-white bg-[#0B4F4B] shadow-xs group-hover:scale-125 transition-transform" />
+                  <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-2 border-white bg-[#0F766E] shadow-xs group-hover:scale-125 transition-transform" />
 
                   <div className="space-y-1.5">
                     <div className="flex flex-wrap items-center justify-between gap-2">

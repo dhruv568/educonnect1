@@ -217,7 +217,7 @@ export default function TeacherLandingPage() {
   ];
 
   return (
-    <div data-theme="educator" className="min-h-screen flex flex-col bg-[#F0FAF5]/30 relative overflow-hidden font-sans text-slate-900">
+    <div data-theme="educator" className="min-h-screen flex flex-col bg-[#F0FDFA]/30 relative overflow-hidden font-sans text-slate-900">
       {/* 1. Educator-Oriented Role Navbar */}
       <FloatingNavbar variant="teacher" />
 
@@ -228,22 +228,22 @@ export default function TeacherLandingPage() {
         {/* ========================================================================= */}
         {/* 1. HERO SECTION WITH BACKGROUND SLIDESHOW */}
         {/* ========================================================================= */}
-        <section className="relative pt-6 sm:pt-10 lg:pt-12 pb-16 lg:pb-24 overflow-hidden bg-gradient-to-b from-[#F0FAF5] via-white to-[#F0FAF5]/50">
+        <section className="relative pt-6 sm:pt-10 lg:pt-12 pb-16 lg:pb-24 overflow-hidden bg-gradient-to-b from-[#F0FDFA] via-white to-[#F0FDFA]/50">
           {/* 5-Slide Educator Background Slideshow */}
           <EducatorHeroSlideshow />
 
           {/* Subtle Accent Glow Elements */}
           <div className="absolute top-20 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] pointer-events-none -z-10">
-            <div className="absolute top-10 left-10 w-96 h-96 bg-[#16805B]/10 rounded-full blur-3xl" />
-            <div className="absolute top-20 right-10 w-96 h-96 bg-[#35A979]/10 rounded-full blur-3xl" />
+            <div className="absolute top-10 left-10 w-96 h-96 bg-[#0F766E]/10 rounded-full blur-3xl" />
+            <div className="absolute top-20 right-10 w-96 h-96 bg-[#2DD4BF]/10 rounded-full blur-3xl" />
           </div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
               {/* Left Column: Copy & CTAs */}
               <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F7F0] border border-[#A7F3D0] text-[#0D5C41] text-xs font-extrabold uppercase tracking-wider shadow-2xs">
-                  <Sparkles className="h-3.5 w-3.5 text-[#16805B]" />
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#CCFBF1] border border-[#99F6E4] text-[#115E59] text-xs font-extrabold uppercase tracking-wider shadow-2xs">
+                  <Sparkles className="h-3.5 w-3.5 text-[#0F766E]" />
                   <span>The Platform Built for Independent Educators</span>
                 </div>
 
@@ -252,7 +252,7 @@ export default function TeacherLandingPage() {
                   <span className="block text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-700 mt-2 sm:mt-2.5">
                     Turn Knowledge Into
                   </span>
-                  <span className="block text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-[#16805B] via-[#0D5C41] to-[#16805B] bg-clip-text text-transparent mt-0.5 sm:mt-1">
+                  <span className="block text-3xl sm:text-4xl lg:text-5xl font-black bg-gradient-to-r from-[#0F766E] via-[#115E59] to-[#0F766E] bg-clip-text text-transparent mt-0.5 sm:mt-1">
                     Impact
                   </span>
                 </h1>
@@ -265,21 +265,21 @@ export default function TeacherLandingPage() {
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2">
                   {userSession && isEducatorRole(userSession.role) ? (
                     <Link href="/teacher/dashboard" className="w-full sm:w-auto">
-                      <button className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] shadow-xl shadow-emerald-900/20 text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
-                        <LayoutDashboard className="h-4 w-4 text-emerald-100" />
+                      <button className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-white bg-[#0F766E] hover:bg-[#115E59] shadow-xl shadow-teal-950/20 text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                        <LayoutDashboard className="h-4 w-4 text-teal-100" />
                         <span>Go to Educator Dashboard</span>
                       </button>
                     </Link>
                   ) : (
                     <>
                       <Link href="/teacher/login" className="w-full sm:w-auto">
-                        <button className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-white bg-[#16805B] hover:bg-[#0D5C41] shadow-xl shadow-emerald-900/20 text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                        <button className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-white bg-[#0F766E] hover:bg-[#115E59] shadow-xl shadow-teal-950/20 text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                           <span>Educator Login</span>
                           <ArrowRight className="h-4 w-4" />
                         </button>
                       </Link>
                       <Link href="/teacher/register" className="w-full sm:w-auto">
-                        <button className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-[#0D5C41] bg-[#F0FAF5] hover:bg-[#E2F7ED] border border-[#A7F3D0] shadow-sm text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                        <button className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-[#115E59] bg-[#F0FDFA] hover:bg-[#E6FFFA] border border-[#99F6E4] shadow-sm text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
                           <span>Become an Educator</span>
                           <ArrowRight className="h-4 w-4" />
                         </button>
@@ -288,8 +288,8 @@ export default function TeacherLandingPage() {
                   )}
 
                   <a href="#how-it-works" className="w-full sm:w-auto">
-                    <button className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-slate-800 bg-white hover:bg-[#F0FAF5] border border-slate-300 shadow-sm text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
-                      <FileCheck className="h-4 w-4 text-[#16805B]" />
+                    <button className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-slate-800 bg-white hover:bg-[#F0FDFA] border border-slate-300 shadow-sm text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer">
+                      <FileCheck className="h-4 w-4 text-[#0F766E]" />
                       <span>How It Works?</span>
                     </button>
                   </a>
@@ -298,7 +298,7 @@ export default function TeacherLandingPage() {
                 {/* Educator Trust Stats */}
                 <div className="pt-6 border-t border-slate-200/90 grid grid-cols-3 gap-4 text-left max-w-lg mx-auto lg:mx-0">
                   <div>
-                    <div className="text-2xl lg:text-3xl font-black text-[#16805B]">85%+</div>
+                    <div className="text-2xl lg:text-3xl font-black text-[#0F766E]">85%+</div>
                     <div className="text-xs text-slate-600 font-bold">Revenue Share</div>
                   </div>
                   <div>
@@ -306,7 +306,7 @@ export default function TeacherLandingPage() {
                     <div className="text-xs text-slate-600 font-bold">Cashfree Payouts</div>
                   </div>
                   <div>
-                    <div className="text-2xl lg:text-3xl font-black text-[#0D5C41]">100%</div>
+                    <div className="text-2xl lg:text-3xl font-black text-[#115E59]">100%</div>
                     <div className="text-xs text-slate-600 font-bold">Content Ownership</div>
                   </div>
                 </div>
@@ -316,7 +316,7 @@ export default function TeacherLandingPage() {
               <div className="lg:col-span-5 relative">
                 <div className="relative mx-auto max-w-md lg:max-w-none">
                   <GlassCard
-                    glowColor="rgba(22, 128, 91, 0.4)"
+                    glowColor="rgba(15, 118, 110, 0.4)"
                     className="p-6 border-2 border-white/30 shadow-2xl space-y-5 rounded-3xl bg-white/95 backdrop-blur-xl"
                   >
                     {/* Header with Verification Status */}
@@ -325,34 +325,34 @@ export default function TeacherLandingPage() {
                         <img
                           src="/images/educators/female-1.png"
                           alt="Dr. Kavita Deshmukh"
-                          className="w-10 h-10 rounded-2xl object-cover ring-2 ring-[#16805B]/40 shadow-sm"
+                          className="w-10 h-10 rounded-2xl object-cover ring-2 ring-[#0F766E]/40 shadow-sm"
                         />
                         <div>
                           <div className="text-xs font-black text-slate-900">Dr. Kavita Deshmukh</div>
                           <div className="text-[10px] text-slate-500 font-semibold">Senior Mathematics Educator</div>
                         </div>
                       </div>
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-[#F0FAF5] text-[#0D5C41] border border-[#A7F3D0] flex items-center gap-1">
-                        <ShieldCheck className="h-3 w-3 text-[#16805B]" />
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-[#F0FDFA] text-[#115E59] border border-[#99F6E4] flex items-center gap-1">
+                        <ShieldCheck className="h-3 w-3 text-[#0F766E]" />
                         Verified
                       </span>
                     </div>
 
                     {/* Educator Metrics Row Preview */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3.5 rounded-2xl bg-[#F0FAF5] border border-[#A7F3D0] space-y-1">
+                      <div className="p-3.5 rounded-2xl bg-[#F0FDFA] border border-[#99F6E4] space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-extrabold uppercase text-[#0D5C41]">This Month</span>
-                          <IndianRupee className="h-3.5 w-3.5 text-[#16805B]" />
+                          <span className="text-[10px] font-extrabold uppercase text-[#115E59]">This Month</span>
+                          <IndianRupee className="h-3.5 w-3.5 text-[#0F766E]" />
                         </div>
                         <div className="text-xl font-black text-slate-900">₹72,400</div>
                         <div className="text-[10px] text-slate-500 font-medium">+18% vs last month</div>
                       </div>
 
-                      <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-100 space-y-1">
+                      <div className="p-3.5 rounded-2xl bg-teal-50/80 border border-teal-100 space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-extrabold uppercase text-[#0D5C41]">Enrolled Learners</span>
-                          <Users className="h-3.5 w-3.5 text-[#16805B]" />
+                          <span className="text-[10px] font-extrabold uppercase text-[#115E59]">Enrolled Learners</span>
+                          <Users className="h-3.5 w-3.5 text-[#0F766E]" />
                         </div>
                         <div className="text-xl font-black text-slate-900">148</div>
                         <div className="text-[10px] text-slate-500 font-medium">Active learners</div>
@@ -363,10 +363,10 @@ export default function TeacherLandingPage() {
                     <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
                       <div className="flex items-center justify-between text-xs font-bold text-slate-700">
                         <span className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-[#16805B]" />
+                          <Clock className="w-3.5 h-3.5 text-[#0F766E]" />
                           Next Live Session
                         </span>
-                        <span className="text-[10px] bg-[#F0FAF5] text-[#0D5C41] border border-[#A7F3D0] font-bold px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] bg-[#F0FDFA] text-[#115E59] border border-[#99F6E4] font-bold px-2 py-0.5 rounded-md">
                           Starts in 25m
                         </span>
                       </div>
@@ -375,14 +375,14 @@ export default function TeacherLandingPage() {
                       </div>
                       <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1">
                         <span>18 / 20 Learners Confirmed</span>
-                        <span className="font-bold text-[#16805B]">Enter Classroom →</span>
+                        <span className="font-bold text-[#0F766E]">Enter Classroom →</span>
                       </div>
                     </div>
                   </GlassCard>
 
                   {/* Floating Trust Badge */}
                   <div className="absolute -bottom-5 -right-5 bg-white p-3.5 rounded-2xl shadow-xl border border-slate-200/90 flex items-center gap-3 hidden sm:flex">
-                    <div className="p-2 bg-[#F0FAF5] text-[#16805B] rounded-xl border border-[#A7F3D0]">
+                    <div className="p-2 bg-[#F0FDFA] text-[#0F766E] rounded-xl border border-[#99F6E4]">
                       <Zap className="h-5 w-5" />
                     </div>
                     <div className="text-left">
@@ -414,8 +414,8 @@ export default function TeacherLandingPage() {
             {/* Feature 1: Profile & Platform Listing */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-6 space-y-5">
-                <div className="p-3 bg-[#F0FAF5] text-[#0D5C41] border border-[#A7F3D0] rounded-2xl w-fit">
-                  <GraduationCap className="h-6 w-6 text-[#16805B]" />
+                <div className="p-3 bg-[#F0FDFA] text-[#115E59] border border-[#99F6E4] rounded-2xl w-fit">
+                  <GraduationCap className="h-6 w-6 text-[#0F766E]" />
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
                   Build Your Verified Educator Brand
@@ -425,15 +425,15 @@ export default function TeacherLandingPage() {
                 </p>
                 <div className="space-y-2.5 text-xs sm:text-sm text-slate-700 font-semibold">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-[#16805B] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-[#0F766E] shrink-0" />
                     <span>Display verified degrees, certificates, and years of experience</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-[#16805B] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-[#0F766E] shrink-0" />
                     <span>Set custom hourly rates in ₹ INR for live 1-on-1 tutoring</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-[#16805B] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-[#0F766E] shrink-0" />
                     <span>Collect ratings and reviews from verified attending learners</span>
                   </div>
                 </div>
@@ -443,7 +443,7 @@ export default function TeacherLandingPage() {
                 <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200/90 shadow-lg space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                     <span className="text-xs font-bold uppercase text-slate-500">Platform Search Preview</span>
-                    <span className="text-xs font-bold text-[#0D5C41]">⭐ 4.98 (84 Reviews)</span>
+                    <span className="text-xs font-bold text-[#115E59]">⭐ 4.98 (84 Reviews)</span>
                   </div>
                   <div className="space-y-2">
                     <div className="text-sm font-extrabold text-slate-900">
@@ -451,7 +451,7 @@ export default function TeacherLandingPage() {
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {["Mathematics", "Physics", "Calculus", "Competitive Exam Prep"].map((s) => (
-                        <span key={s} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#F0FAF5] text-[#0D5C41] border border-[#A7F3D0]">
+                        <span key={s} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#F0FDFA] text-[#115E59] border border-[#99F6E4]">
                           {s}
                         </span>
                       ))}
@@ -470,7 +470,7 @@ export default function TeacherLandingPage() {
                 <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200/90 shadow-lg space-y-3">
                   <div className="flex items-center justify-between border-b border-slate-200 pb-2 text-xs font-bold text-slate-700">
                     <span>LMS Course Builder</span>
-                    <span className="text-[#16805B]">Status: Published</span>
+                    <span className="text-[#0F766E]">Status: Published</span>
                   </div>
                   <div className="space-y-2 text-xs">
                     <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between font-bold">
@@ -490,8 +490,8 @@ export default function TeacherLandingPage() {
               </div>
 
               <div className="lg:col-span-6 order-1 lg:order-2 space-y-5">
-                <div className="p-3 bg-[#F0FAF5] text-[#0D5C41] border border-[#A7F3D0] rounded-2xl w-fit">
-                  <BookOpen className="h-6 w-6 text-[#16805B]" />
+                <div className="p-3 bg-[#F0FDFA] text-[#115E59] border border-[#99F6E4] rounded-2xl w-fit">
+                  <BookOpen className="h-6 w-6 text-[#0F766E]" />
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
                   Publish On-Demand Video Courses
@@ -501,15 +501,15 @@ export default function TeacherLandingPage() {
                 </p>
                 <div className="space-y-2.5 text-xs sm:text-sm text-slate-700 font-semibold">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-[#16805B] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-[#0F766E] shrink-0" />
                     <span>Fast video uploads with automated streaming encoding</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-[#16805B] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-[#0F766E] shrink-0" />
                     <span>Set one-time course purchase pricing in ₹ INR</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-[#16805B] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-[#0F766E] shrink-0" />
                     <span>Automatic learner progress tracking and completion certificates</span>
                   </div>
                 </div>
@@ -519,8 +519,8 @@ export default function TeacherLandingPage() {
             {/* Feature 3: Live Classes & Availability Scheduler */}
             <div id="live-classes" className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-6 space-y-5">
-                <div className="p-3 bg-[#F0FAF5] text-[#0D5C41] border border-[#A7F3D0] rounded-2xl w-fit">
-                  <Video className="h-6 w-6 text-[#16805B]" />
+                <div className="p-3 bg-[#F0FDFA] text-[#115E59] border border-[#99F6E4] rounded-2xl w-fit">
+                  <Video className="h-6 w-6 text-[#0F766E]" />
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
                   Schedule Live Classes with Built-In Whiteboard
@@ -530,15 +530,15 @@ export default function TeacherLandingPage() {
                 </p>
                 <div className="space-y-2.5 text-xs sm:text-sm text-slate-700 font-semibold">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-[#16805B] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-[#0F766E] shrink-0" />
                     <span>Interactive whiteboard with pen, shapes, and drawing permission control</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-[#16805B] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-[#0F766E] shrink-0" />
                     <span>In-session group chat and instant homework PDF sharing</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-[#16805B] shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-[#0F766E] shrink-0" />
                     <span>Automated learner attendance tracking and session logs</span>
                   </div>
                 </div>
@@ -548,20 +548,20 @@ export default function TeacherLandingPage() {
                 <div className="p-6 rounded-3xl bg-slate-900 text-white shadow-xl space-y-4">
                   <div className="flex items-center justify-between text-xs border-b border-slate-800 pb-3 font-semibold">
                     <span>Weekly Availability Schedule</span>
-                    <span className="text-[#35A979]">● 6 Slots Available This Week</span>
+                    <span className="text-[#2DD4BF]">● 6 Slots Available This Week</span>
                   </div>
                   <div className="space-y-2 text-xs">
                     <div className="p-3 bg-slate-800/80 rounded-xl flex items-center justify-between">
                       <span>Mon, Wed, Fri (4:00 PM - 7:00 PM)</span>
-                      <span className="text-[#35A979] font-mono">1-on-1 Demos</span>
+                      <span className="text-[#2DD4BF] font-mono">1-on-1 Demos</span>
                     </div>
                     <div className="p-3 bg-slate-800/80 rounded-xl flex items-center justify-between">
                       <span>Saturday (10:00 AM - 1:00 PM)</span>
-                      <span className="text-[#35A979] font-mono">Group Live Class (Max 20)</span>
+                      <span className="text-[#2DD4BF] font-mono">Group Live Class (Max 20)</span>
                     </div>
                     <div className="p-3 bg-slate-800/80 rounded-xl flex items-center justify-between">
                       <span>Sunday (11:00 AM - 1:00 PM)</span>
-                      <span className="text-[#35A979] font-mono">Doubt Resolution Clinic</span>
+                      <span className="text-[#2DD4BF] font-mono">Doubt Resolution Clinic</span>
                     </div>
                   </div>
                 </div>
@@ -603,7 +603,7 @@ export default function TeacherLandingPage() {
                           max={10000}
                           value={hourlyRate}
                           onChange={(e) => setHourlyRate(Math.max(1, Number(e.target.value) || 0))}
-                          className="w-24 px-2 py-0.5 text-sm font-black text-[#0D5C41] border border-slate-200 rounded-lg text-right outline-none focus:ring-1 focus:ring-[#16805B]"
+                          className="w-24 px-2 py-0.5 text-sm font-black text-[#115E59] border border-slate-200 rounded-lg text-right outline-none focus:ring-1 focus:ring-[#0F766E]"
                         />
                         <span className="text-xs font-bold text-slate-500">/hr</span>
                       </div>
@@ -615,7 +615,7 @@ export default function TeacherLandingPage() {
                       step={1}
                       value={hourlyRate}
                       onChange={(e) => setHourlyRate(Number(e.target.value))}
-                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#16805B]"
+                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#0F766E]"
                     />
                     <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
                       <span>₹100/hr</span>
@@ -630,7 +630,7 @@ export default function TeacherLandingPage() {
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                         Live Teaching Hours / Week
                       </label>
-                      <span className="text-base font-black text-[#0D5C41]">{hoursPerWeek} hrs/wk</span>
+                      <span className="text-base font-black text-[#115E59]">{hoursPerWeek} hrs/wk</span>
                     </div>
                     <input
                       type="range"
@@ -639,7 +639,7 @@ export default function TeacherLandingPage() {
                       step={1}
                       value={hoursPerWeek}
                       onChange={(e) => setHoursPerWeek(Number(e.target.value))}
-                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#16805B]"
+                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#0F766E]"
                     />
                     <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
                       <span>2 hrs</span>
@@ -654,7 +654,7 @@ export default function TeacherLandingPage() {
                       <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                         Course Enrollments / Month
                       </label>
-                      <span className="text-base font-black text-[#0D5C41]">{coursesSoldPerMonth} sales</span>
+                      <span className="text-base font-black text-[#115E59]">{coursesSoldPerMonth} sales</span>
                     </div>
                     <input
                       type="range"
@@ -663,7 +663,7 @@ export default function TeacherLandingPage() {
                       step={1}
                       value={coursesSoldPerMonth}
                       onChange={(e) => setCoursesSoldPerMonth(Number(e.target.value))}
-                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#16805B]"
+                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#0F766E]"
                     />
                     <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
                       <span>0</span>
@@ -674,25 +674,25 @@ export default function TeacherLandingPage() {
                 </div>
 
                 {/* Right: Projected Breakdown Card */}
-                <div className="p-7 rounded-3xl bg-gradient-to-br from-[#0D5C41] via-[#16805B] to-[#083827] text-white flex flex-col justify-between space-y-6 shadow-xl">
+                <div className="p-7 rounded-3xl bg-gradient-to-br from-[#115E59] via-[#0F766E] to-[#042F2E] text-white flex flex-col justify-between space-y-6 shadow-xl">
                   <div className="space-y-2">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#A7F3D0]">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#99F6E4]">
                       Estimated Gross Monthly Revenue
                     </span>
                     <div className="text-4xl sm:text-5xl font-black text-white">
                       {formatCurrency(totalEstimatedMonthly)}
                     </div>
-                    <p className="text-xs text-[#A7F3D0] leading-relaxed pt-1">
+                    <p className="text-xs text-[#99F6E4] leading-relaxed pt-1">
                       Based on {hoursPerWeek} hrs/week live classes + {coursesSoldPerMonth} monthly course enrollments.
                     </p>
                   </div>
 
-                  <div className="space-y-2 pt-4 border-t border-[#35A979]/30 text-xs">
-                    <div className="flex items-center justify-between text-[#A7F3D0]">
+                  <div className="space-y-2 pt-4 border-t border-[#2DD4BF]/30 text-xs">
+                    <div className="flex items-center justify-between text-[#99F6E4]">
                       <span>Live Tutoring Income:</span>
                       <span className="font-bold text-white">{formatCurrency(Math.round(liveIncome))}</span>
                     </div>
-                    <div className="flex items-center justify-between text-[#A7F3D0]">
+                    <div className="flex items-center justify-between text-[#99F6E4]">
                       <span>Recorded Course Income:</span>
                       <span className="font-bold text-white">{formatCurrency(Math.round(courseIncome))}</span>
                     </div>
@@ -734,13 +734,13 @@ export default function TeacherLandingPage() {
                 return (
                   <div
                     key={idx}
-                    className="p-6 rounded-3xl bg-slate-50 border border-slate-200 hover:border-[#35A979] hover:shadow-lg transition-all space-y-4 relative flex flex-col justify-between"
+                    className="p-6 rounded-3xl bg-slate-50 border border-slate-200 hover:border-[#2DD4BF] hover:shadow-lg transition-all space-y-4 relative flex flex-col justify-between"
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-2xl font-black text-[#16805B]/40">{s.step}</span>
-                        <div className="p-2.5 rounded-xl bg-[#F0FAF5] text-[#0D5C41] border border-[#A7F3D0]">
-                          <IconComp className="h-5 w-5 text-[#16805B]" />
+                        <span className="text-2xl font-black text-[#0F766E]/40">{s.step}</span>
+                        <div className="p-2.5 rounded-xl bg-[#F0FDFA] text-[#115E59] border border-[#99F6E4]">
+                          <IconComp className="h-5 w-5 text-[#0F766E]" />
                         </div>
                       </div>
                       <h3 className="text-base font-black text-slate-900">{s.title}</h3>
@@ -755,7 +755,7 @@ export default function TeacherLandingPage() {
             <div className="pt-2 text-center">
               <a
                 href="#benefits"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#F0FAF5] hover:bg-[#E3F8ED] text-[#0D5C41] border border-[#A7F3D0] text-xs sm:text-sm font-bold transition-all shadow-2xs hover:shadow-xs group"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#F0FDFA] hover:bg-[#E6FFFA] text-[#115E59] border border-[#99F6E4] text-xs sm:text-sm font-bold transition-all shadow-2xs hover:shadow-xs group"
               >
                 <span>Explore All Educator Benefits</span>
                 <span className="text-base group-hover:translate-y-0.5 transition-transform">↓</span>
@@ -785,12 +785,12 @@ export default function TeacherLandingPage() {
                 return (
                   <GlassCard
                     key={idx}
-                    className="p-7 rounded-3xl border border-slate-200 bg-white hover:border-[#35A979] hover:shadow-xl transition-all flex flex-col justify-between space-y-4"
+                    className="p-7 rounded-3xl border border-slate-200 bg-white hover:border-[#2DD4BF] hover:shadow-xl transition-all flex flex-col justify-between space-y-4"
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <div className="p-3 bg-[#F0FAF5] text-[#0D5C41] border border-[#A7F3D0] rounded-2xl w-fit">
-                          <IconComp className="h-6 w-6 text-[#16805B]" />
+                        <div className="p-3 bg-[#F0FDFA] text-[#115E59] border border-[#99F6E4] rounded-2xl w-fit">
+                          <IconComp className="h-6 w-6 text-[#0F766E]" />
                         </div>
                         <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
                           {b.badge}
@@ -839,7 +839,7 @@ export default function TeacherLandingPage() {
                       &ldquo;{t.quote}&rdquo;
                     </p>
 
-                    <div className="px-3 py-1.5 rounded-xl bg-[#F0FAF5] border border-[#A7F3D0] text-[#0D5C41] text-xs font-bold w-fit">
+                    <div className="px-3 py-1.5 rounded-xl bg-[#F0FDFA] border border-[#99F6E4] text-[#115E59] text-xs font-bold w-fit">
                       🎯 {t.achievement}
                     </div>
                   </div>
@@ -848,12 +848,12 @@ export default function TeacherLandingPage() {
                     <img
                       src={t.avatar}
                       alt={t.name}
-                      className="w-11 h-11 rounded-full object-cover ring-2 ring-[#16805B]/30"
+                      className="w-11 h-11 rounded-full object-cover ring-2 ring-[#0F766E]/30"
                     />
                     <div>
                       <div className="text-xs font-extrabold text-slate-900">{t.name}</div>
                       <div className="text-[10px] text-slate-500">{t.role} • {t.location}</div>
-                      <div className="text-[10px] text-[#0D5C41] font-semibold">{t.subjects}</div>
+                      <div className="text-[10px] text-[#115E59] font-semibold">{t.subjects}</div>
                     </div>
                   </div>
                 </GlassCard>
@@ -887,12 +887,12 @@ export default function TeacherLandingPage() {
                   >
                     <button
                       onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                      className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 hover:text-[#16805B] transition-colors"
+                      className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 hover:text-[#0F766E] transition-colors"
                     >
                       <span>{faq.question}</span>
                       <ChevronDown
                         className={`w-5 h-5 text-slate-500 shrink-0 transition-transform duration-300 ${
-                          isOpen ? "rotate-180 text-[#16805B]" : ""
+                          isOpen ? "rotate-180 text-[#0F766E]" : ""
                         }`}
                       />
                     </button>
@@ -911,9 +911,9 @@ export default function TeacherLandingPage() {
         {/* ========================================================================= */}
         {/* 8. FINAL CALL TO ACTION */}
         {/* ========================================================================= */}
-        <section className="py-20 bg-gradient-to-br from-[#0D5C41] via-[#16805B] to-[#083827] text-white relative overflow-hidden">
+        <section className="py-20 bg-gradient-to-br from-[#115E59] via-[#0F766E] to-[#042F2E] text-white relative overflow-hidden">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-6 relative z-10">
-            <span className="px-3.5 py-1.5 rounded-full bg-[#0D5C41]/50 backdrop-blur-md text-[#A7F3D0] text-xs font-bold uppercase tracking-wider border border-[#35A979]/40">
+            <span className="px-3.5 py-1.5 rounded-full bg-[#115E59]/50 backdrop-blur-md text-[#99F6E4] text-xs font-bold uppercase tracking-wider border border-[#2DD4BF]/40">
               Join EduConnects Educator Network
             </span>
 
@@ -921,7 +921,7 @@ export default function TeacherLandingPage() {
               Ready to Inspire as an Educator?
             </h2>
 
-            <p className="text-sm sm:text-base text-[#F0FAF5] max-w-xl mx-auto font-medium">
+            <p className="text-sm sm:text-base text-[#F0FDFA] max-w-xl mx-auto font-medium">
               Create your profile, submit your verification documents, and start earning by teaching learners across India and beyond.
             </p>
 
@@ -958,7 +958,7 @@ export default function TeacherLandingPage() {
               </a>
             </div>
 
-            <div className="pt-6 flex items-center justify-center gap-6 text-xs text-[#A7F3D0]">
+            <div className="pt-6 flex items-center justify-center gap-6 text-xs text-[#99F6E4]">
               <span>✓ Nominal Registration Fee</span>
               <span>•</span>
               <span>✓ Verified Educator Badge</span>

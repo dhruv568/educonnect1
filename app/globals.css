@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Centralized EduConnects Design System Tokens */
+    /* Centralized EduConnects Design System Tokens — Main Website (Emerald Green) */
     --edu-primary: #16805B;
     --edu-primary-dark: #0D5C41;
     --edu-primary-light: #35A979;
@@ -25,7 +25,8 @@
     --edu-error: #EF4444;
     --edu-info: #3B82F6;
 
-    /* Legacy Theme Variables Mapped to EduConnects Brand Tokens */
+    /* Distinct Portal Variables */
+    /* 1. Main Website — Emerald Green */
     --home-primary: #16805B;
     --home-primary-dark: #0D5C41;
     --home-accent: #35A979;
@@ -33,19 +34,21 @@
     --home-tint: #DCFCE7;
     --home-border: #A7F3D0;
 
-    --learner-primary: #16805B;
-    --learner-primary-dark: #0D5C41;
-    --learner-accent: #35A979;
-    --learner-background: #F0FAF5;
-    --learner-tint: #DCFCE7;
-    --learner-border: #A7F3D0;
+    /* 2. Learner Portal — Blue */
+    --learner-primary: #2563EB;
+    --learner-primary-dark: #1E40AF;
+    --learner-accent: #60A5FA;
+    --learner-background: #EFF6FF;
+    --learner-tint: #DBEAFE;
+    --learner-border: #BFDBFE;
 
-    --educator-primary: #16805B;
-    --educator-primary-dark: #0D5C41;
-    --educator-accent: #35A979;
-    --educator-background: #F0FAF5;
-    --educator-tint: #DCFCE7;
-    --educator-border: #A7F3D0;
+    /* 3. Educator Portal — Teal */
+    --educator-primary: #0F766E;
+    --educator-primary-dark: #115E59;
+    --educator-accent: #2DD4BF;
+    --educator-background: #F0FDFA;
+    --educator-tint: #CCFBF1;
+    --educator-border: #99F6E4;
 
     /* Base Fallbacks */
     --primary: #16805B;
@@ -63,33 +66,60 @@
 
     --border: #E2E8F0;
     --radius: 1rem;
+
+    /* Active Dynamic Theme Tokens (Defaults to Main Website Emerald) */
+    --color-primary: #16805B;
+    --color-primary-dark: #0D5C41;
+    --color-primary-light: #35A979;
+    --color-primary-soft: #F0FAF5;
+    --color-border-brand: #A7F3D0;
+    --color-ring: rgba(22, 128, 91, 0.35);
   }
 
-  [data-theme="home"] {
-    --theme-primary: var(--edu-primary);
-    --theme-primary-dark: var(--edu-primary-dark);
-    --theme-accent: var(--edu-primary-light);
-    --theme-background: var(--edu-primary-soft);
-    --theme-tint: var(--home-tint);
-    --theme-border: var(--home-border);
+  [data-theme="home"],
+  [data-theme="main"] {
+    --theme-primary: #16805B;
+    --theme-primary-dark: #0D5C41;
+    --theme-accent: #35A979;
+    --theme-background: #F0FAF5;
+    --theme-tint: #DCFCE7;
+    --theme-border: #A7F3D0;
+    --color-primary: #16805B;
+    --color-primary-dark: #0D5C41;
+    --color-primary-light: #35A979;
+    --color-primary-soft: #F0FAF5;
+    --color-border-brand: #A7F3D0;
+    --color-ring: rgba(22, 128, 91, 0.35);
   }
 
   [data-theme="learner"] {
-    --theme-primary: var(--edu-primary);
-    --theme-primary-dark: var(--edu-primary-dark);
-    --theme-accent: var(--edu-primary-light);
-    --theme-background: var(--edu-primary-soft);
-    --theme-tint: var(--learner-tint);
-    --theme-border: var(--learner-border);
+    --theme-primary: #2563EB;
+    --theme-primary-dark: #1E40AF;
+    --theme-accent: #60A5FA;
+    --theme-background: #EFF6FF;
+    --theme-tint: #DBEAFE;
+    --theme-border: #BFDBFE;
+    --color-primary: #2563EB;
+    --color-primary-dark: #1E40AF;
+    --color-primary-light: #60A5FA;
+    --color-primary-soft: #EFF6FF;
+    --color-border-brand: #BFDBFE;
+    --color-ring: rgba(37, 99, 235, 0.35);
   }
 
   [data-theme="educator"] {
-    --theme-primary: var(--edu-primary);
-    --theme-primary-dark: var(--edu-primary-dark);
-    --theme-accent: var(--edu-primary-light);
-    --theme-background: var(--edu-primary-soft);
-    --theme-tint: var(--educator-tint);
-    --theme-border: var(--educator-border);
+    --theme-primary: #0F766E;
+    --theme-primary-dark: #115E59;
+    --theme-accent: #2DD4BF;
+    --theme-background: #F0FDFA;
+    --theme-tint: #CCFBF1;
+    --theme-border: #99F6E4;
+    --color-primary: #0F766E;
+    --color-primary-dark: #115E59;
+    --color-primary-light: #2DD4BF;
+    --color-primary-soft: #F0FDFA;
+    --color-border-brand: #99F6E4;
+    --color-ring: rgba(15, 118, 110, 0.35);
   }
 
   body {

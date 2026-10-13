@@ -172,7 +172,7 @@ export default function StudentPaymentsPage() {
                             p.status === "CAPTURED"
                               ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                               : p.status === "REFUNDED"
-                              ? "bg-purple-100 text-purple-800 border border-purple-200"
+                              ? "bg-cyan-100 text-cyan-800 border border-cyan-200"
                               : p.status === "FAILED"
                               ? "bg-red-100 text-red-800 border border-red-200"
                               : "bg-amber-100 text-amber-800 border border-amber-200"

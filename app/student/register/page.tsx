@@ -9,13 +9,13 @@ import { LearnerRegistrationFlow } from "@/components/learner/learner-registrati
 
 export default function StudentRegisterPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#F0FAF5] relative overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col bg-[#EFF6FF] relative overflow-hidden font-sans">
       {/* Role-Specific Learner Navbar */}
       <FloatingNavbar variant="student" />
 
       {/* Decorative Brand Accent Background Glows */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#16805B]/10 blur-[140px] rounded-full pointer-events-none -z-10" />
-      <div className="absolute bottom-40 right-10 w-[500px] h-[400px] bg-[#35A979]/10 blur-[130px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#2563EB]/10 blur-[140px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute bottom-40 right-10 w-[500px] h-[400px] bg-[#60A5FA]/10 blur-[130px] rounded-full pointer-events-none -z-10" />
 
       <main className="flex-1 pt-32 sm:pt-36 pb-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8">
         <div className="flex items-center justify-between">
@@ -33,7 +33,7 @@ export default function StudentRegisterPage() {
         <Suspense
           fallback={
             <div className="min-h-[400px] flex items-center justify-center">
-              <div className="w-10 h-10 border-4 border-[#16805B]/30 border-t-[#16805B] rounded-full animate-spin" />
+              <div className="w-10 h-10 border-4 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin" />
             </div>
           }
         >

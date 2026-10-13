@@ -76,39 +76,39 @@ export function TeacherCarousel({ onOpenAuth }: TeacherCarouselProps) {
               glowColor="rgba(99, 102, 241, 0.15)"
               onMouseEnter={() => setActiveTeacher(t.id)}
               onMouseLeave={() => setActiveTeacher(null)}
-              className="group cursor-pointer flex flex-col justify-between h-full border-2 border-white/90 hover:border-indigo-300 transition-all p-5 sm:p-7"
+              className="group cursor-pointer flex flex-col justify-between h-full border-2 border-white/90 hover:border-indigo-300 transition-all p-5 sm:p-7 min-w-0 overflow-hidden"
             >
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
+              <div className="space-y-4 min-w-0">
+                <div className="flex items-center gap-4 min-w-0">
                   <img
                     src={t.avatar}
                     alt={t.name}
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ring-4 ring-indigo-500/20 group-hover:ring-indigo-500 transition-all shrink-0"
+                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ring-4 ring-indigo-500/20 group-hover:ring-indigo-500 transition-all shrink-0 aspect-square"
                   />
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate min-w-0" title={t.name}>
                       {t.name}
                     </h3>
-                    <p className="text-xs font-bold text-indigo-600">{t.subject}</p>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <GlassBadge variant="emerald" size="sm" className="flex items-center gap-1">
+                    <p className="text-xs font-bold text-indigo-600 truncate">{t.subject}</p>
+                    <div className="flex items-center gap-1.5 mt-1 min-w-0">
+                      <GlassBadge variant="emerald" size="sm" className="flex items-center gap-1 shrink-0">
                         <ShieldCheck className="h-3 w-3" /> Verified
                       </GlassBadge>
                     </div>
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                <p className="text-xs text-slate-600 leading-relaxed font-medium line-clamp-2" title={t.headline}>
                   {t.headline}
                 </p>
 
-                <div className="flex items-center justify-between text-xs bg-slate-50/80 p-3 rounded-2xl border border-slate-100">
-                  <div>
+                <div className="flex items-center justify-between text-xs bg-slate-50/80 p-3 rounded-2xl border border-slate-100 gap-2">
+                  <div className="shrink-0">
                     <span className="font-bold text-amber-500">★ {t.rating}</span>
                     <span className="text-slate-400 text-[10px]"> ({t.reviewsCount})</span>
                   </div>
-                  <div className="font-bold text-slate-700">{t.experience}</div>
-                  <div className="font-extrabold text-slate-900">{t.rate}/hr</div>
+                  <div className="font-bold text-slate-700 shrink-0">{t.experience}</div>
+                  <div className="font-extrabold text-slate-900 shrink-0">{t.rate}/hr</div>
                 </div>
               </div>
 

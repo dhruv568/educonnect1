@@ -439,13 +439,19 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
     })
     .filter((sec) => sec.items.length > 0);
 
+  const isLearner = isLearnerRole(role);
+  const isEducator = isEducatorRole(role);
+
   return (
     <PermissionProvider>
-      <div className="min-h-screen flex bg-[#F5F7F8]">
+      <div
+        data-theme={isEducator ? "educator" : isLearner ? "learner" : "main"}
+        className="min-h-screen flex bg-[#F5F7F8]"
+      >
         {/* Mobile Backdrop & Sidebar */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-[#102A2A]/80 z-40 lg:hidden backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-[#0F172A]/80 z-40 lg:hidden backdrop-blur-xs transition-opacity"
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
@@ -453,27 +459,41 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
 
         {/* Desktop & Mobile Sidebar */}
         <aside
-          className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col w-64 bg-[#073F3C] text-teal-100 border-r border-[#1B6863]/30 shrink-0 transition-transform duration-300 ease-in-out ${
+          className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col w-64 shrink-0 transition-transform duration-300 ease-in-out ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          } ${
+            isLearner
+              ? "bg-[#0F172A] text-slate-100 border-r border-blue-900/40"
+              : isEducator
+              ? "bg-[#042F2E] text-teal-100 border-r border-[#115E59]/40"
+              : "bg-[#073F3C] text-teal-100 border-r border-[#1B6863]/30"
           }`}
           aria-label="Main Navigation"
         >
           {/* Logo Header */}
-          <div className="p-5 border-b border-[#1B6863]/30 flex items-center justify-between">
+          <div
+            className={`p-5 flex items-center justify-between ${
+              isLearner
+                ? "border-b border-blue-900/40"
+                : isEducator
+                ? "border-b border-[#115E59]/40"
+                : "border-b border-[#1B6863]/30"
+            }`}
+          >
             <Link
-              href={isAdminOrStaff ? "/admin" : isEducatorRole(role) ? "/teacher/dashboard" : "/student/dashboard"}
+              href={isAdminOrStaff ? "/admin" : isEducator ? "/teacher/dashboard" : "/student/dashboard"}
               className="flex items-center gap-3 group min-w-0"
             >
               <Logo
                 variant="mark"
                 size="md"
-                roleContext={isEducatorRole(role) ? "teacher" : isAdminOrStaff ? "admin" : "student"}
+                roleContext={isEducator ? "teacher" : isAdminOrStaff ? "admin" : "student"}
                 href={false}
                 priority
               />
               <div className="min-w-0">
                 <h1 className="text-sm font-black text-white tracking-tight">
-                  EDU<span className={isAdminOrStaff ? "text-[#F2C14E]" : "text-[#35A979]"}>CONNECTS</span>
+                  EDU<span className={isAdminOrStaff ? "text-[#F2C14E]" : isEducator ? "text-[#2DD4BF]" : "text-[#60A5FA]"}>CONNECTS</span>
                 </h1>
                 <Badge variant={roleColors[role] || "student"} size="sm">
                   {currentRoleTitle}
@@ -482,7 +502,9 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-teal-200 hover:text-white p-1 rounded-lg"
+              className={`lg:hidden p-1 rounded-lg ${
+                isLearner ? "text-slate-300 hover:text-white" : "text-teal-200 hover:text-white"
+              }`}
               aria-label="Close navigation"
             >
               <X className="h-5 w-5" />
@@ -581,15 +603,21 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
                       onClick={() => setSidebarOpen(false)}
                       className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
                         isActive
-                          ? "bg-[#16805B] text-white shadow-md border border-[#35A979]/40"
-                          : "text-teal-100/80 hover:bg-[#1B6863]/40 hover:text-white"
+                          ? isEducator
+                            ? "bg-[#0F766E] text-white shadow-md shadow-teal-700/25 border border-[#2DD4BF]/40"
+                            : "bg-[#2563EB] text-white shadow-md shadow-blue-500/25 border border-[#60A5FA]/40"
+                          : isEducator
+                          ? "text-teal-100/80 hover:bg-[#115E59]/40 hover:text-white"
+                          : "text-slate-300 hover:bg-blue-950/50 hover:text-white"
                       }`}
                     >
                       <IconComponent
                         className={`h-4 w-4 ${
                           isActive
-                            ? "text-[#35A979]"
-                            : "text-teal-200/70"
+                            ? "text-white"
+                            : isEducator
+                            ? "text-teal-300/70"
+                            : "text-blue-300/70"
                         }`}
                       />
                       <span>{item.label}</span>
@@ -601,7 +629,15 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
           </nav>
 
           {/* Sidebar Footer */}
-          <div className="p-3 border-t border-[#1B6863]/30 space-y-1.5">
+          <div
+            className={`p-3 space-y-1.5 ${
+              isLearner
+                ? "border-t border-blue-900/40"
+                : isEducator
+                ? "border-t border-[#115E59]/40"
+                : "border-t border-[#1B6863]/30"
+            }`}
+          >
             <BackToHomeButton variant="sidebar" />
             <button
               type="button"

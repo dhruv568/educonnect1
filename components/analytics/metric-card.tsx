@@ -14,7 +14,7 @@ export interface MetricCardProps {
     isPositive?: boolean;
   };
   icon?: React.ReactNode;
-  variant?: "default" | "emerald" | "blue" | "purple" | "amber";
+  variant?: "default" | "emerald" | "teal" | "blue" | "purple" | "amber";
 }
 
 export function MetricCard({
@@ -28,6 +28,7 @@ export function MetricCard({
   const variantStyles = {
     default: "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900",
     emerald: "border-emerald-200 bg-emerald-50/40 dark:bg-emerald-950/20 dark:border-emerald-900/50",
+    teal: "border-teal-200 bg-teal-50/40 dark:bg-teal-950/20 dark:border-teal-900/50",
     blue: "border-blue-200 bg-blue-50/40 dark:bg-blue-950/20 dark:border-blue-900/50",
     purple: "border-purple-200 bg-purple-50/40 dark:bg-purple-950/20 dark:border-purple-900/50",
     amber: "border-amber-200 bg-amber-50/40 dark:bg-amber-950/20 dark:border-amber-900/50",

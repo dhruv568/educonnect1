@@ -199,7 +199,7 @@ export default function TeacherEarningsPage() {
       case "APPROVED":
         return "bg-blue-950/80 text-blue-300 border-blue-800";
       case "PROCESSING":
-        return "bg-purple-950/80 text-purple-300 border-purple-800 animate-pulse";
+        return "bg-teal-950/80 text-teal-300 border-teal-800 animate-pulse";
       case "REJECTED":
         return "bg-rose-950/80 text-rose-300 border-rose-800";
       case "FAILED":
@@ -212,7 +212,7 @@ export default function TeacherEarningsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
-        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -254,7 +254,7 @@ export default function TeacherEarningsPage() {
           </Link>
           <Link
             href="/teacher/earnings/setup"
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-xs font-bold text-white flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#0F766E] to-[#115E59] hover:from-[#115E59] hover:to-[#0F766E] text-xs font-bold text-white flex items-center gap-2 transition-all shadow-lg shadow-teal-700/20"
           >
             <CreditCard className="w-4 h-4" /> Split Payouts
           </Link>
@@ -285,10 +285,10 @@ export default function TeacherEarningsPage() {
         <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-2 shadow-xl">
           <div className="flex justify-between items-center text-slate-400 text-xs font-semibold">
             <span>Total Gross Earnings</span>
-            <IndianRupee className="w-4 h-4 text-emerald-400" />
+            <IndianRupee className="w-4 h-4 text-teal-400" />
           </div>
           <p className="text-3xl font-black text-white">{formatCurrency(summary.totalEarnings)}</p>
-          <p className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+          <p className="text-[11px] text-teal-400 font-medium flex items-center gap-1">
             <TrendingUp className="w-3 h-3" /> Cumulative earnings to date
           </p>
         </div>
@@ -296,9 +296,9 @@ export default function TeacherEarningsPage() {
         <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-2 shadow-xl">
           <div className="flex justify-between items-center text-slate-400 text-xs font-semibold">
             <span>This Month</span>
-            <TrendingUp className="w-4 h-4 text-blue-400" />
+            <TrendingUp className="w-4 h-4 text-teal-300" />
           </div>
-          <p className="text-3xl font-black text-blue-400">{formatCurrency(summary.thisMonthEarnings)}</p>
+          <p className="text-3xl font-black text-teal-300">{formatCurrency(summary.thisMonthEarnings)}</p>
           <p className="text-[11px] text-slate-400">Current calendar month sales</p>
         </div>
 
@@ -314,18 +314,18 @@ export default function TeacherEarningsPage() {
         <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-3 shadow-xl relative overflow-hidden">
           <div className="flex justify-between items-center text-slate-400 text-xs font-semibold">
             <span>Available for Payout</span>
-            <CheckCircle2 className="w-4 h-4 text-purple-400" />
+            <CheckCircle2 className="w-4 h-4 text-teal-400" />
           </div>
           <div>
-            <p className="text-3xl font-black text-purple-400">{formatCurrency(summary.availableAmount)}</p>
+            <p className="text-3xl font-black text-teal-400">{formatCurrency(summary.availableAmount)}</p>
             <p className="text-[11px] text-slate-400 mt-0.5">Eligible for instant withdrawal (Min ₹500)</p>
           </div>
           <button
             onClick={handleOpenModal}
             disabled={!canWithdraw}
-            className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+            className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               canWithdraw
-                ? "bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/30"
+                ? "bg-[#0F766E] hover:bg-[#115E59] text-white shadow-md shadow-teal-700/30"
                 : "bg-slate-800 text-slate-500 border border-slate-700/50 cursor-not-allowed"
             }`}
           >
@@ -336,10 +336,10 @@ export default function TeacherEarningsPage() {
       </div>
 
       {/* Payout Account Status Banner */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-slate-900/70 border border-purple-800/40 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-teal-950/60 via-slate-900/80 to-slate-900/70 border border-teal-800/40 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-purple-400" />
+            <ShieldCheck className="w-5 h-5 text-teal-400" />
             <h3 className="text-base font-bold text-white">Cashfree Automated Payouts Enabled</h3>
           </div>
           <p className="text-xs text-slate-300">
@@ -361,7 +361,7 @@ export default function TeacherEarningsPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Clock className="w-5 h-5 text-purple-400" /> Withdrawal & Payout History
+            <Clock className="w-5 h-5 text-teal-400" /> Withdrawal & Payout History
           </h2>
           <span className="text-xs text-slate-400">{withdrawals.length} request(s)</span>
         </div>
@@ -369,7 +369,7 @@ export default function TeacherEarningsPage() {
         <div className="rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl overflow-hidden shadow-xl">
           {loadingWithdrawals ? (
             <div className="p-10 flex items-center justify-center text-slate-400">
-              <Loader2 className="w-6 h-6 animate-spin text-purple-500 mr-2" /> Loading withdrawal records...
+              <Loader2 className="w-6 h-6 animate-spin text-teal-400 mr-2" /> Loading withdrawal records...
             </div>
           ) : withdrawals.length === 0 ? (
             <div className="p-12 text-center space-y-3">
@@ -489,12 +489,12 @@ export default function TeacherEarningsPage() {
             <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
               <div>
                 <p className="text-[11px] text-slate-400 font-medium">Available to Withdraw</p>
-                <p className="text-2xl font-black text-purple-400">{formatCurrency(summary.availableAmount)}</p>
+                <p className="text-2xl font-black text-teal-400">{formatCurrency(summary.availableAmount)}</p>
               </div>
               <button
                 type="button"
                 onClick={handleMaxAmount}
-                className="px-3 py-1.5 rounded-xl bg-purple-900/40 hover:bg-purple-900/60 border border-purple-700/50 text-[11px] font-bold text-purple-300 transition-colors"
+                className="px-3 py-1.5 rounded-xl bg-teal-950/60 hover:bg-teal-900/60 border border-teal-700/50 text-[11px] font-bold text-teal-300 transition-colors cursor-pointer"
               >
                 Withdraw All
               </button>
@@ -617,7 +617,7 @@ export default function TeacherEarningsPage() {
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
                     placeholder="Enter amount (min ₹500)"
-                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-purple-500 text-white font-bold text-sm outline-none transition-colors"
+                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-teal-500 text-white font-bold text-sm outline-none transition-colors"
                   />
                 </div>
 
@@ -632,7 +632,7 @@ export default function TeacherEarningsPage() {
                       className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors ${
                         amt > summary.availableAmount
                           ? "bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed"
-                          : "bg-slate-900 border-slate-700/80 text-slate-300 hover:bg-slate-800"
+                          : "bg-slate-900 border-slate-700/80 text-slate-300 hover:bg-slate-800 cursor-pointer"
                       }`}
                     >
                       ₹{amt}
@@ -645,7 +645,7 @@ export default function TeacherEarningsPage() {
               <button
                 type="submit"
                 disabled={submitting || !!formSuccess}
-                className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs transition-all shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 rounded-2xl bg-[#0F766E] hover:bg-[#115E59] text-white font-bold text-xs transition-all shadow-lg shadow-teal-700/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>

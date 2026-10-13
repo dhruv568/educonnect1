@@ -62,15 +62,15 @@ export default function StudentActivityLogPage() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "LESSONS":
-        return <BookOpen className="w-4 h-4 text-purple-600" />;
+        return <BookOpen className="w-4 h-4 text-blue-600" />;
       case "CLASSES":
-        return <CalendarCheck className="w-4 h-4 text-emerald-600" />;
+        return <CalendarCheck className="w-4 h-4 text-indigo-600" />;
       case "PURCHASES":
-        return <CreditCard className="w-4 h-4 text-[#16805B]" />;
+        return <CreditCard className="w-4 h-4 text-[#2563EB]" />;
       case "ACCOUNT":
         return <ShieldCheck className="w-4 h-4 text-amber-600" />;
       default:
-        return <Activity className="w-4 h-4 text-teal-600" />;
+        return <Activity className="w-4 h-4 text-sky-600" />;
     }
   };
 
@@ -78,18 +78,18 @@ export default function StudentActivityLogPage() {
     <DashboardLayout role="STUDENT" userName="Learner">
       <div className="space-y-6 pb-16">
         {/* Header Title Banner */}
-        <div className="bg-gradient-to-r from-[#0D5C41] via-[#16805B] to-[#0A4732] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
           <div className="space-y-2 relative z-10">
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-emerald-200 border border-white/20 uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-blue-200 border border-white/20 uppercase tracking-wider">
                 Real-Time Timeline
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-3">
-              <Activity className="w-8 h-8 text-emerald-300 shrink-0" />
+              <Activity className="w-8 h-8 text-blue-200 shrink-0" />
               Learner Activity Log
             </h1>
-            <p className="text-xs sm:text-sm text-emerald-100 max-w-xl">
+            <p className="text-xs sm:text-sm text-blue-100 max-w-xl">
               Complete historical record of course enrollments, lesson completions, live class bookings, logins, and account security events.
             </p>
           </div>
@@ -109,7 +109,7 @@ export default function StudentActivityLogPage() {
               placeholder="Search activity title or details..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#16805B]"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
           </div>
 
@@ -126,7 +126,7 @@ export default function StudentActivityLogPage() {
                 onClick={() => setFilterCategory(cat.value)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   filterCategory === cat.value
-                    ? "bg-[#16805B] text-white shadow-xs"
+                    ? "bg-[#2563EB] text-white shadow-xs"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
@@ -139,7 +139,7 @@ export default function StudentActivityLogPage() {
         {/* Activity Timeline List */}
         {loading ? (
           <Card className="p-12 text-center bg-white border border-slate-200 rounded-3xl">
-            <Loader2 className="h-8 w-8 text-[#16805B] animate-spin mx-auto mb-3" />
+            <Loader2 className="h-8 w-8 text-[#2563EB] animate-spin mx-auto mb-3" />
             <p className="text-xs text-slate-500 font-bold">Loading activity log timeline...</p>
           </Card>
         ) : filtered.length === 0 ? (
@@ -156,7 +156,7 @@ export default function StudentActivityLogPage() {
               {filtered.map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-emerald-200 transition-colors flex items-start gap-4"
+                  className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-blue-200 transition-colors flex items-start gap-4"
                 >
                   <div className="p-2.5 rounded-2xl bg-white border border-slate-200 shadow-2xs shrink-0 mt-0.5">
                     {getCategoryIcon(item.category)}

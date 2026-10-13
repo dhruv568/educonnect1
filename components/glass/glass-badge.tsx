@@ -24,8 +24,8 @@ export function GlassBadge({ className, variant = "primary", size = "md", childr
     rose: "bg-rose-500/10 text-rose-700 border-rose-400/30",
     dark: "bg-slate-900/80 text-white border-white/20",
     outline: "bg-white/40 text-slate-700 border-slate-300/80",
-    learner: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0] font-bold",
-    educator: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0] font-bold",
+    learner: "bg-[#EFF6FF] text-[#1E40AF] border-[#BFDBFE] font-bold",
+    educator: "bg-[#F0FDFA] text-[#115E59] border-[#99F6E4] font-bold",
   };
 
   const sizes = {

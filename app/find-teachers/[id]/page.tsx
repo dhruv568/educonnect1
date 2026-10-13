@@ -50,8 +50,8 @@ export default function PublicTeacherProfilePage() {
             <h3 className="text-lg font-bold text-slate-900">Educator Profile Not Found</h3>
           </div>
         ) : (
-          <GlassCard glowColor="rgba(16, 128, 91, 0.2)" className="p-8 space-y-6 border-2 border-white/90 shadow-xl">
-            <div className="flex flex-col sm:flex-row items-center gap-6">
+          <GlassCard glowColor="rgba(16, 128, 91, 0.2)" className="p-8 space-y-6 border-2 border-white/90 shadow-xl min-w-0 overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 min-w-0">
               <img
                 src={teacher.avatarUrl}
                 alt={teacher.name}
@@ -60,14 +60,14 @@ export default function PublicTeacherProfilePage() {
                   (e.target as HTMLImageElement).src = "/images/educators/educator_01.jpg";
                 }}
               />
-              <div className="space-y-2 text-center sm:text-left">
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  <h1 className="text-2xl font-black text-slate-900">{teacher.name}</h1>
-                  <GlassBadge variant="emerald" size="sm" className="flex items-center gap-1">
+              <div className="space-y-2 text-center sm:text-left min-w-0 flex-1">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 min-w-0">
+                  <h1 className="text-2xl font-black text-slate-900 break-words">{teacher.name}</h1>
+                  <GlassBadge variant="emerald" size="sm" className="flex items-center gap-1 shrink-0">
                     <ShieldCheck className="h-3.5 w-3.5" /> Verified Educator
                   </GlassBadge>
                 </div>
-                <p className="text-sm font-bold text-emerald-700">{teacher.headline}</p>
+                <p className="text-sm font-bold text-emerald-700 break-words">{teacher.headline}</p>
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-slate-600 font-semibold">
                   <span className="text-amber-500">★ {typeof teacher.rating === "number" ? teacher.rating.toFixed(2) : teacher.rating} Rating</span>
                   <span>• {teacher.experienceYears} Years Experience</span>

@@ -20,9 +20,9 @@ export function Badge({ className, variant = "primary", size = "md", children, .
     success: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0]",
     warning: "bg-amber-50 text-amber-800 border-amber-200",
     error: "bg-rose-50 text-rose-700 border-rose-200",
-    teacher: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0]",
-    student: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0]",
-    admin: "bg-[#F0FAF5] text-[#0D5C41] border-[#A7F3D0]",
+    teacher: "bg-[#F0FDFA] text-[#115E59] border-[#99F6E4]",
+    student: "bg-[#EFF6FF] text-[#1E40AF] border-[#BFDBFE]",
+    admin: "bg-[#073F3C] text-[#F2C14E] border-[#F2C14E]/30",
     outline: "bg-transparent text-slate-600 border-slate-300",
   };
 

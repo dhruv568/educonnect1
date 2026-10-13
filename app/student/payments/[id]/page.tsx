@@ -223,7 +223,7 @@ export default function StudentPaymentReceiptPage() {
 
           <button
             onClick={handlePrint}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-md transition-all cursor-pointer border border-emerald-500/40"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-md transition-all cursor-pointer border border-blue-500/40"
           >
             <Printer className="w-4 h-4" />
             <span>Print Receipt</span>
@@ -295,7 +295,7 @@ export default function StudentPaymentReceiptPage() {
                     <CheckCircle2 className="w-3.5 h-3.5" /> PAYMENT CAPTURED
                   </span>
                 ) : isRefunded ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30 print:bg-purple-100 print:text-purple-800 print:border-purple-300">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 print:bg-cyan-100 print:text-cyan-800 print:border-cyan-300">
                     <RotateCcw className="w-3.5 h-3.5" /> REFUNDED
                   </span>
                 ) : receipt.status === "PENDING" ? (
@@ -600,15 +600,15 @@ export default function StudentPaymentReceiptPage() {
           )}
 
           {isRefunded && (
-            <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/25 space-y-1">
-              <div className="flex items-center gap-2 text-purple-400 font-bold text-xs">
+            <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 space-y-1">
+              <div className="flex items-center gap-2 text-cyan-400 font-bold text-xs">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Purchase Refunded</span>
               </div>
-              <p className="text-xs text-purple-200/90">
+              <p className="text-xs text-cyan-200/90">
                 This transaction has been refunded. Course access or slot booking has been revoked.
                 {receipt.refund?.providerRefundId && (
-                  <span className="block mt-1 font-mono text-[11px] text-purple-300">
+                  <span className="block mt-1 font-mono text-[11px] text-cyan-300">
                     Gateway Refund ID: {receipt.refund.providerRefundId}
                   </span>
                 )}

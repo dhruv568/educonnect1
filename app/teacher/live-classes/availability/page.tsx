@@ -241,7 +241,7 @@ export default function TeacherAvailabilityPage() {
             <BackButton fallbackUrl="/teacher/live-classes" label="Back to Live Classes" variant="default" />
             <div>
               <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-                <Clock className="h-6 w-6 text-blue-600" /> Availability & Schedule Management
+                <Clock className="h-6 w-6 text-[#0F766E]" /> Availability & Schedule Management
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
                 Manage your weekly teaching schedule, add custom date slots, or block availability.
@@ -254,14 +254,14 @@ export default function TeacherAvailabilityPage() {
               onClick={() => setShowOverrideModal(true)}
               variant="outline"
               size="sm"
-              leftIcon={<Plus className="h-4 w-4 text-[#16805B]" />}
+              leftIcon={<Plus className="h-4 w-4 text-[#0F766E]" />}
             >
               Add Date / Block Slot
             </Button>
             <Button
               onClick={handleSaveWeekly}
               disabled={saving}
-              variant="primary"
+              variant="teacher"
               size="sm"
               leftIcon={<Save className="h-4 w-4" />}
             >
@@ -278,14 +278,14 @@ export default function TeacherAvailabilityPage() {
             <Card className="p-4 bg-slate-50/80 border border-slate-200/80">
               <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
                 <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                  <Info className="w-4 h-4 text-blue-600" /> Slot Status Indicators:
+                  <Info className="w-4 h-4 text-[#0F766E]" /> Slot Status Indicators:
                 </span>
                 <div className="flex flex-wrap items-center gap-4 font-semibold">
                   <span className="flex items-center gap-1.5 text-emerald-700">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> AVAILABLE (Open for Learners)
                   </span>
-                  <span className="flex items-center gap-1.5 text-blue-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600" /> BOOKED / CONFIRMED
+                  <span className="flex items-center gap-1.5 text-teal-700">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#0F766E]" /> BOOKED / CONFIRMED
                   </span>
                   <span className="flex items-center gap-1.5 text-amber-700">
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> PENDING (In Checkout)
@@ -300,7 +300,7 @@ export default function TeacherAvailabilityPage() {
             {/* Timezone Configuration */}
             <Card className="p-6 space-y-4">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-blue-600" /> Teaching Timezone
+                <Calendar className="h-5 w-5 text-[#0F766E]" /> Teaching Timezone
               </h3>
               <div className="max-w-md">
                 <select
@@ -324,7 +324,7 @@ export default function TeacherAvailabilityPage() {
                   <h3 className="text-base font-bold text-slate-900">Weekly Recurring Hours</h3>
                   <p className="text-xs text-slate-500">Enable active days and specify your regular available window.</p>
                 </div>
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
                   Recurring Schedule
                 </span>
               </div>
@@ -350,7 +350,7 @@ export default function TeacherAvailabilityPage() {
                           type="checkbox"
                           checked={dayAvail.isActive}
                           onChange={() => toggleDayActive(dayIdx)}
-                          className="h-4 w-4 rounded-md text-blue-600 cursor-pointer"
+                          className="h-4 w-4 rounded-md accent-[#0F766E] cursor-pointer"
                         />
                         <span className="text-xs font-bold text-slate-900">{dayName}</span>
                       </div>
@@ -465,7 +465,7 @@ export default function TeacherAvailabilityPage() {
                                 isBlocked
                                   ? "bg-rose-100 text-rose-700"
                                   : activeCount > 0
-                                  ? "bg-blue-100 text-blue-700"
+                                  ? "bg-teal-100 text-teal-700"
                                   : "bg-emerald-100 text-emerald-700"
                               }`}
                             >
