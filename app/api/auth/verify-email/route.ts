@@ -6,6 +6,7 @@ import { getSession, setSessionCookie, encodeSession, getCookieDomain } from "@/
 import { isEducatorRole, isLearnerRole } from "@/lib/auth/roles";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { extractOtpDigits } from "@/lib/auth/otp-utils";
+import { isSafeRedirectPath, sanitizeRedirectUrl } from "@/lib/auth/redirect-validator";
 
 /**
  * POST /api/auth/verify-email
@@ -45,9 +46,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Determine canonical dashboard redirect strictly based on actual server/database role
-    let redirectPath = result.redirectPath || "/";
-    if (result.user) {
+    // Determine canonical destination: prefer safe returnTo/redirectTo, otherwise fallback to database role dashboard
+    const targetParam = validated.returnTo || validated.redirectTo;
+    const safeReturn = targetParam && isSafeRedirectPath(targetParam) ? sanitizeRedirectUrl(targetParam) : null;
+
+    let redirectPath = safeReturn || result.redirectPath || "/";
+    if (!safeReturn && result.user) {
       if (result.user.role === "ADMIN") {
         redirectPath = "/admin";
       } else if (isEducatorRole(result.user.role)) {

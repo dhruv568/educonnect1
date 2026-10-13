@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { maskEmail } from "@/lib/auth/tokens";
 import { extractOtpDigits } from "@/lib/auth/otp-utils";
+import { isSafeRedirectPath, sanitizeRedirectUrl } from "@/lib/auth/redirect-validator";
 import { BackButton } from "@/components/ui/back-button";
 import { Logo } from "@/components/brand/logo";
 
@@ -18,7 +19,10 @@ function VerifyEmailForm() {
 
   const queryEmail = searchParams.get("email") || "user@example.com";
   const queryToken = searchParams.get("token");
-  const redirectTo = searchParams.get("redirectTo");
+  const targetRedirectParam = searchParams.get("returnTo") || searchParams.get("redirectTo");
+  const redirectTo = targetRedirectParam && isSafeRedirectPath(targetRedirectParam)
+    ? sanitizeRedirectUrl(targetRedirectParam)
+    : null;
 
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
   const [loading, setLoading] = useState(false);
@@ -38,7 +42,7 @@ function VerifyEmailForm() {
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
-            const target = data.data?.redirectPath || redirectTo || "/student/dashboard";
+            const target = redirectTo || data.data?.redirectPath || "/student/dashboard";
             setRedirectTarget(target);
             setVerified(true);
             showToast("Email Verified!", "Welcome to EduConnects 🎓", "success", true);
@@ -244,7 +248,7 @@ function VerifyEmailForm() {
       const res = await fetch("/api/auth/verify-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: queryEmail, otp: code }),
+        body: JSON.stringify({ email: queryEmail, otp: code, returnTo: redirectTo, redirectTo }),
       });
 
       const data = await res.json();
@@ -252,7 +256,9 @@ function VerifyEmailForm() {
         throw new Error(data.error || "Incorrect verification code. Please check your email and try again.");
       }
 
-      const target = data.data?.redirectPath || redirectTo || "/student/dashboard";
+      const target = (redirectTo && isSafeRedirectPath(redirectTo) && sanitizeRedirectUrl(redirectTo))
+        || data.data?.redirectPath
+        || "/student/dashboard";
       setRedirectTarget(target);
       setVerified(true);
       showToast("Verification Successful!", "Identity confirmed. Redirecting...", "success", true);
