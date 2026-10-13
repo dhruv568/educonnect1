@@ -24,7 +24,10 @@ import {
   Lock,
   ShieldAlert,
   ArrowRight,
+  Copy,
+  Share2,
 } from "lucide-react";
+import { getLearnerClassroomUrl } from "@/lib/app-url";
 
 export default function TeacherLiveClassDetailsPage() {
   const params = useParams();
@@ -38,6 +41,27 @@ export default function TeacherLiveClassDetailsPage() {
   const [verificationStatus, setVerificationStatus] = useState<string>("PENDING");
   const [slot, setSlot] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"OVERVIEW" | "BOOKINGS" | "ATTENDANCE" | "CLASSROOM">("OVERVIEW");
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyLearnerLink = () => {
+    const link = slot?.shareableUrl || (slotId ? getLearnerClassroomUrl(slotId) : "");
+    if (!link) return;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link);
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = link;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
+
+    setIsCopied(true);
+    showToast("Link Copied! 📋", "Learner classroom link copied to clipboard. Share it with your students.", "success");
+    setTimeout(() => setIsCopied(false), 2500);
+  };
 
   const fetchSlotDetails = async () => {
     setLoading(true);
@@ -137,25 +161,44 @@ export default function TeacherLiveClassDetailsPage() {
             </div>
           </div>
 
-          {verificationStatus === "VERIFIED" ? (
+          <div className="flex flex-wrap items-center gap-2">
             <Button
-              onClick={handleLaunchClassroom}
-              variant="teacher"
-              size="md"
-              leftIcon={<Play className="h-4 w-4" />}
-            >
-              Enter Classroom
-            </Button>
-          ) : (
-            <Button
+              onClick={handleCopyLearnerLink}
               variant="outline"
               size="md"
-              disabled
-              className="bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed font-bold"
+              className="border-teal-200 text-[#0F766E] hover:bg-teal-50 font-semibold"
             >
-              <Lock className="h-4 w-4 mr-1.5 text-slate-400" /> Locked
+              {isCopied ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4 mr-1.5 text-emerald-600" /> Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4 mr-1.5 text-[#0F766E]" /> Copy Learner Link
+                </>
+              )}
             </Button>
-          )}
+
+            {verificationStatus === "VERIFIED" ? (
+              <Button
+                onClick={handleLaunchClassroom}
+                variant="teacher"
+                size="md"
+                leftIcon={<Play className="h-4 w-4" />}
+              >
+                Enter Classroom
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="md"
+                disabled
+                className="bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed font-bold"
+              >
+                <Lock className="h-4 w-4 mr-1.5 text-slate-400" /> Locked
+              </Button>
+            )}
+          </div>
         </div>
 
         {loading ? (
@@ -164,6 +207,35 @@ export default function TeacherLiveClassDetailsPage() {
           <Card className="p-12 text-center">Live Class slot not found.</Card>
         ) : (
           <div className="space-y-6">
+            {/* Shareable Learner Link Card */}
+            <Card className="p-5 bg-teal-50/40 border border-teal-200/80 rounded-2xl space-y-3 shadow-2xs">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-[#0F766E]" />
+                    <h4 className="text-xs sm:text-sm font-black text-slate-900">
+                      Permanent Learner Classroom Link
+                    </h4>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-slate-600">
+                    Share this unique URL with your students. Logged-in learners enter directly; new learners are guided through login and immediately returned to this classroom.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleCopyLearnerLink}
+                  variant="teacher"
+                  size="sm"
+                  className="shrink-0 w-full sm:w-auto"
+                  leftIcon={isCopied ? <CheckCircle2 className="h-3.5 w-3.5 text-white" /> : <Copy className="h-3.5 w-3.5 text-white" />}
+                >
+                  {isCopied ? "Link Copied!" : "Copy Learner Link"}
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 bg-white border border-teal-200/90 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 overflow-x-auto select-all">
+                <span className="truncate">{slot?.shareableUrl || (slotId ? getLearnerClassroomUrl(slotId) : "")}</span>
+              </div>
+            </Card>
+
             {/* Navigation Tabs */}
             <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
               {(["OVERVIEW", "BOOKINGS", "ATTENDANCE", "CLASSROOM"] as const).map((tab) => (
