@@ -1046,7 +1046,7 @@ export default function TeacherLiveClassesPage() {
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-blue-600" /> Create Live Class
+                    <Sparkles className="h-5 w-5 text-[#0F766E]" /> Create Live Class
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">Step {step} of 5</p>
                 </div>
@@ -1071,9 +1071,9 @@ export default function TeacherLiveClassesPage() {
                     key={idx}
                     className={`py-1.5 rounded-lg transition ${
                       step === idx + 1
-                        ? "bg-blue-600 text-white"
+                        ? "bg-[#0F766E] text-white"
                         : step > idx + 1
-                        ? "bg-emerald-100 text-emerald-800"
+                        ? "bg-teal-100 text-teal-800"
                         : "bg-slate-100 text-slate-400"
                     }`}
                   >
@@ -1092,7 +1092,7 @@ export default function TeacherLiveClassesPage() {
                       placeholder="e.g. Masterclass on Calculus Integration"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none focus:border-[#0F766E]"
                     />
                   </div>
 
@@ -1135,7 +1135,7 @@ export default function TeacherLiveClassesPage() {
                       placeholder="Describe what will be covered in this live session..."
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2.5 text-xs border border-slate-200 rounded-xl outline-none focus:border-[#0F766E]"
                     />
                   </div>
                 </div>
@@ -1262,7 +1262,7 @@ export default function TeacherLiveClassesPage() {
                           type="checkbox"
                           checked={item.key}
                           onChange={(e) => item.set(e.target.checked)}
-                          className="h-4 w-4 rounded text-blue-600"
+                          className="h-4 w-4 rounded accent-[#0F766E]"
                         />
                         <span className="text-xs font-semibold text-slate-700">{item.label}</span>
                       </label>
@@ -1277,7 +1277,7 @@ export default function TeacherLiveClassesPage() {
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
                     <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                       <span className="font-bold text-slate-900 text-sm">{title || "Untitled Live Class"}</span>
-                      <span className="font-mono font-bold text-blue-600">
+                      <span className="font-mono font-bold text-[#0F766E]">
                         {price === 0 ? "FREE" : formatCurrency(price)}
                       </span>
                     </div>
@@ -1309,12 +1309,12 @@ export default function TeacherLiveClassesPage() {
                 )}
 
                 {step < 5 ? (
-                  <Button variant="primary" size="sm" onClick={() => setStep(step + 1)}>
+                  <Button variant="teacher" size="sm" onClick={() => setStep(step + 1)}>
                     Next Step
                   </Button>
                 ) : (
                   <Button
-                    variant="primary"
+                    variant="teacher"
                     size="sm"
                     onClick={() => handleCreateSubmit(true)}
                     isLoading={submitting}
