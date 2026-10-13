@@ -137,15 +137,15 @@ export default function LoginPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
           {/* Left Column: Social Proof & Feature Highlights */}
           <div className="lg:col-span-6 space-y-6 hidden lg:block">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-700 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#16805B]/10 border border-[#16805B]/20 text-[#16805B] text-xs font-bold uppercase tracking-wider">
+              <Sparkles className="h-3.5 w-3.5 text-[#16805B]" />
               <span>Welcome Back to EduConnects</span>
             </div>
 
             <div className="space-y-3">
               <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-tight">
                 Continue Your <br />
-                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#0D5C41] via-[#16805B] to-[#35A979] bg-clip-text text-transparent">
                   Learning Momentum
                 </span>
               </h1>
@@ -160,7 +160,7 @@ export default function LoginPage() {
                 <img
                   src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80"
                   alt="Student"
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/20"
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-[#16805B]/20"
                 />
                 <div>
                   <div className="text-xs font-bold text-slate-900">Priya Sharma</div>
@@ -174,15 +174,15 @@ export default function LoginPage() {
 
             {/* Trust Badges */}
             <div className="flex items-center gap-4 text-xs font-bold text-slate-600">
-              <span className="flex items-center gap-1 text-blue-600">
+              <span className="flex items-center gap-1 text-[#16805B]">
                 ★ 4.95 Rating
               </span>
               <span>•</span>
-              <span className="flex items-center gap-1 text-emerald-600">
+              <span className="flex items-center gap-1 text-[#16805B]">
                 15,000+ Students
               </span>
               <span>•</span>
-              <span className="flex items-center gap-1 text-indigo-600">
+              <span className="flex items-center gap-1 text-[#0D5C41]">
                 850+ Verified Tutors
               </span>
             </div>
@@ -198,7 +198,7 @@ export default function LoginPage() {
               <p className="text-xs text-slate-500">Access your Teacher or Student Dashboard</p>
             </div>
 
-            <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-7 sm:p-8 border border-white/90 shadow-xl space-y-6">
+            <GlassCard glowColor="rgba(22, 128, 91, 0.15)" className="p-7 sm:p-8 border border-white/90 shadow-xl space-y-6">
               <form onSubmit={handleLogin} className="space-y-4">
                 <Input
                   label="Email Address"

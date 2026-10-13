@@ -1018,6 +1018,27 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               )}
 
               {/* Authenticated User Card in Mobile Drawer */}
+              {isMainWebsite && userSession && (
+                <div className="p-3.5 rounded-2xl flex items-center justify-between bg-[#16805B]/40 border border-[#16805B]/60 text-white">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl text-white font-black text-sm flex items-center justify-center bg-[#16805B]">
+                      {getUserInitials(userSession)}
+                    </div>
+                    <div>
+                      <div className="text-xs font-extrabold text-white">
+                        {getUserDisplayName(userSession)}
+                      </div>
+                      <div className="text-[11px] truncate max-w-[160px] text-emerald-200">
+                        {userSession.email}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    {userSession.role}
+                  </span>
+                </div>
+              )}
+
               {isEducator && userSession && isEducatorRole(userSession.role) && (
                 <div className="p-3.5 rounded-2xl flex items-center justify-between bg-[#0F766E]/40 border border-[#0F766E]/60 text-white">
                   <div className="flex items-center gap-3">
@@ -1237,13 +1258,13 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
 
               {/* Mobile Auth Actions */}
               {isLearner ? (
-                <div className="pt-3 border-t border-emerald-400/20 flex flex-col gap-2">
+                <div className="pt-3 border-t border-blue-400/20 flex flex-col gap-2">
                   {userSession && isLearnerRole(userSession.role) ? (
                     <>
                       <Link
                         href={getLearnerSubdomainUrl("/student/dashboard")}
                         onClick={() => setMobileOpen(false)}
-                        className="w-full py-2.5 rounded-xl bg-[#16805B] hover:bg-[#0D5C41] text-white text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                        className="w-full py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1E40AF] text-white text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
                       >
                         <LayoutDashboard className="h-4 w-4" />
                         <span>Learner Dashboard</span>
@@ -1255,7 +1276,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                           handleLogout(e);
                         }}
                         disabled={isLoggingOut}
-                        className="w-full py-2 rounded-xl text-emerald-200 hover:text-white text-xs font-bold text-center cursor-pointer"
+                        className="w-full py-2 rounded-xl text-blue-200 hover:text-white text-xs font-bold text-center cursor-pointer"
                       >
                         Logout
                       </button>
@@ -1320,7 +1341,71 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                     </>
                   )}
                 </div>
-              ) : null}
+              ) : (
+                <div className="pt-3 border-t border-emerald-400/20 flex flex-col gap-2">
+                  {userSession ? (
+                    <>
+                      {isLearnerRole(userSession.role) ? (
+                        <Link
+                          href={getLearnerSubdomainUrl("/student/dashboard")}
+                          onClick={() => setMobileOpen(false)}
+                          className="w-full py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1E40AF] text-white text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          <span>Learner Dashboard</span>
+                        </Link>
+                      ) : isEducatorRole(userSession.role) ? (
+                        <Link
+                          href={getEducatorSubdomainUrl("/teacher/dashboard")}
+                          onClick={() => setMobileOpen(false)}
+                          className="w-full py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          <span>Educator Dashboard</span>
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/admin"
+                          onClick={() => setMobileOpen(false)}
+                          className="w-full py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          <span>Admin Console</span>
+                        </Link>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          setMobileOpen(false);
+                          handleLogout(e);
+                        }}
+                        disabled={isLoggingOut}
+                        className="w-full py-2 rounded-xl text-emerald-200 hover:text-white text-xs font-bold text-center cursor-pointer"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <Link
+                        href="/login"
+                        onClick={() => setMobileOpen(false)}
+                        className="w-full py-2.5 rounded-xl border border-white/25 text-white text-sm font-semibold hover:bg-white/10 transition-colors text-center cursor-pointer block shadow-2xs"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        href="/register"
+                        onClick={() => setMobileOpen(false)}
+                        className="w-full py-2.5 rounded-xl bg-[#16805B] hover:bg-[#0D5C41] text-white text-sm font-bold shadow-xs transition-colors text-center cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <span>Get Started</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.div>
           </div>
         )}
