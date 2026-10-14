@@ -157,7 +157,7 @@ async function runLearnerNavbarTests() {
     // TEST G: Click notification bell → existing notification interface opens
     // -------------------------------------------------------------------------
     console.log("\n📋 TEST G: Notification Bell Trigger & Notification Center...");
-    const hasNotificationBell = navbarFile.includes("<NotificationPopover />");
+    const hasNotificationBell = navbarFile.includes("<NotificationPopover");
     const middlewareExemptsNotifications = middlewareFile.includes('pathname.startsWith("/notifications")');
     const notificationPopoverHasTouch = notificationPopoverFile.includes("touchstart");
 

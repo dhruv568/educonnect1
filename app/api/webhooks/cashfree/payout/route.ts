@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextRequest } from "next/server";
 import { cashfreePayoutClient } from "@/lib/cashfree-payout";
 import { WithdrawalService } from "@/services/withdrawal-service";
@@ -35,12 +36,13 @@ export async function POST(request: NextRequest) {
       return apiBadRequest("Invalid JSON payload.");
     }
 
+    const payloadHash = crypto.createHash("sha256").update(rawBody).digest("hex");
     const eventType = payload.event_type || payload.type || "UNKNOWN";
     const transferId =
       payload.data?.transfer?.transfer_id ||
       payload.data?.transfer_id ||
       payload.transfer_id ||
-      `evt_${Date.now()}`;
+      payloadHash.slice(0, 16);
 
     const eventId = `payout_${eventType}_${transferId}`;
 
@@ -56,28 +58,49 @@ export async function POST(request: NextRequest) {
       return apiSuccess({ received: true, idempotent: true });
     }
 
-    const webhookRecord =
-      existing ||
-      (await prisma.paymentWebhookEvent.create({
-        data: {
-          provider: "CASHFREE_PAYOUT",
-          eventId,
-          eventType,
-          payload: rawBody,
-          processed: false,
-        },
-      }));
+    let webhookRecord = existing;
+    if (!webhookRecord) {
+      try {
+        webhookRecord = await prisma.paymentWebhookEvent.create({
+          data: {
+            provider: "CASHFREE_PAYOUT",
+            eventId,
+            eventType,
+            payloadHash,
+            payload: rawBody,
+            processed: false,
+          },
+        });
+      } catch (createErr: any) {
+        if (createErr?.code === "P2002") {
+          const concurrent = await prisma.paymentWebhookEvent.findFirst({
+            where: {
+              provider: "CASHFREE_PAYOUT",
+              eventId,
+            },
+          });
+          if (concurrent?.processed) {
+            return apiSuccess({ received: true, idempotent: true });
+          }
+          webhookRecord = concurrent;
+        } else {
+          throw createErr;
+        }
+      }
+    }
 
     // Process payout event
     const result = await WithdrawalService.processPayoutWebhook(payload);
 
-    await prisma.paymentWebhookEvent.update({
-      where: { id: webhookRecord.id },
-      data: {
-        processed: true,
-        processedAt: new Date(),
-      },
-    });
+    if (webhookRecord?.id) {
+      await prisma.paymentWebhookEvent.update({
+        where: { id: webhookRecord.id },
+        data: {
+          processed: true,
+          processedAt: new Date(),
+        },
+      });
+    }
 
     return apiSuccess({ received: true, result });
   } catch (error: any) {

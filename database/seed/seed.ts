@@ -32,6 +32,11 @@ loadEnv();
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_PRODUCTION_SEED !== "true") {
+    console.error("❌ Refusing to run database seed in PRODUCTION environment without explicit ALLOW_PRODUCTION_SEED=true.");
+    console.error("   This safeguards against accidental data deletion or seeding dummy courses on production.");
+    process.exit(1);
+  }
   console.log("🌱 Starting EduConnects Database Seeding for Module 04...");
 
   // Check for existing primary admin user
@@ -490,26 +495,71 @@ async function main() {
   });
   console.log(`✅ Student Created: ${student.email}`);
 
-  // 7. Seed Course for Verified Teacher
-  if (teacher1.teacherProfile) {
-    await prisma.course.create({
-      data: {
+  // 7. Seed Course for Verified Real Educator
+  const courseTeacherProfileId = realEducator.teacherProfile?.id || teacher1.teacherProfile?.id;
+  if (courseTeacherProfileId) {
+    const seededCourse = await prisma.course.upsert({
+      where: { slug: "advanced-calculus-mastery" },
+      update: {
+        status: "PUBLISHED",
+        publishedAt: now,
+        price: 499.0,
+        teacherId: courseTeacherProfileId,
+      },
+      create: {
         title: "Advanced Calculus & Analytical Geometry",
         slug: "advanced-calculus-mastery",
-        description: "Master differential equations, integrals, and vector analysis.",
+        description: "Master differential equations, integrals, and vector analysis with step-by-step guidance.",
         subject: "Mathematics",
-        gradeLevel: "Grade 11 - College Prep",
-        price: 89.99,
+        category: "General",
+        level: "INTERMEDIATE",
+        gradeLevel: "Grade 11",
+        price: 499.0,
         rating: 4.95,
         reviewCount: 42,
-        lessonCount: 24,
-        durationHours: 18.5,
+        lessonCount: 2,
+        durationHours: 3.5,
         thumbnailUrl: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&auto=format&fit=crop&q=80",
-        teacherId: teacher1.teacherProfile.id,
+        status: "PUBLISHED",
+        publishedAt: now,
+        teacherId: courseTeacherProfileId,
+        learningOutcomes: JSON.stringify(["Master differential equations", "Understand vector calculus"]),
+        requirements: JSON.stringify(["Basic algebra and trigonometry"]),
+        sections: {
+          create: [
+            {
+              title: "Section 1: Foundations of Calculus",
+              order: 1,
+              lessons: {
+                create: [
+                  {
+                    title: "Lesson 1: Limits & Continuity",
+                    type: "VIDEO",
+                    durationSeconds: 1800,
+                    order: 1,
+                    status: "READY",
+                    content: "Comprehensive overview of limit definitions and continuous functions.",
+                  },
+                  {
+                    title: "Lesson 2: Derivatives & Rate of Change",
+                    type: "VIDEO",
+                    durationSeconds: 2400,
+                    order: 2,
+                    status: "READY",
+                    content: "Fundamental theorem of calculus and derivative applications.",
+                  },
+                ],
+              },
+            },
+          ],
+        },
       },
     });
+    console.log(`✅ Seeded Course Published: ${seededCourse.title}`);
+  }
 
     // 8. Seed Live Class Slot & Session for Module 06 Testing
+  if (teacher1.teacherProfile) {
     const startTime = new Date(Date.now() - 5 * 60 * 1000); // Started 5 mins ago
     const endTime = new Date(Date.now() + 55 * 60 * 1000); // Ends in 55 mins
 

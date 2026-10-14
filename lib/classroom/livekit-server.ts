@@ -1,4 +1,4 @@
-import { AccessToken } from "livekit-server-sdk";
+import { AccessToken, RoomServiceClient } from "livekit-server-sdk";
 
 export interface LiveKitTokenParams {
   sessionId: string;
@@ -35,4 +35,31 @@ export async function generateLiveKitRoomToken(params: LiveKitTokenParams): Prom
   });
 
   return await at.toJwt();
+}
+
+/**
+ * Safely closes and removes a LiveKit room when a class session is ended.
+ */
+export async function closeLiveKitRoom(sessionId: string): Promise<boolean> {
+  const apiKey = process.env.LIVEKIT_API_KEY;
+  const apiSecret = process.env.LIVEKIT_API_SECRET;
+  const livekitUrl = process.env.LIVEKIT_URL;
+
+  if (!apiKey || !apiSecret || !livekitUrl || livekitUrl.includes("demo.livekit.cloud")) {
+    return false;
+  }
+
+  try {
+    const roomService = new RoomServiceClient(
+      livekitUrl.replace(/^ws/, "http"),
+      apiKey,
+      apiSecret
+    );
+    const roomName = `edu-session-${sessionId}`;
+    await roomService.deleteRoom(roomName);
+    return true;
+  } catch (err) {
+    console.warn("[LiveKit closeLiveKitRoom warning]:", err);
+    return false;
+  }
 }

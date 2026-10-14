@@ -16,7 +16,7 @@ export async function POST(
 
     const result = await WhatsAppService.retryMessage(messageId);
 
-    await logAuditEvent(session.id, "ADMIN_WHATSAPP_RETRY", {
+    await logAuditEvent(session.userId || session.id, "ADMIN_WHATSAPP_RETRY", {
       messageId,
       success: result.success,
       status: result.status,

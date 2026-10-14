@@ -31,7 +31,7 @@ export async function POST(
     const note = await prisma.adminNote.create({
       data: {
         teacherId: tp.id,
-        adminId: adminSession.id,
+        adminId: adminSession.userId || adminSession.id,
         content: content.trim(),
       },
       include: {

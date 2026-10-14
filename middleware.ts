@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { isSafeRedirectPath } from "@/lib/auth/redirect-validator";
+import { decodeSession } from "@/lib/auth/session-token";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -325,14 +326,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Parse session payload from cookie
-  let userSession: { email?: string; role?: string; emailVerified?: boolean } | null = null;
-  try {
-    const jsonStr = Buffer.from(cookie.value, "base64url").toString("utf-8");
-    userSession = JSON.parse(jsonStr);
-  } catch {
-    userSession = null;
-  }
+  // Cryptographically verify and decode signed session from cookie (HMAC-SHA256)
+  const userSession = decodeSession(cookie.value);
 
   if (!userSession) {
     if (isPublicPath) {

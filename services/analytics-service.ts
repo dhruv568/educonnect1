@@ -153,7 +153,9 @@ export class AnalyticsService {
       const endTime = new Date(slot.endTime);
       const joinWindowStart = new Date(startTime.getTime() - 15 * 60 * 1000);
 
-      const canJoin = now >= joinWindowStart && now <= endTime;
+      const isLiveNow = slot.status === "LIVE" || slot.session?.status === "LIVE" || slot.session?.status === "OPEN";
+      const isWithinWindow = now >= joinWindowStart && now <= endTime;
+      const canJoin = (isLiveNow || isWithinWindow) && slot.status !== "CANCELLED";
 
       return {
         bookingId: b.id,
@@ -526,30 +528,12 @@ export class AnalyticsService {
       include: { bookings: { where: { status: { notIn: ["CANCELLED"] } } }, session: true },
     });
 
-    const todaySchedule = todaySlots.map((slot) => ({
-      slotId: slot.id,
-      title: slot.title,
-      subject: slot.subject,
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-      bookedCount: slot.bookings.length,
-      maxCapacity: slot.maxCapacity,
-      status: slot.status,
-      sessionId: slot.session?.id || null,
-    }));
-
-    // 4. Next 5 Upcoming Classes
-    const upcomingSlots = await prisma.liveClassSlot.findMany({
-      where: { teacherId, startTime: { gte: now }, status: { notIn: ["CANCELLED"] } },
-      orderBy: { startTime: "asc" },
-      take: 5,
-      include: { bookings: { where: { status: { notIn: ["CANCELLED"] } } }, session: true },
-    });
-
-    const upcomingClasses = upcomingSlots.map((slot) => {
+    const todaySchedule = todaySlots.map((slot) => {
       const startTime = new Date(slot.startTime);
       const endTime = new Date(slot.endTime);
-      const canEnter = now >= new Date(startTime.getTime() - 15 * 60 * 1000) && now <= endTime;
+      const isLiveNow = slot.status === "LIVE" || slot.session?.status === "LIVE" || slot.session?.status === "OPEN";
+      const isWithinWindow = now >= new Date(startTime.getTime() - 15 * 60 * 1000) && now <= endTime;
+      const canEnter = (isLiveNow || isWithinWindow) && slot.status !== "CANCELLED";
 
       return {
         slotId: slot.id,
@@ -565,9 +549,43 @@ export class AnalyticsService {
       };
     });
 
+    // 4. Next 5 Upcoming Classes
+    const upcomingSlots = await prisma.liveClassSlot.findMany({
+      where: { teacherId, startTime: { gte: now }, status: { notIn: ["CANCELLED"] } },
+      orderBy: { startTime: "asc" },
+      take: 5,
+      include: { bookings: { where: { status: { notIn: ["CANCELLED"] } } }, session: true },
+    });
+
+    const upcomingClasses = upcomingSlots.map((slot) => {
+      const startTime = new Date(slot.startTime);
+      const endTime = new Date(slot.endTime);
+      const isLiveNow = slot.status === "LIVE" || slot.session?.status === "LIVE" || slot.session?.status === "OPEN";
+      const isWithinWindow = now >= new Date(startTime.getTime() - 15 * 60 * 1000) && now <= endTime;
+      const canEnter = (isLiveNow || isWithinWindow) && slot.status !== "CANCELLED";
+
+      return {
+        slotId: slot.id,
+        title: slot.title,
+        subject: slot.subject,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        bookedCount: slot.bookings.length,
+        maxCapacity: slot.maxCapacity,
+        status: slot.status,
+        canEnter,
+        sessionId: slot.session?.id || null,
+      };
+    });
+
+    const unreadNotificationsCount = await prisma.notification.count({
+      where: { userId, isRead: false },
+    });
+
     return {
       userName,
       verificationStatus: teacherProfile.verificationStatus,
+      unreadNotificationsCount,
       metrics: {
         todayClassesCount,
         upcomingClassesCount,
@@ -728,7 +746,7 @@ export class AnalyticsService {
     const publishedCourses = await prisma.course.count({ where: { status: "PUBLISHED" } });
     const totalLiveClasses = await prisma.liveClassSlot.count();
     const openReports = await prisma.report.count({ where: { status: "OPEN" } });
-    const pendingRefunds = await prisma.refund.count({ where: { status: "REFUND_REQUESTED" } });
+    const pendingRefunds = await prisma.refund.count({ where: { status: { in: ["REFUND_REQUESTED", "PENDING"] } } });
 
     // Financial Metrics from Module 08 Database
     const capturedTransactionsAgg = await prisma.paymentTransaction.aggregate({

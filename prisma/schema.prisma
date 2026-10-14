@@ -52,6 +52,8 @@ model User {
   certificates          Certificate[]
   whatsappMessages      WhatsAppMessage[]
 
+  @@index([role, status])
+  @@index([status])
   @@map("users")
 }
 
@@ -122,6 +124,7 @@ model TeacherProfile {
   ledgerEntries         FinancialLedgerEntry[]
   withdrawals           WithdrawalRequest[]
 
+  @@index([verificationStatus])
   @@map("teacher_profiles")
 }
 
@@ -298,6 +301,9 @@ model Course {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
+  @@index([status])
+  @@index([teacherId, status])
+  @@index([category])
   @@map("courses")
 }
 
@@ -396,6 +402,8 @@ model Enrollment {
   paymentTransactions PaymentTransaction[]
 
   @@unique([studentId, courseId])
+  @@index([studentId, status])
+  @@index([courseId, status])
   @@map("enrollments")
 }
 
@@ -413,6 +421,7 @@ model LessonProgress {
   lesson          CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([enrollmentId, lessonId])
+  @@index([enrollmentId, completed])
   @@map("lesson_progresses")
 }
 
@@ -487,6 +496,9 @@ model LiveClassSlot {
   paymentOrders        PaymentOrder[]
   paymentTransactions  PaymentTransaction[]
 
+  @@index([status])
+  @@index([teacherId, status])
+  @@index([startTime, endTime])
   @@map("live_class_slots")
 }
 
@@ -554,6 +566,8 @@ model Booking {
   student       User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   paymentTransactions PaymentTransaction[]
 
+  @@index([studentId, status])
+  @@index([liveClassSlotId, status])
   @@map("bookings")
 }
 
@@ -598,6 +612,9 @@ model ClassAttendance {
   session LiveClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   student User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
+  @@unique([sessionId, studentId])
+  @@index([sessionId, status])
+  @@index([studentId])
   @@map("class_attendances")
 }
 
@@ -792,6 +809,7 @@ model FinancialLedgerEntry {
   withdrawals   WithdrawalRequest[]
 
   @@index([teacherId, type])
+  @@index([type, status])
   @@map("financial_ledger_entries")
 }
 

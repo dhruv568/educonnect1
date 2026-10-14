@@ -37,11 +37,11 @@ export async function GET(request: NextRequest) {
     if (search.trim()) {
       const q = search.trim();
       whereCondition.OR = [
-        { subjects: { contains: q } },
-        { headline: { contains: q } },
-        { user: { email: { contains: q } } },
-        { user: { profile: { firstName: { contains: q } } } },
-        { user: { profile: { lastName: { contains: q } } } },
+        { subjects: { contains: q, mode: "insensitive" } },
+        { headline: { contains: q, mode: "insensitive" } },
+        { user: { email: { contains: q, mode: "insensitive" } } },
+        { user: { profile: { firstName: { contains: q, mode: "insensitive" } } } },
+        { user: { profile: { lastName: { contains: q, mode: "insensitive" } } } },
       ];
     }
 

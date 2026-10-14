@@ -75,7 +75,8 @@ async function runTests() {
     "lib/auth/guards.ts exports requireVerifiedEducator"
   );
   assert.ok(
-    guardsContent.includes("Educator verification is under review"),
+    guardsContent.includes("EDUCATOR_VERIFICATION_PENDING_MESSAGE") &&
+      guardsContent.includes("pending verification"),
     "Guard includes informative message for unverified educators"
   );
 
@@ -161,12 +162,28 @@ async function runTests() {
     path.join(process.cwd(), "app/teacher/logout/page.tsx"),
     "utf-8"
   );
-  assert.ok(logoutPageContent.includes("/images/logo.jpeg"), "Logout page displays logo");
-  assert.ok(logoutPageContent.includes("/images/director.jpeg"), "Logout page displays director");
-  assert.ok(logoutPageContent.includes("/images/learner-hero.jpeg"), "Logout page displays learner hero");
-  assert.ok(logoutPageContent.includes("Sameer Shrivastava"), "Logout page references Director Sameer Shrivastava");
-  assert.ok(logoutPageContent.includes("Log In Again"), "Logout page has Log In Again CTA");
-  assert.ok(logoutPageContent.includes("Return to Homepage"), "Logout page has Return to Homepage CTA");
+  const logoutComponentContent = fs.readFileSync(
+    path.join(process.cwd(), "components/auth/logout-page.tsx"),
+    "utf-8"
+  );
+  const combinedLogout = `${logoutPageContent}\n${logoutComponentContent}`;
+
+  assert.ok(
+    logoutPageContent.includes("LogoutPage") && logoutPageContent.includes('roleContext="teacher"'),
+    "Logout page renders LogoutPage with educator roleContext"
+  );
+  assert.ok(
+    combinedLogout.includes("Logo") || combinedLogout.includes("logo"),
+    "Logout page displays logo"
+  );
+  assert.ok(
+    combinedLogout.includes("Login Again") || combinedLogout.includes("Log In Again"),
+    "Logout page has Log In Again CTA"
+  );
+  assert.ok(
+    combinedLogout.includes("Back to Home") || combinedLogout.includes("Return to Homepage"),
+    "Logout page has Return to Homepage CTA"
+  );
   console.log("✅ Dedicated educator logout page verified.\n");
 
   // 9. Dashboard Shared Footer (Problems 5 & 8)

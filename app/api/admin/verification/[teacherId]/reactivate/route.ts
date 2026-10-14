@@ -40,17 +40,19 @@ export async function POST(
       },
     });
 
+    const adminId = adminSession.userId || adminSession.id;
+
     await prisma.teacherVerificationHistory.create({
       data: {
         teacherId: tp.id,
-        adminId: adminSession.id,
+        adminId,
         previousStatus,
         newStatus: "VERIFIED",
         reason: note,
       },
     });
 
-    await logAuditEvent(adminSession.id, "TEACHER_REACTIVATED", {
+    await logAuditEvent(adminId, "TEACHER_REACTIVATED", {
       teacherProfileId: tp.id,
       teacherUserId: tp.userId,
       previousStatus,

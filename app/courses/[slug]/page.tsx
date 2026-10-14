@@ -436,6 +436,7 @@ export default function CourseDetailPage() {
                   setPlaybackData(null);
                 }}
                 className="text-slate-400 hover:text-slate-200"
+                aria-label="Close preview modal"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -489,7 +490,7 @@ export default function CourseDetailPage() {
           <button
             onClick={handleEnroll}
             disabled={enrolling}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-lg shadow-blue-600/30"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#16805B] to-[#0D5C41] text-white font-bold text-xs shadow-lg shadow-[#16805B]/30"
           >
             {enrolling ? "Enrolling..." : course.isEnrolled ? "Continue" : "Enroll"}
           </button>

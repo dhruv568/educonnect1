@@ -7,6 +7,7 @@ export interface CourseFilterParams {
   subject?: string;
   category?: string;
   level?: string;
+  academicLevel?: string;
   gradeLevel?: string;
   stream?: string;
   competitiveExam?: string;
@@ -80,7 +81,7 @@ export class LmsService {
     };
 
     if (params.subject && params.subject !== "all") {
-      where.subject = { equals: params.subject, mode: "insensitive" };
+      where.subject = { contains: params.subject, mode: "insensitive" };
     }
 
     if (params.category && params.category !== "all") {
@@ -113,6 +114,32 @@ export class LmsService {
           ],
         },
       ];
+    } else if (params.academicLevel && params.academicLevel !== "all") {
+      if (params.academicLevel === "DIPLOMA") {
+        where.AND = [
+          ...(where.AND || []),
+          {
+            OR: [
+              { title: { contains: "diploma", mode: "insensitive" } },
+              { description: { contains: "diploma", mode: "insensitive" } },
+              { category: { contains: "diploma", mode: "insensitive" } },
+              { subject: { contains: "engineering", mode: "insensitive" } },
+            ],
+          },
+        ];
+      } else if (params.academicLevel === "SCHOOL") {
+        where.AND = [
+          ...(where.AND || []),
+          {
+            OR: [
+              { gradeLevel: { not: null } },
+              { title: { contains: "class", mode: "insensitive" } },
+              { title: { contains: "grade", mode: "insensitive" } },
+              { category: { contains: "school", mode: "insensitive" } },
+            ],
+          },
+        ];
+      }
     }
 
     if (params.search) {

@@ -32,7 +32,7 @@ export async function requireAuth(): Promise<UserSession & { userId: string }> {
     throw new Error("FORBIDDEN: User account is deactivated or suspended. Access denied.");
   }
 
-  return { ...session, userId, role: dbUser.role as UserRole };
+  return { ...session, id: userId, userId, role: dbUser.role as UserRole };
 }
 
 export async function requireVerifiedEmail(): Promise<UserSession & { userId: string }> {

@@ -12,10 +12,35 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_MAIN_DOMAIN || "https://educonnects.co.in"),
-  title: "EduConnects — Learn Better. Teach Smarter.",
-  description: "Next-generation education platform connecting educators and learners with flexible learning models.",
+  title: {
+    default: "EduConnects — Learn Better. Teach Smarter.",
+    template: "%s | EduConnects",
+  },
+  description: "Next-generation education platform connecting educators and learners with live classes, interactive courses, and flexible learning models.",
   alternates: {
     canonical: "https://educonnects.co.in/",
+  },
+  openGraph: {
+    title: "EduConnects — Learn Better. Teach Smarter.",
+    description: "Next-generation education platform connecting educators and learners with live classes, interactive courses, and flexible learning models.",
+    url: "https://educonnects.co.in",
+    siteName: "EduConnects",
+    locale: "en_IN",
+    type: "website",
+    images: [
+      {
+        url: "/images/favicon.png",
+        width: 512,
+        height: 512,
+        alt: "EduConnects — Learn Better. Teach Smarter.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EduConnects — Learn Better. Teach Smarter.",
+    description: "Next-generation education platform connecting educators and learners with live classes, interactive courses, and flexible learning models.",
+    images: ["/images/favicon.png"],
   },
   icons: {
     icon: [

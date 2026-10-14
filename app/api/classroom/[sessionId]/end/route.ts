@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { closeLiveKitRoom } from "@/lib/classroom/livekit-server";
 import { apiError, apiSuccess } from "@/lib/api-response";
 
 export async function POST(
@@ -110,6 +111,14 @@ export async function POST(
           });
         }
       }
+
+      // Synchronize liveClassSlot status to COMPLETED
+      if (liveSession.liveClassSlotId) {
+        await prisma.liveClassSlot.update({
+          where: { id: liveSession.liveClassSlotId },
+          data: { status: "COMPLETED" },
+        }).catch(() => {});
+      }
     }
 
     // 4. Broadcast reliable class-ended signal to all connected peers in signaling room
@@ -140,6 +149,9 @@ export async function POST(
         }
       }
     }
+
+    // 4b. Terminate LiveKit room if server credentials are configured
+    await closeLiveKitRoom(canonicalSessionId).catch(() => {});
 
     // 5. Fetch summary stats
     const allAttendances = await prisma.classAttendance.findMany({

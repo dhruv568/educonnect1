@@ -11,8 +11,10 @@ function getEnrichedDatabaseUrl(): string | undefined {
       const slashIdx = hostAndRest.indexOf("/");
       if (slashIdx !== -1) {
         const host = hostAndRest.slice(0, slashIdx);
-        const rest = hostAndRest.slice(slashIdx);
-        enriched = `${parts[0]}@${host}:5432${rest}`;
+        if (!host.includes(":")) {
+          const rest = hostAndRest.slice(slashIdx);
+          enriched = `${parts[0]}@${host}:5432${rest}`;
+        }
       }
     }
   }

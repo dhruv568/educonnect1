@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { cashfreeClient, verifyCashfreeWebhookSignature } from "@/lib/cashfree";
 import { PaymentService } from "@/services/payment-service";
 
 export async function POST(request: NextRequest) {
+  let webhookRecord: any = null;
   try {
     const rawBody = await request.text();
     const signature = request.headers.get("x-webhook-signature") || "";
@@ -36,9 +38,19 @@ export async function POST(request: NextRequest) {
     const payment = data.payment || {};
     const customer = data.customer_details || {};
 
-    const orderId = order.order_id || payload.order_id || "";
-    const paymentId = payment.cf_payment_id ? String(payment.cf_payment_id) : (payload.payment_id || "");
-    const eventId = `cf_evt_${eventType}_${orderId}_${paymentId}_${Date.now()}`;
+    const orderId = String(order.order_id || payload.order_id || "").trim();
+    const paymentId = payment.cf_payment_id
+      ? String(payment.cf_payment_id).trim()
+      : String(payload.payment_id || "").trim();
+    const paymentStatus = String(payment.payment_status || order.order_status || "").toUpperCase();
+
+    // Deterministic event identifier:
+    // Format: cf_evt_<eventType>_<orderId>_<paymentId || paymentStatus || "ORDER">
+    // This guarantees that retries of the SAME event produce the exact same ID,
+    // while multiple legitimate attempts (different paymentId) or status transitions produce distinct IDs.
+    const eventKey = paymentId ? paymentId : (paymentStatus || "ORDER");
+    const eventId = `cf_evt_${eventType}_${orderId}_${eventKey}`;
+    const payloadHash = crypto.createHash("sha256").update(rawBody).digest("hex");
 
     // Record Webhook Event for idempotency & audit trail
     const existingWebhook = await prisma.paymentWebhookEvent.findFirst({
@@ -48,19 +60,38 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (existingWebhook && existingWebhook.processed) {
-      return NextResponse.json({ received: true, idempotent: true });
+    if (existingWebhook) {
+      if (existingWebhook.processed) {
+        return NextResponse.json({ received: true, idempotent: true });
+      }
+      // If event was recorded less than 60 seconds ago, it is actively in flight by another worker
+      const inFlightAgeMs = Date.now() - new Date(existingWebhook.createdAt).getTime();
+      if (inFlightAgeMs < 60000) {
+        return NextResponse.json({ received: true, inFlight: true });
+      }
     }
 
-    const webhookRecord = await prisma.paymentWebhookEvent.create({
-      data: {
-        provider: "CASHFREE",
-        eventId,
-        eventType,
-        payload: rawBody,
-        processed: false,
-      },
-    });
+    webhookRecord = existingWebhook;
+    if (!webhookRecord) {
+      try {
+        webhookRecord = await prisma.paymentWebhookEvent.create({
+          data: {
+            provider: "CASHFREE",
+            eventId,
+            eventType,
+            payloadHash,
+            payload: rawBody,
+            processed: false,
+          },
+        });
+      } catch (createErr: any) {
+        // P2002 indicates concurrent webhook delivery created the record simultaneously
+        if (createErr.code === "P2002" || createErr.message?.includes("Unique constraint")) {
+          return NextResponse.json({ received: true, idempotent: true, concurrent: true });
+        }
+        throw createErr;
+      }
+    }
 
     // Handle Payment Success Webhook
     if (
@@ -157,14 +188,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark webhook as processed
-    await prisma.paymentWebhookEvent.update({
-      where: { id: webhookRecord.id },
-      data: { processed: true, processedAt: new Date() },
-    });
+    if (webhookRecord?.id) {
+      await prisma.paymentWebhookEvent.update({
+        where: { id: webhookRecord.id },
+        data: { processed: true, processedAt: new Date() },
+      });
+    }
 
     return NextResponse.json({ received: true, status: "OK" });
   } catch (error: any) {
     console.error("Cashfree webhook processing error:", error);
+    if (webhookRecord?.id) {
+      try {
+        await prisma.paymentWebhookEvent.update({
+          where: { id: webhookRecord.id },
+          data: { error: String(error?.message || error) },
+        });
+      } catch {}
+    }
     return NextResponse.json({ error: error.message || "Webhook processing error" }, { status: 500 });
   }
 }

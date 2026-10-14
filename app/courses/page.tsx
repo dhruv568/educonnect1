@@ -144,6 +144,7 @@ export default function CoursePlatformPage() {
               <input
                 type="text"
                 placeholder="Search by course title, teacher, subject, or keyword..."
+                aria-label="Search courses by title, teacher, subject, or keyword"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -155,6 +156,7 @@ export default function CoursePlatformPage() {
                 <button
                   onClick={() => setSearchQuery("")}
                   className="absolute right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  aria-label="Clear search"
                 >
                   <X className="w-4 h-4" />
                 </button>

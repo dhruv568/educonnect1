@@ -1,33 +1,11 @@
 import { cookies, headers } from "next/headers";
 import { UserSession } from "@/types/auth";
+import { encodeSession, decodeSession } from "./session-token";
+
+export { encodeSession, decodeSession };
 
 const SESSION_COOKIE_NAME = "educonnects_session";
 const SESSION_DURATION_DAYS = 7;
-
-/**
- * Encodes session data to a secure base64 payload (or JWT token signature).
- */
-export function encodeSession(session: UserSession): string {
-  const jsonStr = JSON.stringify(session);
-  return Buffer.from(jsonStr).toString("base64url");
-}
-
-/**
- * Decodes session data from cookie payload.
- */
-export function decodeSession(token: string): UserSession | null {
-  try {
-    const jsonStr = Buffer.from(token, "base64url").toString("utf-8");
-    const payload = JSON.parse(jsonStr) as UserSession;
-    if (payload) {
-      payload.userId = payload.userId || payload.id;
-      payload.id = payload.id || payload.userId;
-    }
-    return payload;
-  } catch {
-    return null;
-  }
-}
 
 export function getCookieDomain(host?: string): string | undefined {
   if (host) {

@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/permissions/permission-engine";
 import { AnalyticsService } from "@/services/analytics-service";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "TEACHER")) {
-      return new NextResponse("Unauthorized", { status: 403 });
-    }
+    await requirePermission("analytics.export");
 
     const { searchParams } = new URL(req.url);
     const reportType = searchParams.get("type") || "revenue";
@@ -62,6 +59,12 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error: any) {
+    if (error.message?.startsWith("UNAUTHORIZED")) {
+      return new NextResponse(error.message, { status: 401 });
+    }
+    if (error.message?.startsWith("UNVERIFIED") || error.message?.startsWith("FORBIDDEN")) {
+      return new NextResponse(error.message, { status: 403 });
+    }
     console.error("[GET /api/admin/analytics/export error]:", error);
     return new NextResponse("Export Failed", { status: 500 });
   }

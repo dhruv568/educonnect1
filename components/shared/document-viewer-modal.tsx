@@ -12,6 +12,15 @@ interface DocumentViewerModalProps {
 }
 
 export function DocumentViewerModal({ document, isOpen, onClose }: DocumentViewerModalProps) {
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !document) return null;
 
   const secureUrl = `/api/documents/${document.id}`;
@@ -21,7 +30,12 @@ export function DocumentViewerModal({ document, isOpen, onClose }: DocumentViewe
   const formattedSize = (document.fileSize / 1024).toFixed(1) + " KB";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Document Viewer: ${document.fileName}`}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+    >
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Modal Header */}
         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
@@ -61,6 +75,7 @@ export function DocumentViewerModal({ document, isOpen, onClose }: DocumentViewe
             <button
               onClick={onClose}
               className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors"
+              aria-label="Close document viewer"
             >
               <X className="h-6 w-6" />
             </button>
