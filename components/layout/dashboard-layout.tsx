@@ -787,7 +787,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
               {/* Back to Home Button */}
               <BackToHomeButton variant="default" />
 
-              <NotificationPopover />
+              <NotificationPopover variant="light" />
 
               {/* Profile Menu Trigger & Dropdown */}
               <div className="relative pl-1.5 sm:pl-4 border-l border-[#DCE5E4]" ref={profileMenuRef}>

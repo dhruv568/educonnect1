@@ -12,6 +12,7 @@ import {
   LogIn,
   UserPlus,
   LogOut,
+  Bell,
   User,
   LayoutDashboard,
   Users,
@@ -609,24 +610,25 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
           ) : isEducator ? (
             <div className="hidden lg:flex items-center gap-3 shrink-0">
               {userSession && isEducatorRole(userSession.role) ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
                   <Link
                     href={getEducatorSubdomainUrl("/teacher/dashboard")}
-                    className="h-10 px-4 rounded-xl text-sm font-semibold text-white bg-[#16805B] hover:bg-[#12684A] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer border border-[#35A979]/40"
+                    className="h-10 px-4 rounded-xl text-sm font-semibold text-white bg-[#16805B] hover:bg-[#12684A] shadow-xs hover:shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer border border-[#35A979]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#115E59] shrink-0"
                   >
                     <LayoutDashboard className="h-4 w-4 text-emerald-100" />
                     <span>Educator Dashboard</span>
                   </Link>
 
                   {/* Notification Bell Popover */}
-                  <div className="flex items-center">
-                    <NotificationPopover />
+                  <div className="flex items-center shrink-0">
+                    <NotificationPopover variant="educator" />
                   </div>
 
                   <button
+                    type="button"
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="text-sm font-semibold text-emerald-200 hover:text-white px-3.5 py-2 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+                    className="h-10 px-3.5 rounded-xl text-sm font-semibold text-teal-100 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-teal-400/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#115E59] disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
                   >
                     Logout
                   </button>
@@ -707,8 +709,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                   )}
 
                   {/* B. Notification Bell Popover */}
-                  <div className="flex items-center">
-                    <NotificationPopover />
+                  <div className="flex items-center shrink-0">
+                    <NotificationPopover variant={isEducator ? "educator" : isLearner ? "dark" : isMainWebsite ? "dark" : "light"} />
                   </div>
 
                 {/* C. User Profile Account Menu */}
@@ -901,6 +903,13 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
           </div>
         )}
 
+          {/* Mobile Notification Bell */}
+          {userSession && (
+            <div className="lg:hidden flex items-center shrink-0 mr-1 sm:mr-1.5">
+              <NotificationPopover variant={isEducator ? "educator" : isLearner ? "dark" : isMainWebsite ? "dark" : "light"} />
+            </div>
+          )}
+
           {/* ========================================================================= */}
           {/* 4. MOBILE HAMBURGER / CLOSE BUTTON */}
           {/* ========================================================================= */}
@@ -916,14 +925,14 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                 setMobileOpen(true);
               }
             }}
-            className={`lg:hidden p-2 rounded-xl border transition-colors ${
+            className={`lg:hidden h-10 w-10 flex items-center justify-center rounded-xl border transition-colors cursor-pointer ${
               isEducator
-                ? "bg-white/10 border-white/20 text-white hover:bg-white/15"
+                ? "bg-white/10 border-white/20 text-white hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-300"
                 : isLearner
-                ? "bg-white/10 border-white/20 text-white hover:bg-white/15"
+                ? "bg-white/10 border-white/20 text-white hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
                 : isMainWebsite
-                ? "bg-white/10 border-white/20 text-white hover:bg-white/15"
-                : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                ? "bg-white/10 border-white/20 text-white hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
             }`}
             aria-label={mobileOpen ? "Close mobile menu" : "Open mobile menu"}
             aria-expanded={mobileOpen}
@@ -1325,6 +1334,15 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       >
                         <LayoutDashboard className="h-4 w-4" />
                         <span>Educator Dashboard</span>
+                      </Link>
+
+                      <Link
+                        href="/notifications"
+                        onClick={() => setMobileOpen(false)}
+                        className="w-full py-2 rounded-xl text-teal-100 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 border border-white/20 hover:bg-white/10 transition-colors cursor-pointer"
+                      >
+                        <Bell className="h-3.5 w-3.5 text-teal-200" />
+                        <span>Notifications</span>
                       </Link>
 
                       <button
