@@ -24,6 +24,7 @@ import {
 import { formatCurrency } from "@/lib/currency";
 import { BackButton } from "@/components/ui/back-button";
 import { BackToHomeButton } from "@/components/ui/back-to-home-button";
+import { MIN_WITHDRAWAL_RUPEES } from "@/lib/withdrawal-config";
 
 export default function TeacherEarningsPage() {
   const [data, setData] = useState<any>(null);
@@ -87,13 +88,14 @@ export default function TeacherEarningsPage() {
 
   const payoutAccount = data?.payoutAccount || { status: "NOT_STARTED" };
   const payoutDetails = data?.payoutDetails || {};
+  const minWithdrawal = data?.minWithdrawalRupees ?? MIN_WITHDRAWAL_RUPEES;
 
   // Check if educator has an active withdrawal in progress
   const activeWithdrawal = withdrawals.find((w) =>
     ["PENDING", "APPROVED", "PROCESSING"].includes(w.status)
   );
 
-  const canWithdraw = summary.availableAmount >= 500 && !activeWithdrawal;
+  const canWithdraw = summary.availableAmount >= minWithdrawal && !activeWithdrawal;
 
   const handleOpenModal = () => {
     setFormError(null);
@@ -127,8 +129,8 @@ export default function TeacherEarningsPage() {
     setFormSuccess(null);
 
     const amountNum = parseFloat(withdrawAmount);
-    if (isNaN(amountNum) || amountNum < 500) {
-      setFormError("Minimum withdrawal amount is ₹500.");
+    if (isNaN(amountNum) || amountNum < minWithdrawal) {
+      setFormError(`Minimum withdrawal amount is ₹${minWithdrawal}.`);
       return;
     }
 
@@ -318,7 +320,7 @@ export default function TeacherEarningsPage() {
           </div>
           <div>
             <p className="text-3xl font-black text-teal-400">{formatCurrency(summary.availableAmount)}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Eligible for instant withdrawal (Min ₹500)</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Eligible for instant withdrawal (Min ₹{minWithdrawal})</p>
           </div>
           <button
             onClick={handleOpenModal}
@@ -330,7 +332,7 @@ export default function TeacherEarningsPage() {
             }`}
           >
             <ArrowDownCircle className="w-3.5 h-3.5" />
-            {canWithdraw ? "Request Withdrawal" : summary.availableAmount < 500 ? "Min ₹500 Required" : "Payout In Progress"}
+            {canWithdraw ? "Request Withdrawal" : summary.availableAmount < minWithdrawal ? `Min ₹${minWithdrawal} Required` : "Payout In Progress"}
           </button>
         </div>
       </div>
@@ -378,7 +380,7 @@ export default function TeacherEarningsPage() {
               </div>
               <h3 className="text-sm font-semibold text-slate-300">No Withdrawal Requests Yet</h3>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                When your available balance reaches ₹500 or more, you can submit a withdrawal request to transfer earnings to your bank account or UPI ID.
+                When your available balance reaches ₹{minWithdrawal} or more, you can submit a withdrawal request to transfer earnings to your bank account or UPI ID.
               </p>
             </div>
           ) : (
@@ -605,25 +607,25 @@ export default function TeacherEarningsPage() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs font-semibold text-slate-300">
                   <span>Withdrawal Amount (₹)</span>
-                  <span className="text-[11px] text-slate-400 font-normal">Min: ₹500</span>
+                  <span className="text-[11px] text-slate-400 font-normal">Min: ₹{minWithdrawal}</span>
                 </div>
                 <div className="relative">
                   <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">₹</span>
                   <input
                     type="number"
-                    min="500"
+                    min={minWithdrawal}
                     max={summary.availableAmount}
                     step="1"
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
-                    placeholder="Enter amount (min ₹500)"
+                    placeholder={`Enter amount (min ₹${minWithdrawal})`}
                     className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-teal-500 text-white font-bold text-sm outline-none transition-colors"
                   />
                 </div>
 
                 {/* Quick Selection Chips */}
                 <div className="flex items-center gap-2 pt-1">
-                  {[500, 1000, 2500, 5000].map((amt) => (
+                  {[100, 500, 1000, 2500, 5000].map((amt) => (
                     <button
                       key={amt}
                       type="button"

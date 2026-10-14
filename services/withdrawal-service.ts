@@ -2,9 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { LedgerService } from "@/services/ledger-service";
 import { cashfreePayoutClient, CashfreeTransferOptions } from "@/lib/cashfree-payout";
 import { EventService } from "@/services/event-service";
+import {
+  MIN_WITHDRAWAL_PAISE,
+  MIN_WITHDRAWAL_RUPEES,
+} from "@/lib/withdrawal-config";
 
-export const MIN_WITHDRAWAL_PAISE = 50000; // ₹500.00
-export const MIN_WITHDRAWAL_RUPEES = 500;
+export { MIN_WITHDRAWAL_PAISE, MIN_WITHDRAWAL_RUPEES };
 
 export interface RequestWithdrawalParams {
   teacherId: string;

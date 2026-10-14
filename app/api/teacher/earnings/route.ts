@@ -4,6 +4,7 @@ import { apiSuccess, handleApiError } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 import { LedgerService } from "@/services/ledger-service";
 import { RouteService } from "@/services/route-service";
+import { MIN_WITHDRAWAL_RUPEES } from "@/lib/withdrawal-config";
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
     const payoutAccount = await RouteService.getOrCreatePayoutAccount(teacherProfile.id);
 
     return apiSuccess({
+      minWithdrawalRupees: MIN_WITHDRAWAL_RUPEES,
       summary,
       payoutAccount: {
         id: payoutAccount.id,

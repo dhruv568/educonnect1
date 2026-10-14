@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma";
-import { WithdrawalService } from "../services/withdrawal-service";
+import { WithdrawalService, MIN_WITHDRAWAL_RUPEES } from "../services/withdrawal-service";
 import { LedgerService } from "../services/ledger-service";
 import { cashfreePayoutClient } from "../lib/cashfree-payout";
 import crypto from "crypto";
@@ -111,16 +111,19 @@ async function runEducatorWithdrawalTests() {
     // -------------------------------------------------------------
     console.log("\n🛡️ 1. Testing Minimum Limit & Balance Validation...");
 
-    // Amount below ₹500 should fail
+    // Amount below minimum limit should fail
     try {
       await WithdrawalService.requestWithdrawal({
         teacherId: testTeacherProfile.id,
-        amountRupees: 200,
+        amountRupees: Math.max(1, MIN_WITHDRAWAL_RUPEES - 50),
         payoutMethod: "BANK_TRANSFER",
       });
-      assert(false, "Should have rejected withdrawal below ₹500");
+      assert(false, `Should have rejected withdrawal below ₹${MIN_WITHDRAWAL_RUPEES}`);
     } catch (err: any) {
-      assert(err.message.includes("Minimum withdrawal amount is ₹500"), "Rejected amount below minimum limit (₹500)");
+      assert(
+        err.message.includes(`Minimum withdrawal amount is ₹${MIN_WITHDRAWAL_RUPEES}`),
+        `Rejected amount below minimum limit (₹${MIN_WITHDRAWAL_RUPEES})`
+      );
     }
 
     // Amount exceeding available balance should fail
