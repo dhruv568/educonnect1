@@ -673,7 +673,7 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
           <div className="flex items-center gap-1.5 font-medium">
             <span>Powered by</span>
             <a
-              href="https://automation.myprofunnels.com/"
+              href="https://myprofunnels.com"
               target="_blank"
               rel="noopener noreferrer"
               className={`font-bold ${t.accentText} hover:text-white hover:underline transition-colors inline-flex items-center gap-1`}

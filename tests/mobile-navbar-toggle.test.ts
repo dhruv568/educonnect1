@@ -105,7 +105,7 @@ async function runMobileNavbarToggleTests() {
     console.log("\n📋 TEST 6: State machine simulation of open, close with X, and reopen...");
     
     // Simulate runtime behavior
-    let mobileOpenState = false;
+    const state = { mobileOpen: false };
     const buttonElement = { name: "button" };
     const svgElement = { name: "svg", parent: buttonElement };
     const drawerElement = { name: "drawer" };
@@ -124,33 +124,33 @@ async function runMobileNavbarToggleTests() {
     const handleClickOutsideSimulation = (target: any) => {
       const isOutsideDrawer = !contains(drawerElement, target);
       const isOutsideButton = !contains(buttonElement, target);
-      if (mobileOpenState && isOutsideDrawer && isOutsideButton) {
-        mobileOpenState = false;
+      if (state.mobileOpen && isOutsideDrawer && isOutsideButton) {
+        state.mobileOpen = false;
       }
     };
 
     const handleButtonClickSimulation = (e: { stopPropagation: () => void; preventDefault: () => void }) => {
       e.preventDefault();
       e.stopPropagation();
-      if (mobileOpenState) {
-        mobileOpenState = false;
+      if (state.mobileOpen) {
+        state.mobileOpen = false;
       } else {
-        mobileOpenState = true;
+        state.mobileOpen = true;
       }
     };
 
     // Step A: Initially closed
-    let stepAPass = (mobileOpenState === false);
+    let stepAPass = (state.mobileOpen === false);
 
     // Step B: User opens the menu
     handleButtonClickSimulation({ stopPropagation: () => {}, preventDefault: () => {} });
-    let stepBPass = (mobileOpenState === true);
+    let stepBPass = (state.mobileOpen === true);
 
     // Step C: User clicks the X button
     // 1. mousedown/touchstart fires on svgElement inside button
     handleClickOutsideSimulation(svgElement);
     // Crucial check: mousedown on button MUST NOT close menu prematurely before click handler
-    const notPrematurelyClosed = (mobileOpenState === true);
+    const notPrematurelyClosed = (state.mobileOpen === true);
 
     // 2. click event fires on button
     let propagationStopped = false;
@@ -160,16 +160,16 @@ async function runMobileNavbarToggleTests() {
       preventDefault: () => { defaultPrevented = true; }
     });
     // Crucial check: menu MUST be closed and stay closed
-    const closedCompletely = (mobileOpenState === false);
+    const closedCompletely = (state.mobileOpen === false);
 
     // Step D: User reopens the menu manually
     handleButtonClickSimulation({ stopPropagation: () => {}, preventDefault: () => {} });
-    const reopenedSuccessfully = (mobileOpenState === true);
+    const reopenedSuccessfully = (state.mobileOpen === true);
 
     // Step E: User closes with X again
     handleClickOutsideSimulation(buttonElement);
     handleButtonClickSimulation({ stopPropagation: () => {}, preventDefault: () => {} });
-    const closedAgain = (mobileOpenState === false);
+    const closedAgain = (state.mobileOpen === false);
 
     assert(
       stepAPass && stepBPass && notPrematurelyClosed && closedCompletely && propagationStopped && defaultPrevented && reopenedSuccessfully && closedAgain,
