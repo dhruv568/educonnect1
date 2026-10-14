@@ -68,6 +68,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
   const moreDropdownRef = useRef<HTMLDivElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileButtonRef = useRef<HTMLButtonElement>(null);
 
   // Authenticate strictly with server-truth (no-cache headers)
   const checkAuthStatus = async () => {
@@ -141,7 +142,11 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(target)) {
         setProfileDropdownOpen(false);
       }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(target)) {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(target) &&
+        !mobileButtonRef.current?.contains(target)
+      ) {
         setMobileOpen(false);
       }
     };
@@ -897,10 +902,20 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
         )}
 
           {/* ========================================================================= */}
-          {/* 4. MOBILE HAMBURGER BUTTON */}
+          {/* 4. MOBILE HAMBURGER / CLOSE BUTTON */}
           {/* ========================================================================= */}
           <button
-            onClick={() => setMobileOpen(!mobileOpen)}
+            ref={mobileButtonRef}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (mobileOpen) {
+                setMobileOpen(false);
+              } else {
+                setMobileOpen(true);
+              }
+            }}
             className={`lg:hidden p-2 rounded-xl border transition-colors ${
               isEducator
                 ? "bg-white/10 border-white/20 text-white hover:bg-white/15"
@@ -910,7 +925,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                 ? "bg-white/10 border-white/20 text-white hover:bg-white/15"
                 : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
             }`}
-            aria-label="Toggle mobile menu"
+            aria-label={mobileOpen ? "Close mobile menu" : "Open mobile menu"}
+            aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -937,6 +953,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
               className={`relative top-16 mx-3 sm:mx-6 rounded-3xl shadow-2xl p-5 space-y-4 max-h-[calc(100vh-5rem)] overflow-y-auto ${
                 isEducator
                   ? "bg-[#115E59] border border-[#0F766E]/60 text-white"
