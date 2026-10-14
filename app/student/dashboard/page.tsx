@@ -108,24 +108,24 @@ export default function StudentDashboardPage() {
 
   return (
     <DashboardLayout role="STUDENT" userName={data.userName} userEmail={data.userEmail}>
-      <div className="space-y-8 pb-16">
+      <div className="space-y-6 sm:space-y-8 pb-16 min-w-0">
         {/* Welcome Header Banner */}
-        <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
-          <div className="flex items-center gap-4 relative z-10">
+        <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
+          <div className="flex items-center gap-3 sm:gap-4 relative z-10 min-w-0">
             {data.avatarUrl ? (
               <img
                 src={data.avatarUrl}
                 alt={data.userName}
-                className="w-16 h-16 rounded-2xl object-cover ring-4 ring-white/20 shadow-lg"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl object-cover ring-4 ring-white/20 shadow-lg shrink-0"
               />
             ) : (
-              <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md text-white font-black text-2xl flex items-center justify-center ring-4 ring-white/20 shadow-lg">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-md text-white font-black text-xl sm:text-2xl flex items-center justify-center ring-4 ring-white/20 shadow-lg shrink-0">
                 {data.userName.charAt(0).toUpperCase()}
               </div>
             )}
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl lg:text-3xl font-black tracking-tight">
+            <div className="space-y-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight break-words">
                   {getGreeting()}, {data.userName} 👋
                 </h1>
                 {data.academicProfile?.educationType === "DIPLOMA" ? (
@@ -158,23 +158,23 @@ export default function StudentDashboardPage() {
                   </Badge>
                 ) : null}
               </div>
-              <p className="text-xs sm:text-sm text-blue-100 font-medium">
+              <p className="text-xs sm:text-sm text-blue-100 font-medium truncate">
                 {data.userEmail || "Your personalized learning dashboard"} • Ready to continue?
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 relative z-10 shrink-0">
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 shadow-sm">
-              <Flame className="h-5 w-5 text-amber-300 animate-pulse" />
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 relative z-10 w-full sm:w-auto shrink-0 pt-1 sm:pt-0">
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-white/20 shadow-sm">
+              <Flame className="h-5 w-5 text-amber-300 animate-pulse shrink-0" />
               <div className="text-left">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-blue-200">Learning Streak</div>
                 <div className="text-xs font-black text-white">{data.stats.totalHours} hrs Total</div>
               </div>
             </div>
 
-            <Link href="/student/teachers">
-              <Button variant="secondary" size="sm" className="bg-white text-slate-900 hover:bg-slate-100 font-bold border-0 shadow-md">
+            <Link href="/student/teachers" className="w-full sm:w-auto">
+              <Button variant="secondary" size="sm" className="w-full sm:w-auto bg-white text-slate-900 hover:bg-slate-100 font-bold border-0 shadow-md">
                 Find Teachers
               </Button>
             </Link>
@@ -182,7 +182,7 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Statistics Overview Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <MetricCard
             title="Courses Enrolled"
             value={loading ? "..." : data.stats.enrolledCount}
@@ -217,7 +217,7 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Continue Learning & Upcoming Classes Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Continue Learning Card */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
@@ -578,13 +578,13 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Quick Actions & Navigation Shortcuts */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          <Card className="space-y-3 p-5 bg-white border border-slate-200 rounded-3xl hover:shadow-md transition-all">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <Card className="space-y-3 p-4 sm:p-5 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl hover:shadow-md transition-all h-full">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Discovery</span>
               <Search className="h-4 w-4 text-[#2563EB]" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">Find Teachers</h3>
+            <h3 className="text-base font-bold text-slate-900 truncate">Find Teachers</h3>
             <p className="text-xs text-slate-500">Search verified educators, view qualifications, and book sessions.</p>
             <Link href="/student/teachers" className="block pt-1">
               <Button variant="secondary" size="sm" className="w-full">
@@ -593,12 +593,12 @@ export default function StudentDashboardPage() {
             </Link>
           </Card>
 
-          <Card className="space-y-3 p-5 bg-white border border-slate-200 rounded-3xl hover:shadow-md transition-all">
+          <Card className="space-y-3 p-4 sm:p-5 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl hover:shadow-md transition-all h-full">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Live Classes</span>
               <Video className="h-4 w-4 text-blue-600" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">My Live Schedule</h3>
+            <h3 className="text-base font-bold text-slate-900 truncate">My Live Schedule</h3>
             <p className="text-xs text-slate-500">View upcoming, today's, and completed video classrooms.</p>
             <Link href="/student/live-classes" className="block pt-1">
               <Button variant="outline" size="sm" className="w-full">
@@ -607,12 +607,12 @@ export default function StudentDashboardPage() {
             </Link>
           </Card>
 
-          <Card className="space-y-3 p-5 bg-white border border-slate-200 rounded-3xl hover:shadow-md transition-all">
+          <Card className="space-y-3 p-4 sm:p-5 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl hover:shadow-md transition-all h-full">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Course Library</span>
               <BookOpen className="h-4 w-4 text-sky-600" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">Enrolled Courses</h3>
+            <h3 className="text-base font-bold text-slate-900 truncate">Enrolled Courses</h3>
             <p className="text-xs text-slate-500">Access video lessons, track progress, and resume learning.</p>
             <Link href="/student/courses" className="block pt-1">
               <Button variant="outline" size="sm" className="w-full">
@@ -621,12 +621,12 @@ export default function StudentDashboardPage() {
             </Link>
           </Card>
 
-          <Card className="space-y-3 p-5 bg-white border border-slate-200 rounded-3xl hover:shadow-md transition-all">
+          <Card className="space-y-3 p-4 sm:p-5 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl hover:shadow-md transition-all h-full">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Finance</span>
               <CreditCard className="h-4 w-4 text-amber-500" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">Payment Invoices</h3>
+            <h3 className="text-base font-bold text-slate-900 truncate">Payment Invoices</h3>
             <p className="text-xs text-slate-500">Review purchases, receipts, and Cashfree transactions.</p>
             <Link href="/student/payments" className="block pt-1">
               <Button variant="outline" size="sm" className="w-full">

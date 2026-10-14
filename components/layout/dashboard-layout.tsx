@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -33,10 +33,12 @@ import {
   Award,
   MessageSquare,
   CalendarCheck,
+  Home,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { UserRole } from "@/types/auth";
 import { isEducatorRole, isLearnerRole, isAdminRole, getDashboardPathForRole } from "@/lib/auth/roles";
+import { getHomeUrl, getLearnerDomain, getEducatorDomain } from "@/lib/app-url";
 import { useToast } from "@/components/ui/toast";
 import { NotificationPopover } from "@/components/layout/notification-popover";
 import { PermissionProvider } from "@/components/shared/permission-guard";
@@ -85,6 +87,8 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
   const [dynamicNav, setDynamicNav] = useState<any[] | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // Real badge counts fetched from dashboard metrics API
   const [badgeCounts, setBadgeCounts] = useState<{
@@ -193,17 +197,57 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
     return () => window.removeEventListener("pageshow", handlePageShow);
   }, [userName, userEmail, role]);
 
-  // Keyboard shortcut for search palette (Ctrl+K or Cmd+K)
+  // Keyboard shortcut for search palette (Ctrl+K or Cmd+K) and Escape to close overlays
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setSearchOpen((prev) => !prev);
       }
+      if (e.key === "Escape") {
+        setSidebarOpen(false);
+        setProfileDropdownOpen(false);
+        setSearchOpen(false);
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Close mobile drawer and profile dropdown on navigation / route change
+  useEffect(() => {
+    setSidebarOpen(false);
+    setProfileDropdownOpen(false);
+  }, [pathname]);
+
+  // Click outside listener for profile dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    if (profileDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [profileDropdownOpen]);
+
+  // Prevent background scroll when mobile sidebar drawer is open
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [sidebarOpen]);
 
   const toggleSection = (id: string) => {
     setCollapsedSections((prev) => ({
@@ -446,21 +490,25 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
     <PermissionProvider>
       <div
         data-theme={isEducator ? "educator" : isLearner ? "learner" : "main"}
-        className="min-h-screen flex bg-[#F5F7F8]"
+        className="min-h-screen flex bg-[#F5F7F8] relative"
       >
-        {/* Mobile Backdrop & Sidebar */}
+        {/* Mobile Backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-[#0F172A]/80 z-40 lg:hidden backdrop-blur-xs transition-opacity"
-            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-[#0F172A]/80 z-40 lg:hidden backdrop-blur-xs transition-opacity cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSidebarOpen(false);
+            }}
             aria-hidden="true"
           />
         )}
 
         {/* Desktop & Mobile Sidebar */}
         <aside
-          className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col w-64 shrink-0 transition-transform duration-300 ease-in-out ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 flex flex-col w-72 max-w-[85vw] lg:w-64 h-screen max-h-screen shrink-0 transition-transform duration-300 ease-in-out ${
+            sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
           } ${
             isLearner
               ? "bg-[#0F172A] text-slate-100 border-r border-blue-900/40"
@@ -472,7 +520,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
         >
           {/* Logo Header */}
           <div
-            className={`p-5 flex items-center justify-between ${
+            className={`p-5 flex items-center justify-between shrink-0 ${
               isLearner
                 ? "border-b border-blue-900/40"
                 : isEducator
@@ -482,6 +530,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
           >
             <Link
               href={isAdminOrStaff ? "/admin" : isEducator ? "/teacher/dashboard" : "/student/dashboard"}
+              onClick={() => setSidebarOpen(false)}
               className="flex items-center gap-3 group min-w-0"
             >
               <Logo
@@ -509,9 +558,16 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
               </div>
             </Link>
             <button
-              onClick={() => setSidebarOpen(false)}
-              className={`lg:hidden p-1 rounded-lg ${
-                isLearner ? "text-slate-300 hover:text-white" : "text-teal-200 hover:text-white"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSidebarOpen(false);
+              }}
+              className={`lg:hidden p-1.5 rounded-xl transition-colors cursor-pointer ${
+                isLearner
+                  ? "text-slate-300 hover:text-white hover:bg-blue-950/60"
+                  : "text-teal-200 hover:text-white hover:bg-[#115E59]/40"
               }`}
               aria-label="Close navigation"
             >
@@ -520,7 +576,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
           </div>
 
           {/* Grouped Navigation Links */}
-          <nav className="flex-1 p-3 space-y-4 overflow-y-auto scrollbar-thin">
+          <nav className="flex-1 p-3 space-y-4 overflow-y-auto scrollbar-thin min-h-0">
             {isAdminOrStaff ? (
               // Grouped Admin / Staff Navigation
               filteredAdminSections.map((section) => {
@@ -603,7 +659,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
                       item.href !== "/student/dashboard" &&
                       pathname.startsWith(item.href));
                   const IconComponent = item.icon || LayoutDashboard;
-                  const isEducator = isEducatorRole(role);
+                  const isEducatorRoleItem = isEducatorRole(role);
                   return (
                     <Link
                       key={idx}
@@ -611,24 +667,24 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
                       onClick={() => setSidebarOpen(false)}
                       className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
                         isActive
-                          ? isEducator
+                          ? isEducatorRoleItem
                             ? "bg-[#0F766E] text-white shadow-md shadow-teal-700/25 border border-[#2DD4BF]/40"
                             : "bg-[#2563EB] text-white shadow-md shadow-blue-500/25 border border-[#60A5FA]/40"
-                          : isEducator
+                          : isEducatorRoleItem
                           ? "text-teal-100/80 hover:bg-[#115E59]/40 hover:text-white"
                           : "text-slate-300 hover:bg-blue-950/50 hover:text-white"
                       }`}
                     >
                       <IconComponent
-                        className={`h-4 w-4 ${
+                        className={`h-4 w-4 shrink-0 ${
                           isActive
                             ? "text-white"
-                            : isEducator
+                            : isEducatorRoleItem
                             ? "text-teal-300/70"
                             : "text-blue-300/70"
                         }`}
                       />
-                      <span>{item.label}</span>
+                      <span className="truncate">{item.label}</span>
                     </Link>
                   );
                 })}
@@ -636,42 +692,56 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
             )}
           </nav>
 
-          {/* Sidebar Footer */}
+          {/* Dedicated Fixed Bottom Action Section */}
           <div
-            className={`p-3 space-y-1.5 ${
+            className={`p-3 space-y-1.5 shrink-0 mt-auto ${
               isLearner
-                ? "border-t border-blue-900/40"
+                ? "border-t border-blue-900/40 bg-[#0B132B]/80"
                 : isEducator
-                ? "border-t border-[#115E59]/40"
-                : "border-t border-[#1B6863]/30"
+                ? "border-t border-[#115E59]/40 bg-[#022322]/80"
+                : "border-t border-[#1B6863]/30 bg-[#053230]/80"
             }`}
           >
             <BackToHomeButton variant="sidebar" />
             <button
               type="button"
-              onClick={(e) => handleLogout(e)}
+              onClick={(e) => {
+                setSidebarOpen(false);
+                handleLogout(e);
+              }}
               disabled={isLoggingOut}
-              className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-xs font-semibold text-rose-300 hover:bg-rose-500/15 transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-300 hover:bg-rose-500/15 hover:text-rose-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer select-none"
             >
               {isLoggingOut ? (
-                <Loader2 className="h-4 w-4 animate-spin text-rose-300" />
+                <Loader2 className="h-4 w-4 animate-spin text-rose-300 shrink-0" />
               ) : (
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4 shrink-0" />
               )}
-              <span>{isLoggingOut ? "Signing out..." : "Sign Out"}</span>
+              <span className="truncate">{isLoggingOut ? "Signing out..." : "Sign Out"}</span>
             </button>
           </div>
         </aside>
 
         {/* Main Workspace Container */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden">
           {/* Topbar Header */}
-          <header className="h-16 bg-white border-b border-[#DCE5E4] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
-            <div className="flex items-center gap-3 sm:gap-4">
+          <header className="h-16 bg-white border-b border-[#DCE5E4] px-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-2xs">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 rounded-xl text-[#102A2A] hover:bg-[#F5F7F8]"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSidebarOpen((prev) => !prev);
+                }}
+                className={`lg:hidden p-2 rounded-xl transition-colors cursor-pointer ${
+                  isLearner
+                    ? "text-[#0F172A] hover:bg-blue-50"
+                    : isEducator
+                    ? "text-[#042F2E] hover:bg-teal-50"
+                    : "text-[#102A2A] hover:bg-[#F5F7F8]"
+                }`}
                 aria-label="Toggle navigation menu"
+                aria-expanded={sidebarOpen}
               >
                 <Menu className="h-6 w-6" />
               </button>
@@ -713,41 +783,139 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
               )}
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
               {/* Back to Home Button */}
               <BackToHomeButton variant="default" />
 
               <NotificationPopover />
 
-              {/* Admin Profile Area */}
-              <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-[#DCE5E4]">
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={currentUserName || "User"}
-                    className="w-9 h-9 rounded-full object-cover shadow-xs ring-1 ring-[#DCE5E4]"
-                  />
-                ) : (
-                  <div className="w-9 h-9 rounded-full bg-[#0B4F4B] text-[#F2C14E] font-extrabold flex items-center justify-center text-xs shadow-xs uppercase border border-[#F2C14E]/30">
-                    {currentUserName ? currentUserName.trim().charAt(0) : "A"}
-                  </div>
-                )}
-                <div className="hidden md:block text-left">
-                  <div className="text-xs font-bold text-[#102A2A]">
-                    {currentUserName || "Administrator"}
-                  </div>
-                  {currentUserEmail && (
-                    <div className="text-[10px] text-[#5D7373] truncate max-w-[160px]">
-                      {currentUserEmail}
+              {/* Profile Menu Trigger & Dropdown */}
+              <div className="relative pl-1.5 sm:pl-4 border-l border-[#DCE5E4]" ref={profileMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setProfileDropdownOpen((prev) => !prev)}
+                  className="flex items-center gap-2 sm:gap-3 p-1 rounded-xl hover:bg-[#F5F7F8] transition-colors cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                  aria-expanded={profileDropdownOpen}
+                  aria-haspopup="true"
+                  aria-label="User account menu"
+                >
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={currentUserName || "User"}
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover shadow-xs ring-1 ring-[#DCE5E4]"
+                    />
+                  ) : (
+                    <div
+                      className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full font-extrabold flex items-center justify-center text-xs shadow-xs uppercase border ${
+                        isLearner
+                          ? "bg-[#2563EB] text-white border-blue-400/40"
+                          : isEducator
+                          ? "bg-[#0F766E] text-teal-100 border-[#2DD4BF]/40"
+                          : "bg-[#0B4F4B] text-[#F2C14E] border-[#F2C14E]/30"
+                      }`}
+                    >
+                      {currentUserName ? currentUserName.trim().charAt(0) : "U"}
                     </div>
                   )}
-                </div>
+                  <div className="hidden md:block text-left">
+                    <div className="text-xs font-bold text-[#102A2A] truncate max-w-[140px]">
+                      {currentUserName || (isEducator ? "Educator" : isLearner ? "Learner" : "Administrator")}
+                    </div>
+                    {currentUserEmail && (
+                      <div className="text-[10px] text-[#5D7373] truncate max-w-[140px]">
+                        {currentUserEmail}
+                      </div>
+                    )}
+                  </div>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 text-[#5D7373] transition-transform duration-200 hidden sm:block ${
+                      profileDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Profile Dropdown Menu */}
+                {profileDropdownOpen && (
+                  <div
+                    className="absolute right-0 mt-2 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-150"
+                    role="menu"
+                    aria-orientation="vertical"
+                  >
+                    {/* User Summary */}
+                    <div className="px-4 py-3 border-b border-slate-100">
+                      <p className="text-xs font-bold text-slate-900 truncate">
+                        {currentUserName || (isEducator ? "Educator" : isLearner ? "Learner" : "User")}
+                      </p>
+                      {currentUserEmail && (
+                        <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                          {currentUserEmail}
+                        </p>
+                      )}
+                      <div className="mt-2">
+                        <Badge variant={roleColors[role] || "student"} size="sm">
+                          {currentRoleTitle}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Quick Profile Links */}
+                    <div className="py-1">
+                      <Link
+                        href={isEducator ? "/teacher/onboarding" : isLearner ? "/profile" : "/admin/settings"}
+                        onClick={() => setProfileDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-950 transition-colors"
+                        role="menuitem"
+                      >
+                        <UserCheck className="h-4 w-4 text-slate-400 shrink-0" />
+                        <span>Profile & Settings</span>
+                      </Link>
+
+                      <a
+                        href={
+                          isEducator
+                            ? (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") ? "/teacher" : getEducatorDomain())
+                            : isLearner
+                            ? (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") ? "/student" : getLearnerDomain())
+                            : (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") ? "/" : getHomeUrl())
+                        }
+                        onClick={() => setProfileDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-950 transition-colors"
+                        role="menuitem"
+                      >
+                        <Home className="h-4 w-4 text-slate-400 shrink-0" />
+                        <span>Back to Home</span>
+                      </a>
+                    </div>
+
+                    {/* Sign Out Action in Dropdown */}
+                    <div className="border-t border-slate-100 pt-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          setProfileDropdownOpen(false);
+                          handleLogout(e);
+                        }}
+                        disabled={isLoggingOut}
+                        className="flex items-center gap-2.5 w-full px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                        role="menuitem"
+                      >
+                        {isLoggingOut ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-rose-600 shrink-0" />
+                        ) : (
+                          <LogOut className="h-4 w-4 text-rose-600 shrink-0" />
+                        )}
+                        <span>{isLoggingOut ? "Signing out..." : "Sign Out"}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </header>
 
           {/* Main Workspace */}
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">{children}</main>
+          <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto min-w-0">{children}</main>
           <DashboardFooter />
         </div>
 
