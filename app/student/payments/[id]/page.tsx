@@ -242,7 +242,7 @@ export default function StudentPaymentReceiptPage() {
         )}
 
         {/* Main Official Receipt Document */}
-        <div className="receipt-card bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 print:bg-white print:text-black print:shadow-none print:border print:border-gray-300 print:rounded-none print:p-5 print:space-y-3">
+        <div className="receipt-card bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-8 shadow-2xl space-y-5 print:bg-white print:text-black print:shadow-none print:border print:border-gray-300 print:rounded-none print:p-5 print:space-y-3">
           
           {/* Header Section: Logo + Heading */}
           <div className="space-y-4 print:space-y-2">
@@ -379,8 +379,8 @@ export default function StudentPaymentReceiptPage() {
               </span>
             </div>
 
-            <div className="border border-slate-800 rounded-2xl overflow-hidden print:border-gray-300">
-              <table className="w-full text-left text-xs">
+            <div className="border border-slate-800 rounded-2xl overflow-x-auto print:border-gray-300">
+              <table className="w-full text-left text-xs min-w-[500px] sm:min-w-0">
                 <thead className="bg-slate-950/80 print:bg-gray-100 text-slate-300 print:text-gray-800 font-bold border-b border-slate-800 print:border-gray-300">
                   <tr>
                     <th className="px-3.5 py-2.5 print:py-1.5">Description of Service</th>

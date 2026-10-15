@@ -40,7 +40,7 @@ export default function TeacherTransactionsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 space-y-8">
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 md:p-10 space-y-6 sm:space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800/80 pb-6">
         <div>
           <div className="flex items-center gap-2.5 mb-2">
@@ -84,7 +84,8 @@ export default function TeacherTransactionsPage() {
         </div>
       ) : (
         <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl overflow-hidden backdrop-blur-xl shadow-2xl">
-          <div className="overflow-x-auto">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-slate-950/80 text-slate-400 uppercase font-semibold border-b border-slate-800">
                 <tr>
@@ -118,6 +119,48 @@ export default function TeacherTransactionsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card List */}
+          <div className="md:hidden divide-y divide-slate-800/60">
+            {filtered.map((t) => (
+              <div key={t.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-extrabold text-sm text-white break-words">
+                      {t.productName}
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Student: <span className="text-slate-200 font-medium">{t.studentName}</span>
+                    </p>
+                  </div>
+                  <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <CheckCircle2 className="w-3 h-3" /> {t.status}
+                  </span>
+                </div>
+
+                <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/80 text-xs space-y-2">
+                  <div className="flex items-center justify-between text-slate-300">
+                    <span className="text-slate-400 text-[11px]">Gross Sales:</span>
+                    <span className="font-semibold text-slate-200">{formatCurrency(t.grossAmount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-300">
+                    <span className="text-slate-400 text-[11px]">Platform Fee:</span>
+                    <span className="text-slate-400">-{formatCurrency(t.commissionAmount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/60">
+                    <span className="text-slate-400 text-[11px] font-semibold">Teacher Net Share:</span>
+                    <span className="text-sm font-extrabold text-emerald-400">{formatCurrency(t.teacherEarningAmount)}</span>
+                  </div>
+                  <div className="pt-1.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500">
+                    <span>Date: {new Date(t.createdAt).toLocaleDateString()}</span>
+                    <span className="font-mono text-[10px] text-slate-400 truncate max-w-[150px]" title={t.internalReference}>
+                      {t.internalReference}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

@@ -852,7 +852,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
                 {/* Profile Dropdown Menu */}
                 {profileDropdownOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-white shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-150"
                     role="menu"
                     aria-orientation="vertical"
                   >

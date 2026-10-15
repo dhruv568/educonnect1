@@ -89,7 +89,7 @@ export default function StudentAttendancePage() {
     <DashboardLayout role="STUDENT" userName="Learner">
       <div className="space-y-6 pb-16">
         {/* Header Title Banner */}
-        <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] text-white rounded-3xl p-5 sm:p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
           <div className="space-y-2 relative z-10">
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-blue-200 border border-white/20 uppercase tracking-wider">
@@ -105,7 +105,7 @@ export default function StudentAttendancePage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 relative z-10 shrink-0">
+          <div className="flex items-center flex-wrap gap-2 relative z-10 shrink-0">
             <BackButton fallbackUrl="/student/dashboard" label="Back to Dashboard" variant="dark" />
             <BackToHomeButton variant="dark" />
           </div>
@@ -148,10 +148,10 @@ export default function StudentAttendancePage() {
 
         {/* Tab Selection & Search Toolbar */}
         <Card className="p-4 border-slate-200 bg-white rounded-3xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-2xl w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl w-full sm:w-auto">
             <button
               onClick={() => setActiveTab("LIVE")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
                 activeTab === "LIVE"
                   ? "bg-[#2563EB] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -161,7 +161,7 @@ export default function StudentAttendancePage() {
             </button>
             <button
               onClick={() => setActiveTab("COURSES")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
                 activeTab === "COURSES"
                   ? "bg-[#2563EB] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -205,7 +205,8 @@ export default function StudentAttendancePage() {
             </Card>
           ) : (
             <Card className="p-0 border-slate-200 overflow-hidden rounded-3xl shadow-xs bg-white">
-              <div className="overflow-x-auto">
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-100 text-slate-600 font-extrabold uppercase border-b border-slate-200">
                     <tr>
@@ -255,6 +256,54 @@ export default function StudentAttendancePage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Mobile Card List */}
+              <div className="md:hidden divide-y divide-slate-100">
+                {filteredAttendances.map((a) => (
+                  <div key={a.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-extrabold text-sm text-slate-900 break-words">
+                          {a.slotTitle}
+                        </h4>
+                        <p className="text-xs text-slate-600 font-medium mt-0.5">
+                          {a.teacherName} • <span className="text-slate-400">{a.subject}</span>
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                          a.status === "PRESENT"
+                            ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                            : a.status === "PARTIAL"
+                            ? "bg-amber-100 text-amber-800 border border-amber-200"
+                            : "bg-red-100 text-red-800 border border-red-200"
+                        }`}
+                      >
+                        {a.status === "PRESENT" && <CheckCircle2 className="w-3 h-3" />}
+                        {a.status}
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 text-xs flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-slate-400 block font-semibold uppercase">Joined At</span>
+                        <span className="text-slate-700 font-medium">
+                          {new Date(a.joinedAt).toLocaleString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <div className="text-right space-y-0.5">
+                        <span className="text-[10px] text-slate-400 block font-semibold uppercase">Duration</span>
+                        <span className="font-bold text-slate-900">{a.durationMinutes} mins</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </Card>
           )
         ) : filteredLessonLogs.length === 0 ? (
@@ -267,7 +316,8 @@ export default function StudentAttendancePage() {
           </Card>
         ) : (
           <Card className="p-0 border-slate-200 overflow-hidden rounded-3xl shadow-xs bg-white">
-            <div className="overflow-x-auto">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-100 text-slate-600 font-extrabold uppercase border-b border-slate-200">
                   <tr>
@@ -303,6 +353,39 @@ export default function StudentAttendancePage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card List */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {filteredLessonLogs.map((l) => (
+                <div key={l.id} className="p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-extrabold text-sm text-slate-900 break-words">
+                        {l.lessonTitle}
+                      </h4>
+                      <p className="text-xs text-slate-600 font-medium mt-0.5">
+                        {l.courseTitle}
+                      </p>
+                    </div>
+                    <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      <CheckCircle2 className="w-3 h-3" />
+                      COMPLETED
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
+                    <span className="text-[11px] text-slate-400">Completed On:</span>
+                    <span className="font-medium text-slate-700">
+                      {new Date(l.completedAt).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </Card>
         )}

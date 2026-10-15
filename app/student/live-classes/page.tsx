@@ -87,7 +87,7 @@ export default function StudentLiveClassesPage() {
         />
 
         {/* Header Banner */}
-        <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white rounded-3xl p-5 sm:p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white text-[11px] font-bold uppercase tracking-wider mb-1">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Interactive Video Classrooms
@@ -227,7 +227,7 @@ export default function StudentLiveClassesPage() {
               {currentList.map((item) => (
                 <Card
                   key={item.bookingId}
-                  className={`p-6 bg-white rounded-3xl border transition-all space-y-4 shadow-sm hover:shadow-md ${
+                  className={`p-4 sm:p-6 bg-white rounded-3xl border transition-all space-y-4 shadow-sm hover:shadow-md ${
                     item.isLiveNow
                       ? "border-emerald-500 ring-2 ring-emerald-500/20"
                       : item.canJoin

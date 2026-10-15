@@ -220,7 +220,7 @@ export default function TeacherEarningsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 space-y-8">
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 md:p-10 space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800/80 pb-6">
         <div>
@@ -384,36 +384,120 @@ export default function TeacherEarningsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-950/40">
-                    <th className="py-3.5 px-6">Date</th>
-                    <th className="py-3.5 px-6">Amount</th>
-                    <th className="py-3.5 px-6">Method</th>
-                    <th className="py-3.5 px-6">Destination</th>
-                    <th className="py-3.5 px-6">Status</th>
-                    <th className="py-3.5 px-6">Reference / UTR</th>
-                    <th className="py-3.5 px-6">Notes</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-xs">
-                  {withdrawals.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-4 px-6 text-slate-300 font-medium">
-                        {new Date(item.requestedAt).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </td>
-                      <td className="py-4 px-6 font-bold text-white">
-                        {formatCurrency(item.amountPaise / 100)}
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-300">
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-950/40">
+                      <th className="py-3.5 px-6">Date</th>
+                      <th className="py-3.5 px-6">Amount</th>
+                      <th className="py-3.5 px-6">Method</th>
+                      <th className="py-3.5 px-6">Destination</th>
+                      <th className="py-3.5 px-6">Status</th>
+                      <th className="py-3.5 px-6">Reference / UTR</th>
+                      <th className="py-3.5 px-6">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 text-xs">
+                    {withdrawals.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-4 px-6 text-slate-300 font-medium">
+                          {new Date(item.requestedAt).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </td>
+                        <td className="py-4 px-6 font-bold text-white">
+                          {formatCurrency(item.amountPaise / 100)}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-300">
+                            {item.payoutMethod === "UPI" ? (
+                              <>
+                                <Smartphone className="w-3.5 h-3.5 text-blue-400" /> UPI
+                              </>
+                            ) : (
+                              <>
+                                <Building2 className="w-3.5 h-3.5 text-emerald-400" /> Bank Transfer
+                              </>
+                            )}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-slate-300 font-mono text-[11px]">
+                          {item.payoutMethod === "UPI" ? (
+                            item.upiId || "N/A"
+                          ) : (
+                            <span>
+                              {item.accountNumber ? `••••${item.accountNumber.slice(-4)}` : "N/A"}{" "}
+                              {item.ifscCode && `(${item.ifscCode})`}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span
+                            className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border ${getStatusBadgeClass(
+                              item.status
+                            )}`}
+                          >
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-slate-400 font-mono text-[11px]">
+                          {item.providerReferenceId || item.providerTransferId || "—"}
+                        </td>
+                        <td className="py-4 px-6 text-slate-400 text-[11px] max-w-xs truncate">
+                          {item.rejectionReason ? (
+                            <span className="text-rose-400">Rejected: {item.rejectionReason}</span>
+                          ) : item.failureReason ? (
+                            <span className="text-red-400">Failed: {item.failureReason}</span>
+                          ) : item.adminNotes ? (
+                            item.adminNotes
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card List */}
+              <div className="md:hidden divide-y divide-slate-800/60">
+                {withdrawals.map((item) => (
+                  <div key={item.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] text-slate-400 block font-semibold">
+                          {new Date(item.requestedAt).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        <p className="text-lg font-black text-white mt-0.5">
+                          {formatCurrency(item.amountPaise / 100)}
+                        </p>
+                      </div>
+                      <span
+                        className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border shrink-0 ${getStatusBadgeClass(
+                          item.status
+                        )}`}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/80 text-xs space-y-2">
+                      <div className="flex items-center justify-between text-slate-300">
+                        <span className="text-slate-400 text-[11px]">Method:</span>
+                        <span className="inline-flex items-center gap-1 font-semibold">
                           {item.payoutMethod === "UPI" ? (
                             <>
                               <Smartphone className="w-3.5 h-3.5 text-blue-400" /> UPI
@@ -424,45 +508,49 @@ export default function TeacherEarningsPage() {
                             </>
                           )}
                         </span>
-                      </td>
-                      <td className="py-4 px-6 text-slate-300 font-mono text-[11px]">
-                        {item.payoutMethod === "UPI" ? (
-                          item.upiId || "N/A"
-                        ) : (
-                          <span>
-                            {item.accountNumber ? `••••${item.accountNumber.slice(-4)}` : "N/A"}{" "}
-                            {item.ifscCode && `(${item.ifscCode})`}
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-4 px-6">
-                        <span
-                          className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border ${getStatusBadgeClass(
-                            item.status
-                          )}`}
-                        >
-                          {item.status}
+                      </div>
+
+                      <div className="flex items-center justify-between text-slate-300">
+                        <span className="text-slate-400 text-[11px]">Destination:</span>
+                        <span className="font-mono text-[11px] text-slate-200">
+                          {item.payoutMethod === "UPI" ? (
+                            item.upiId || "N/A"
+                          ) : (
+                            <span>
+                              {item.accountNumber ? `••••${item.accountNumber.slice(-4)}` : "N/A"}{" "}
+                              {item.ifscCode && `(${item.ifscCode})`}
+                            </span>
+                          )}
                         </span>
-                      </td>
-                      <td className="py-4 px-6 text-slate-400 font-mono text-[11px]">
-                        {item.providerReferenceId || item.providerTransferId || "—"}
-                      </td>
-                      <td className="py-4 px-6 text-slate-400 text-[11px] max-w-xs truncate">
-                        {item.rejectionReason ? (
-                          <span className="text-rose-400">Rejected: {item.rejectionReason}</span>
-                        ) : item.failureReason ? (
-                          <span className="text-red-400">Failed: {item.failureReason}</span>
-                        ) : item.adminNotes ? (
-                          item.adminNotes
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+
+                      {(item.providerReferenceId || item.providerTransferId) && (
+                        <div className="pt-1.5 border-t border-slate-800/60">
+                          <span className="text-slate-400 text-[10px] block mb-0.5">UTR / Reference:</span>
+                          <span className="font-mono text-[10px] text-teal-300 break-all select-all block bg-slate-900 px-2 py-1 rounded border border-slate-800">
+                            {item.providerReferenceId || item.providerTransferId}
+                          </span>
+                        </div>
+                      )}
+
+                      {(item.rejectionReason || item.failureReason || item.adminNotes) && (
+                        <div className="pt-1.5 border-t border-slate-800/60 text-[11px]">
+                          {item.rejectionReason && (
+                            <p className="text-rose-400 font-medium">Rejection Reason: {item.rejectionReason}</p>
+                          )}
+                          {item.failureReason && (
+                            <p className="text-red-400 font-medium">Failure Reason: {item.failureReason}</p>
+                          )}
+                          {item.adminNotes && (
+                            <p className="text-slate-400">Notes: {item.adminNotes}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -470,7 +558,7 @@ export default function TeacherEarningsPage() {
       {/* Withdraw Funds Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl relative">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-6 right-6 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"

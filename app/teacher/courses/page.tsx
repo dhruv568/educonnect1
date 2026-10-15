@@ -251,7 +251,7 @@ export default function TeacherCoursesDashboardPage() {
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
           {["ALL", "PUBLISHED", "DRAFT", "ARCHIVED"].map((st) => (
             <button
               key={st}
@@ -469,7 +469,7 @@ export default function TeacherCoursesDashboardPage() {
         {/* Create Course Modal */}
         {showCreateModal && (
           <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-4 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
               <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-[#0F766E]" /> Create Pre-Recorded Course
               </h3>

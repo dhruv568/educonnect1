@@ -452,7 +452,7 @@ export default function TeacherLiveClassesPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Link href="/teacher/live-classes/availability">
               <Button variant="outline" size="sm" leftIcon={<Settings className="h-4 w-4" />}>
                 Availability Settings
@@ -534,7 +534,7 @@ export default function TeacherLiveClassesPage() {
             </button>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto">
+          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1">
             {["ALL", "SCHEDULED", "OPEN", "LIVE", "COMPLETED", "CANCELLED"].map((st) => (
               <button
                 key={st}

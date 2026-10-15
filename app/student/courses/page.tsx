@@ -90,7 +90,7 @@ export default function StudentCoursesDashboardPage() {
         />
 
         {/* Top Header Banner */}
-        <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white rounded-3xl p-5 sm:p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white text-[11px] font-bold uppercase tracking-wider mb-1">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Self-Paced Video Academy
@@ -152,7 +152,7 @@ export default function StudentCoursesDashboardPage() {
 
         {/* Continue Learning Featured Hero Card */}
         {continueLearning && (
-          <Card className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white border-0 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <Card className="p-5 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white border-0 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-3 max-w-xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[10px] font-bold uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" /> Resume Where You Left Off
@@ -207,7 +207,7 @@ export default function StudentCoursesDashboardPage() {
         {/* Filter Tabs & Search Bar */}
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setFilterTab("all")}
                 className={`px-4 py-2 text-xs font-extrabold rounded-xl transition-all ${

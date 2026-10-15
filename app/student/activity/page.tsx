@@ -78,7 +78,7 @@ export default function StudentActivityLogPage() {
     <DashboardLayout role="STUDENT" userName="Learner">
       <div className="space-y-6 pb-16">
         {/* Header Title Banner */}
-        <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] text-white rounded-3xl p-5 sm:p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
           <div className="space-y-2 relative z-10">
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-blue-200 border border-white/20 uppercase tracking-wider">
@@ -94,7 +94,7 @@ export default function StudentActivityLogPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 relative z-10 shrink-0">
+          <div className="flex items-center flex-wrap gap-2 relative z-10 shrink-0">
             <BackButton fallbackUrl="/student/dashboard" label="Back to Dashboard" variant="dark" />
             <BackToHomeButton variant="dark" />
           </div>
@@ -151,12 +151,12 @@ export default function StudentActivityLogPage() {
             </p>
           </Card>
         ) : (
-          <Card className="p-6 border-slate-200 rounded-3xl bg-white shadow-xs space-y-4">
+          <Card className="p-4 sm:p-6 border-slate-200 rounded-3xl bg-white shadow-xs space-y-4">
             <div className="space-y-4">
               {filtered.map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-blue-200 transition-colors flex items-start gap-4"
+                  className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-blue-200 transition-colors flex items-start gap-3 sm:gap-4"
                 >
                   <div className="p-2.5 rounded-2xl bg-white border border-slate-200 shadow-2xs shrink-0 mt-0.5">
                     {getCategoryIcon(item.category)}
@@ -164,19 +164,19 @@ export default function StudentActivityLogPage() {
 
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                      <h4 className="text-sm font-extrabold text-slate-900 truncate">
+                      <h4 className="text-sm font-extrabold text-slate-900 break-words line-clamp-2">
                         {item.title}
                       </h4>
                       {item.status && (
                         <Badge
                           variant="outline"
-                          className="w-fit text-[10px] font-bold border-slate-200 bg-white"
+                          className="w-fit text-[10px] font-bold border-slate-200 bg-white shrink-0"
                         >
                           {item.status}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 truncate">{item.subtitle}</p>
+                    <p className="text-xs text-slate-500 break-words">{item.subtitle}</p>
                     <div className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5 pt-1">
                       <Clock className="w-3 h-3 text-slate-400" />
                       {new Date(item.timestamp).toLocaleString(undefined, {
