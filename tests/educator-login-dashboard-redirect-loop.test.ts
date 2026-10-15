@@ -173,7 +173,7 @@ async function runEducatorRedirectLoopTests() {
   const unauthDashReq = createReq("http://localhost:3000/teacher/dashboard");
   const unauthDashRes = middleware(unauthDashReq);
   assert(
-    unauthDashRes.status === 307 && unauthDashRes.headers.get("location")?.includes("/teacher/login"),
+    Boolean(unauthDashRes.status === 307 && unauthDashRes.headers.get("location")?.includes("/teacher/login")),
     "3.1: Unauthenticated request to /teacher/dashboard redirects to /teacher/login",
     `Location: ${unauthDashRes.headers.get("location")}`
   );
@@ -184,7 +184,7 @@ async function runEducatorRedirectLoopTests() {
   });
   const unauthSubDashRes = middleware(unauthSubDashReq);
   assert(
-    unauthSubDashRes.status === 307 && unauthSubDashRes.headers.get("location")?.includes("/login"),
+    Boolean(unauthSubDashRes.status === 307 && unauthSubDashRes.headers.get("location")?.includes("/login")),
     "3.2: Unauthenticated request to educators subdomain /dashboard redirects to /login",
     `Location: ${unauthSubDashRes.headers.get("location")}`
   );
@@ -215,7 +215,7 @@ async function runEducatorRedirectLoopTests() {
   });
   const expiredMwRes = middleware(expiredMwReq);
   assert(
-    expiredMwRes.status === 307 && expiredMwRes.headers.get("location")?.includes("/teacher/login"),
+    Boolean(expiredMwRes.status === 307 && expiredMwRes.headers.get("location")?.includes("/teacher/login")),
     "4.2: Middleware redirects expired session to /teacher/login instead of opening dashboard",
     `Status: ${expiredMwRes.status}, Location: ${expiredMwRes.headers.get("location")}`
   );
@@ -278,7 +278,7 @@ async function runEducatorRedirectLoopTests() {
   });
   const learnerOnTeacherRes = middleware(learnerOnTeacherReq);
   assert(
-    learnerOnTeacherRes.status === 307 && learnerOnTeacherRes.headers.get("location")?.includes("/student/dashboard"),
+    Boolean(learnerOnTeacherRes.status === 307 && learnerOnTeacherRes.headers.get("location")?.includes("/student/dashboard")),
     "5.1: Learner session accessing /teacher/dashboard is redirected to /student/dashboard",
     `Location: ${learnerOnTeacherRes.headers.get("location")}`
   );
@@ -292,7 +292,7 @@ async function runEducatorRedirectLoopTests() {
   });
   const learnerOnSubDashRes = middleware(learnerOnSubDashReq);
   assert(
-    learnerOnSubDashRes.status === 307 && learnerOnSubDashRes.headers.get("location")?.includes("learners.educonnects.co.in"),
+    Boolean(learnerOnSubDashRes.status === 307 && learnerOnSubDashRes.headers.get("location")?.includes("learners.educonnects.co.in")),
     "5.2: Learner on educators.educonnects.co.in/dashboard redirected to learners domain",
     `Location: ${learnerOnSubDashRes.headers.get("location")}`
   );
@@ -308,7 +308,7 @@ async function runEducatorRedirectLoopTests() {
   });
   const eduOnLoginRes = middleware(eduOnLoginReq);
   assert(
-    eduOnLoginRes.status === 307 && eduOnLoginRes.headers.get("location")?.includes("/teacher/dashboard"),
+    Boolean(eduOnLoginRes.status === 307 && eduOnLoginRes.headers.get("location")?.includes("/teacher/dashboard")),
     "6.1: Authenticated educator visiting /teacher/login is redirected to /teacher/dashboard",
     `Location: ${eduOnLoginRes.headers.get("location")}`
   );
@@ -322,7 +322,7 @@ async function runEducatorRedirectLoopTests() {
   });
   const eduOnSubLoginRes = middleware(eduOnSubLoginReq);
   assert(
-    eduOnSubLoginRes.status === 307 && eduOnSubLoginRes.headers.get("location")?.includes("/dashboard"),
+    Boolean(eduOnSubLoginRes.status === 307 && eduOnSubLoginRes.headers.get("location")?.includes("/dashboard")),
     "6.2: Authenticated educator visiting educators.educonnects.co.in/login is redirected to /dashboard",
     `Location: ${eduOnSubLoginRes.headers.get("location")}`
   );
@@ -333,7 +333,7 @@ async function runEducatorRedirectLoopTests() {
   });
   const eduWithReturnRes = middleware(eduWithReturnReq);
   assert(
-    eduWithReturnRes.status === 307 && eduWithReturnRes.headers.get("location")?.includes("/teacher/courses"),
+    Boolean(eduWithReturnRes.status === 307 && eduWithReturnRes.headers.get("location")?.includes("/teacher/courses")),
     "6.3: Authenticated educator with returnTo parameter redirected to intended destination",
     `Location: ${eduWithReturnRes.headers.get("location")}`
   );
@@ -514,7 +514,7 @@ async function runEducatorRedirectLoopTests() {
 
   // 8.5: getSessionCookieOptions for localhost development
   const origNodeEnv = process.env.NODE_ENV;
-  process.env.NODE_ENV = "development";
+  (process.env as any).NODE_ENV = "development";
   const devOptions = getSessionCookieOptions("localhost:3000");
   assert(
     devOptions.httpOnly === true &&
@@ -523,7 +523,7 @@ async function runEducatorRedirectLoopTests() {
     "8.5: Development cookie options allow non-HTTPS on localhost without domain lock",
     `Options: ${JSON.stringify(devOptions)}`
   );
-  process.env.NODE_ENV = origNodeEnv;
+  (process.env as any).NODE_ENV = origNodeEnv;
 
   // =========================================================================
   // SUMMARY
