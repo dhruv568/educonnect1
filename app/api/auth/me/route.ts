@@ -1,16 +1,23 @@
-import { getSession } from "@/lib/auth/session";
+import { NextRequest } from "next/server";
+import { getSession, applyLogoutCookies } from "@/lib/auth/session";
 import { apiSuccess, apiUnauthorized } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getSession();
+  const rawHost =
+    request.headers.get("x-forwarded-host") ||
+    request.headers.get("x-original-host") ||
+    request.headers.get("host") ||
+    undefined;
+
   if (!session) {
     const res = apiUnauthorized("No active session.");
     res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
     res.headers.set("Pragma", "no-cache");
-    return res;
+    return applyLogoutCookies(res, rawHost);
   }
 
   try {
@@ -20,7 +27,8 @@ export async function GET() {
     });
 
     if (!user || user.status !== "ACTIVE") {
-      return apiUnauthorized("User account inactive or not found.");
+      const res = apiUnauthorized("User account inactive or not found.");
+      return applyLogoutCookies(res, rawHost);
     }
 
     const firstName = user?.profile?.firstName || session.firstName || "";

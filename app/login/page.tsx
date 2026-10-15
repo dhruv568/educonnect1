@@ -42,6 +42,13 @@ export default function LoginPage() {
                 window.location.hostname.startsWith("students.") ||
                 window.location.hostname.startsWith("student."));
 
+            const isEducatorHost =
+              typeof window !== "undefined" &&
+              (window.location.hostname.startsWith("educator.") ||
+                window.location.hostname.startsWith("educators.") ||
+                window.location.hostname.startsWith("teacher.") ||
+                window.location.hostname.startsWith("teachers."));
+
             const searchParams = new URLSearchParams(window.location.search);
             const returnTarget = searchParams.get("returnTo") || searchParams.get("redirectTo");
             const safeDestination = returnTarget && isSafeRedirectPath(returnTarget)
@@ -50,7 +57,14 @@ export default function LoginPage() {
 
             if (isLearnerHost) {
               if (isLearnerRole(role)) {
-                window.location.replace(safeDestination || "/student/dashboard");
+                window.location.replace(safeDestination || "/dashboard");
+              }
+              return;
+            }
+
+            if (isEducatorHost) {
+              if (isEducatorRole(role)) {
+                window.location.replace(safeDestination || "/dashboard");
               }
               return;
             }
@@ -61,9 +75,9 @@ export default function LoginPage() {
             }
 
             if (isEducatorRole(role)) {
-              window.location.replace("/teacher/dashboard");
+              window.location.replace(isEducatorHost ? "/dashboard" : "/teacher/dashboard");
             } else if (isLearnerRole(role)) {
-              window.location.replace("/student/dashboard");
+              window.location.replace(isLearnerHost ? "/dashboard" : "/student/dashboard");
             } else if (role === "ADMIN") {
               window.location.replace("/admin");
             } else if (role === "STAFF") {

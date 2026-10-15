@@ -15,21 +15,23 @@ const INSECURE_FALLBACK_SECRETS = new Set([
  * is strictly required. Silent fallback to an insecure hardcoded key is prohibited.
  */
 export function getSigningSecret(): string {
-  const secret =
-    process.env.AUTH_SECRET ||
-    process.env.SESSION_SECRET ||
-    process.env.JWT_SECRET;
+  const candidates = [
+    process.env.AUTH_SECRET,
+    process.env.SESSION_SECRET,
+    process.env.JWT_SECRET,
+  ].filter((s): s is string => Boolean(s && typeof s === "string" && s.trim().length > 0));
 
   if (process.env.NODE_ENV === "production") {
-    if (!secret || INSECURE_FALLBACK_SECRETS.has(secret)) {
+    const validSecret = candidates.find((s) => !INSECURE_FALLBACK_SECRETS.has(s));
+    if (!validSecret) {
       throw new Error(
         "FATAL SECURITY CONFIGURATION: A secure, unique AUTH_SECRET, SESSION_SECRET, or JWT_SECRET must be configured in production environments. Insecure fallback or default placeholder secrets are strictly disallowed."
       );
     }
-    return secret;
+    return validSecret;
   }
 
-  return secret || "educonnects_super_secret_session_key_2026";
+  return candidates[0] || "educonnects_super_secret_session_key_2026";
 }
 
 /**

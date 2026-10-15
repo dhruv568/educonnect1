@@ -115,12 +115,14 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
 
         if (!res.ok) {
           if (res.status === 401) {
+            const isEduSubdomain = typeof window !== "undefined" && (window.location.hostname.startsWith("educator") || window.location.hostname.startsWith("teacher"));
+            const isStudSubdomain = typeof window !== "undefined" && (window.location.hostname.startsWith("learner") || window.location.hostname.startsWith("student"));
             const loginTarget =
               isEducatorRole(role)
-                ? "/teacher/login"
+                ? (isEduSubdomain ? "/login" : "/teacher/login")
                 : isAdminRole(role)
                 ? "/admin/login"
-                : "/student/login";
+                : (isStudSubdomain ? "/login" : "/student/login");
             window.location.replace(loginTarget);
           }
           return;

@@ -4,12 +4,12 @@ import { encodeSession, decodeSession } from "./session-token";
 
 export { encodeSession, decodeSession };
 
-const SESSION_COOKIE_NAME = "educonnects_session";
+export const SESSION_COOKIE_NAME = "educonnects_session";
 const SESSION_DURATION_DAYS = 7;
 
 export function getCookieDomain(host?: string): string | undefined {
   if (host) {
-    const clean = host.split(":")[0].toLowerCase().trim();
+    const clean = host.split(",")[0].split(":")[0].toLowerCase().trim();
     if (clean.endsWith("educonnects.co.in")) {
       return ".educonnects.co.in";
     }
@@ -17,39 +17,51 @@ export function getCookieDomain(host?: string): string | undefined {
       return undefined;
     }
   }
-  if (process.env.NODE_ENV === "production") {
-    return ".educonnects.co.in";
-  }
   return undefined;
+}
+
+export function getSessionCookieOptions(host?: string) {
+  const cleanHost = host ? host.split(",")[0].split(":")[0].toLowerCase().trim() : "";
+  const isProd = process.env.NODE_ENV === "production";
+  const isLocalhost =
+    cleanHost === "localhost" ||
+    cleanHost === "127.0.0.1" ||
+    cleanHost.startsWith("localhost:") ||
+    cleanHost.startsWith("127.0.0.1:");
+  const isEduconnects = cleanHost.endsWith("educonnects.co.in");
+
+  const cookieOptions: any = {
+    httpOnly: true,
+    secure: (isProd && !isLocalhost) || isEduconnects,
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_DURATION_DAYS * 24 * 60 * 60,
+  };
+  const domain = getCookieDomain(host);
+  if (domain) {
+    cookieOptions.domain = domain;
+  }
+  return cookieOptions;
 }
 
 /**
  * Sets session cookie in Response headers or current cookie context.
  */
-export async function setSessionCookie(session: UserSession, host?: string) {
+export async function setSessionCookie(session: UserSession, host?: string, response?: any) {
   const encoded = encodeSession(session);
   let resolvedHost = host;
   if (!resolvedHost) {
     try {
       const h = await headers();
-      resolvedHost = h.get("x-forwarded-host") || h.get("host") || undefined;
+      resolvedHost = h.get("x-forwarded-host") || h.get("x-original-host") || h.get("host") || undefined;
     } catch {}
   }
-  const cleanHost = resolvedHost ? resolvedHost.split(":")[0].toLowerCase().trim() : "";
-  const isProd = process.env.NODE_ENV === "production";
-  const isEduconnects = cleanHost.endsWith("educonnects.co.in");
+  const cookieOptions = getSessionCookieOptions(resolvedHost);
 
-  const cookieOptions: any = {
-    httpOnly: true,
-    secure: isProd || isEduconnects,
-    sameSite: "lax",
-    path: "/",
-    maxAge: SESSION_DURATION_DAYS * 24 * 60 * 60,
-  };
-  const domain = getCookieDomain(resolvedHost);
-  if (domain) {
-    cookieOptions.domain = domain;
+  if (response && response.cookies && typeof response.cookies.set === "function") {
+    response.cookies.set(SESSION_COOKIE_NAME, encoded, cookieOptions);
   }
+
   try {
     const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE_NAME, encoded, cookieOptions);
@@ -96,7 +108,7 @@ export async function clearSessionCookie(host?: string) {
  * into a NextResponse or standard Response instance. Guarantees cross-subdomain logout invalidation.
  */
 export function applyLogoutCookies<T extends Response>(response: T, host?: string): T {
-  const cleanHost = host ? host.split(":")[0].toLowerCase().trim() : "";
+  const cleanHost = host ? host.split(",")[0].split(":")[0].toLowerCase().trim() : "";
   const isProd = process.env.NODE_ENV === "production";
   const isSecure = isProd || (cleanHost !== "" && cleanHost.endsWith("educonnects.co.in"));
 

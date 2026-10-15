@@ -266,6 +266,7 @@ export function middleware(request: NextRequest) {
           const res = NextResponse.next();
           res.cookies.delete("admin_pending_otp");
           res.cookies.delete("educonnects_pending_otp");
+          res.cookies.delete("educonnects_session");
           return res;
         }
 
@@ -281,11 +282,13 @@ export function middleware(request: NextRequest) {
 
         if (pendingOtp?.value) {
           const pendingEmail = decodeURIComponent(pendingOtp.value);
-          let redirectTo = "/student/dashboard";
-          if (pathname === "/teacher/login") {
-            redirectTo = "/teacher/dashboard";
+          let redirectTo = isEducatorSubdomain ? "/dashboard" : "/student/dashboard";
+          if (pathname === "/teacher/login" || isEducatorSubdomain) {
+            redirectTo = isEducatorSubdomain ? "/dashboard" : "/teacher/dashboard";
           } else if (pathname === "/admin/login") {
             redirectTo = "/admin";
+          } else if (pathname === "/student/login" || isStudentSubdomain) {
+            redirectTo = isStudentSubdomain ? "/dashboard" : "/student/dashboard";
           }
           return NextResponse.redirect(
             new URL(`/verify-email?email=${encodeURIComponent(pendingEmail)}&redirectTo=${encodeURIComponent(redirectTo)}`, request.url)
@@ -334,21 +337,41 @@ export function middleware(request: NextRequest) {
       const rewrite = getSubdomainRewrite();
       return rewrite || NextResponse.next();
     }
+    let redirectRes: NextResponse;
     if (pathname.startsWith("/classroom") || pathname.startsWith("/live-class")) {
       const fullTarget = `${pathname}${request.nextUrl.search}`;
       const targetBase = isMainDomain || isEducatorSubdomain ? studentDomainUrl : request.url;
       const loginUrl = new URL("/student/login", targetBase);
       loginUrl.searchParams.set("returnTo", fullTarget);
       loginUrl.searchParams.set("redirectTo", fullTarget);
-      return NextResponse.redirect(loginUrl);
+      redirectRes = NextResponse.redirect(loginUrl);
+    } else if (pathname.startsWith("/staff")) {
+      redirectRes = NextResponse.redirect(new URL("/staff/login", request.url));
+    } else if (pathname.startsWith("/admin")) {
+      redirectRes = NextResponse.redirect(new URL("/admin/login", request.url));
+    } else if (pathname.startsWith("/student")) {
+      const loginUrl = new URL("/student/login", request.url);
+      loginUrl.searchParams.set("redirectTo", pathname);
+      redirectRes = NextResponse.redirect(loginUrl);
+    } else if (pathname.startsWith("/teacher")) {
+      const loginUrl = new URL("/teacher/login", request.url);
+      loginUrl.searchParams.set("redirectTo", pathname);
+      redirectRes = NextResponse.redirect(loginUrl);
+    } else {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirectTo", pathname);
+      redirectRes = NextResponse.redirect(loginUrl);
     }
-    if (pathname.startsWith("/staff")) {
-      return NextResponse.redirect(new URL("/staff/login", request.url));
+
+    // Purge the invalid or expired session cookie to avoid repeated redirect loops
+    const rawHost = request.headers.get("x-forwarded-host") || request.headers.get("host") || "";
+    const cleanHost = rawHost.split(",")[0].split(":")[0].toLowerCase().trim();
+    const cookieDomain = cleanHost.endsWith("educonnects.co.in") ? ".educonnects.co.in" : undefined;
+    redirectRes.cookies.delete("educonnects_session");
+    if (cookieDomain) {
+      redirectRes.cookies.delete({ name: "educonnects_session", domain: cookieDomain, path: "/" });
     }
-    if (pathname.startsWith("/admin")) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
-    }
-    return NextResponse.redirect(new URL("/login", request.url));
+    return redirectRes;
   }
 
   // Unverified user handling
@@ -410,6 +433,10 @@ export function middleware(request: NextRequest) {
 
     if (isEducatorLoginRequest) {
       if (isEducatorRole(userSession.role)) {
+        const returnTarget = request.nextUrl.searchParams.get("returnTo") || request.nextUrl.searchParams.get("redirectTo");
+        if (returnTarget && isSafeRedirectPath(returnTarget)) {
+          return NextResponse.redirect(new URL(returnTarget, request.url));
+        }
         const target = isEducatorSubdomain ? "/dashboard" : "/teacher/dashboard";
         return NextResponse.redirect(new URL(target, request.url));
       }

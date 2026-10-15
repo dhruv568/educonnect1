@@ -45,7 +45,8 @@ export default function TeacherLoginPage() {
           if (json?.data?.user) {
             const role = json.data.user.role;
             if (isEducatorRole(role)) {
-              window.location.replace("/teacher/dashboard");
+              const isSubdomain = typeof window !== "undefined" && (window.location.hostname.startsWith("educator") || window.location.hostname.startsWith("teacher"));
+              window.location.replace(isSubdomain ? "/dashboard" : "/teacher/dashboard");
               return;
             }
           }
@@ -90,11 +91,19 @@ export default function TeacherLoginPage() {
           "Please enter the 6-digit OTP code sent to your email to complete login.",
           "info"
         );
-        router.push(`/verify-email?email=${encodeURIComponent(email)}&redirectTo=/teacher/dashboard`);
+        if (data.data?.redirectPath) {
+          router.push(data.data.redirectPath);
+        } else {
+          const isSubdomain = typeof window !== "undefined" && (window.location.hostname.startsWith("educator") || window.location.hostname.startsWith("teacher"));
+          const target = isSubdomain ? "/dashboard" : "/teacher/dashboard";
+          router.push(`/verify-email?email=${encodeURIComponent(email)}&redirectTo=${encodeURIComponent(target)}`);
+        }
       } else {
-        showToast("Welcome Back!", `Signed in as ${data.data.user.firstName || "Educator"}`, "success");
+        showToast("Welcome Back!", `Signed in as ${data.data?.user?.firstName || "Educator"}`, "success");
         // Strictly redirect to Educator Dashboard
-        window.location.replace("/teacher/dashboard");
+        const isSubdomain = typeof window !== "undefined" && (window.location.hostname.startsWith("educator") || window.location.hostname.startsWith("teacher"));
+        const target = data.data?.redirectPath || (isSubdomain ? "/dashboard" : "/teacher/dashboard");
+        window.location.replace(target);
       }
     } catch (err: any) {
       showToast("Authentication Error", err.message, "error");

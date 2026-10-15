@@ -33,18 +33,18 @@ export async function POST(request: NextRequest) {
 
     const result = await AuthService.verifyOTP(validated.email, validated.otp);
 
-    // Set or upgrade authenticated session upon successful verification
-    if (result.user) {
-      await setSessionCookie(result.user, rawHost);
-    } else {
-      const session = await getSession();
-      if (session && session.email.toLowerCase() === validated.email.toLowerCase()) {
-        await setSessionCookie({
-          ...session,
-          emailVerified: true,
-        }, rawHost);
-      }
-    }
+    const cleanHost = rawHost ? rawHost.split(",")[0].split(":")[0].toLowerCase().trim() : "";
+    const isEducatorSubdomain =
+      cleanHost.startsWith("educators.") ||
+      cleanHost.startsWith("educator.") ||
+      cleanHost.startsWith("teacher.") ||
+      cleanHost === "educators.educonnects.co.in";
+    const isStudentSubdomain =
+      cleanHost.startsWith("learners.") ||
+      cleanHost.startsWith("learner.") ||
+      cleanHost.startsWith("students.") ||
+      cleanHost.startsWith("student.") ||
+      cleanHost === "learners.educonnects.co.in";
 
     // Determine canonical destination: prefer safe returnTo/redirectTo, otherwise fallback to database role dashboard
     const targetParam = validated.returnTo || validated.redirectTo;
@@ -55,9 +55,9 @@ export async function POST(request: NextRequest) {
       if (result.user.role === "ADMIN") {
         redirectPath = "/admin";
       } else if (isEducatorRole(result.user.role)) {
-        redirectPath = "/teacher/dashboard";
+        redirectPath = isEducatorSubdomain ? "/dashboard" : "/teacher/dashboard";
       } else if (isLearnerRole(result.user.role)) {
-        redirectPath = "/student/dashboard";
+        redirectPath = isStudentSubdomain ? "/dashboard" : "/student/dashboard";
       } else if (result.user.role === "STAFF") {
         redirectPath = "/staff/dashboard";
       }
@@ -70,28 +70,23 @@ export async function POST(request: NextRequest) {
 
     const response = apiSuccess(payload, result.message);
     if (result.user) {
-      const isProd = process.env.NODE_ENV === "production";
-      const isEduconnects = Boolean(rawHost && rawHost.includes("educonnects.co.in"));
-      const domain = getCookieDomain(rawHost);
-
-      const cookieOptions: any = {
-        httpOnly: true,
-        secure: isProd || isEduconnects,
-        sameSite: "lax",
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60,
-      };
-      if (domain) {
-        cookieOptions.domain = domain;
+      await setSessionCookie(result.user, rawHost, response);
+    } else {
+      const session = await getSession();
+      if (session && session.email.toLowerCase() === validated.email.toLowerCase()) {
+        await setSessionCookie({
+          ...session,
+          emailVerified: true,
+        }, rawHost, response);
       }
-      response.cookies.set("educonnects_session", encodeSession(result.user), cookieOptions);
+    }
 
-      response.cookies.delete("admin_pending_otp");
-      response.cookies.delete("educonnects_pending_otp");
-      if (domain) {
-        response.cookies.delete({ name: "admin_pending_otp", domain, path: "/" });
-        response.cookies.delete({ name: "educonnects_pending_otp", domain, path: "/" });
-      }
+    const domain = getCookieDomain(rawHost);
+    response.cookies.delete("admin_pending_otp");
+    response.cookies.delete("educonnects_pending_otp");
+    if (domain) {
+      response.cookies.delete({ name: "admin_pending_otp", domain, path: "/" });
+      response.cookies.delete({ name: "educonnects_pending_otp", domain, path: "/" });
     }
 
     return response;
@@ -127,20 +122,21 @@ export async function GET(request: NextRequest) {
   try {
     const result = await AuthService.verifyToken(token, email);
 
+    const response = apiSuccess(result, result.message);
+
     // Set or upgrade authenticated session upon successful verification link
     if (result.user) {
-      await setSessionCookie(result.user, rawHost);
+      await setSessionCookie(result.user, rawHost, response);
     } else {
       const session = await getSession();
       if (session && session.email.toLowerCase() === email.toLowerCase()) {
         await setSessionCookie({
           ...session,
           emailVerified: true,
-        }, rawHost);
+        }, rawHost, response);
       }
     }
 
-    const response = apiSuccess(result, result.message);
     response.cookies.delete("admin_pending_otp");
     response.cookies.delete("educonnects_pending_otp");
     const domain = getCookieDomain(rawHost);

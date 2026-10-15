@@ -62,7 +62,8 @@ export default function TeacherDashboardPage() {
     fetch("/api/teacher/dashboard", { cache: "no-store", headers: { Pragma: "no-cache" } })
       .then((res) => {
         if (res.status === 401) {
-          window.location.replace("/teacher/login");
+          const isSubdomain = typeof window !== "undefined" && (window.location.hostname.startsWith("educator") || window.location.hostname.startsWith("teacher"));
+          window.location.replace(isSubdomain ? "/login" : "/teacher/login");
           return null;
         }
         return res.json();

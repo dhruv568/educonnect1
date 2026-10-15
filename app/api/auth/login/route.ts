@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { LoginSchema } from "@/schemas/auth-schemas";
 import { AuthService } from "@/services/auth-service";
 import { apiSuccess, apiBadRequest, apiError } from "@/lib/api-response";
-import { setSessionCookie } from "@/lib/auth/session";
+import { setSessionCookie, getCookieDomain, getSessionCookieOptions } from "@/lib/auth/session";
 import { isEducatorRole, isLearnerRole } from "@/lib/auth/guards";
 import { UserRole, UserSession } from "@/types/auth";
 
@@ -38,9 +38,18 @@ export async function POST(request: NextRequest) {
       await AuthService.validateCredentials(validatedData.email, validatedData.password);
       const result = await AuthService.verifyOTP(validatedData.email, validatedData.otp);
 
-      if (result.user) {
-        await setSessionCookie(result.user, rawHost);
-      }
+      const cleanHost = rawHost ? rawHost.split(",")[0].split(":")[0].toLowerCase().trim() : "";
+      const isEducatorSubdomain =
+        cleanHost.startsWith("educators.") ||
+        cleanHost.startsWith("educator.") ||
+        cleanHost.startsWith("teacher.") ||
+        cleanHost === "educators.educonnects.co.in";
+      const isStudentSubdomain =
+        cleanHost.startsWith("learners.") ||
+        cleanHost.startsWith("learner.") ||
+        cleanHost.startsWith("students.") ||
+        cleanHost.startsWith("student.") ||
+        cleanHost === "learners.educonnects.co.in";
 
       const targetParam = validatedData.returnTo || validatedData.redirectTo;
       const safeCustomReturn = targetParam && isSafeRedirectPath(targetParam) ? sanitizeRedirectUrl(targetParam) : null;
@@ -48,9 +57,9 @@ export async function POST(request: NextRequest) {
       let redirectPath = safeCustomReturn || result.redirectPath || "/";
       if (!safeCustomReturn && result.user) {
         if (isEducatorRole(result.user.role)) {
-          redirectPath = "/teacher/dashboard";
+          redirectPath = isEducatorSubdomain ? "/dashboard" : "/teacher/dashboard";
         } else if (isLearnerRole(result.user.role)) {
-          redirectPath = "/student/dashboard";
+          redirectPath = isStudentSubdomain ? "/dashboard" : "/student/dashboard";
         } else if (result.user.role === "ADMIN") {
           redirectPath = "/admin";
         } else if (result.user.role === "STAFF") {
@@ -67,8 +76,18 @@ export async function POST(request: NextRequest) {
         },
         "Login successful!"
       );
+
+      if (result.user) {
+        await setSessionCookie(result.user, rawHost, response);
+      }
+
+      const domain = getCookieDomain(rawHost);
       response.cookies.delete("admin_pending_otp");
       response.cookies.delete("educonnects_pending_otp");
+      if (domain) {
+        response.cookies.delete({ name: "admin_pending_otp", domain, path: "/" });
+        response.cookies.delete({ name: "educonnects_pending_otp", domain, path: "/" });
+      }
       return response;
     }
 
@@ -124,15 +143,30 @@ export async function POST(request: NextRequest) {
       ? sanitizeRedirectUrl(customTargetParam)
       : null;
 
+    const cleanHost = rawHost ? rawHost.split(",")[0].split(":")[0].toLowerCase().trim() : "";
+    const isEducatorSubdomain =
+      cleanHost.startsWith("educators.") ||
+      cleanHost.startsWith("educator.") ||
+      cleanHost.startsWith("teacher.") ||
+      cleanHost === "educators.educonnects.co.in";
+    const isStudentSubdomain =
+      cleanHost.startsWith("learners.") ||
+      cleanHost.startsWith("learner.") ||
+      cleanHost.startsWith("students.") ||
+      cleanHost.startsWith("student.") ||
+      cleanHost === "learners.educonnects.co.in";
+
     let redirectPath = `/verify-email?email=${encodeURIComponent(user.email)}`;
     if (safeOtpReturn) {
       redirectPath += `&returnTo=${encodeURIComponent(safeOtpReturn)}&redirectTo=${encodeURIComponent(safeOtpReturn)}`;
     } else if (isAdmin) {
       redirectPath = `/verify-email?email=${encodeURIComponent(user.email)}&redirectTo=%2Fadmin`;
     } else if (isEducatorRole(user.role)) {
-      redirectPath = `/verify-email?email=${encodeURIComponent(user.email)}&redirectTo=%2Fteacher%2Fdashboard`;
+      const target = isEducatorSubdomain ? "%2Fdashboard" : "%2Fteacher%2Fdashboard";
+      redirectPath = `/verify-email?email=${encodeURIComponent(user.email)}&redirectTo=${target}`;
     } else if (isLearnerRole(user.role)) {
-      redirectPath = `/verify-email?email=${encodeURIComponent(user.email)}&redirectTo=%2Fstudent%2Fdashboard`;
+      const target = isStudentSubdomain ? "%2Fdashboard" : "%2Fstudent%2Fdashboard";
+      redirectPath = `/verify-email?email=${encodeURIComponent(user.email)}&redirectTo=${target}`;
     } else if (user.role === "STAFF") {
       redirectPath = `/verify-email?email=${encodeURIComponent(user.email)}&redirectTo=%2Fstaff%2Fdashboard`;
     }
@@ -158,7 +192,6 @@ export async function POST(request: NextRequest) {
     // Set temporary state cookies (10 minutes) indicating user is waiting for OTP verification
     const isProd = process.env.NODE_ENV === "production";
     const isEduconnects = Boolean(rawHost && rawHost.includes("educonnects.co.in"));
-    const { getCookieDomain } = await import("@/lib/auth/session");
     const domain = getCookieDomain(rawHost);
 
     const pendingCookieOptions: any = {
