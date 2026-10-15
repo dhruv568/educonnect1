@@ -411,7 +411,7 @@ export default function StudentDashboardPage() {
 
                     {item.canJoin ? (
                       <Link href={`/classroom/${item.sessionId || item.slotId}`}>
-                        <Button variant="primary" size="sm" className="w-full bg-[#2563EB] hover:bg-[#1E40AF]">
+                        <Button variant="student" size="sm" className="w-full bg-[#2563EB] hover:bg-[#1E40AF]">
                           Join Live Classroom
                         </Button>
                       </Link>

@@ -64,18 +64,18 @@ export default function StudentPaymentsPage() {
     <DashboardLayout role="STUDENT" userName="Learner">
       <div className="space-y-6 pb-16">
         {/* Header Title Banner */}
-        <div className="bg-gradient-to-r from-[#0B4F4B] via-[#073F3C] to-[#042826] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
           <div className="space-y-2 relative z-10">
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-teal-200 border border-white/20 uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-blue-200 border border-white/20 uppercase tracking-wider">
                 Financial Ledger
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-3">
-              <CreditCard className="w-8 h-8 text-teal-300 shrink-0" />
+              <CreditCard className="w-8 h-8 text-blue-200 shrink-0" />
               Payment Log & Purchase History
             </h1>
-            <p className="text-xs sm:text-sm text-teal-100 max-w-xl">
+            <p className="text-xs sm:text-sm text-blue-100 max-w-xl">
               Complete itemized billing ledger for all course enrollments, live class slot bookings, and Cashfree transactions.
             </p>
           </div>
@@ -95,7 +95,7 @@ export default function StudentPaymentsPage() {
               placeholder="Search course, class, or reference..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#0B4F4B]"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB]"
             />
           </div>
 
@@ -106,7 +106,7 @@ export default function StudentPaymentsPage() {
                 onClick={() => setFilter(s)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   filter === s
-                    ? "bg-[#0B4F4B] text-white shadow-xs"
+                    ? "bg-[#2563EB] text-white shadow-xs"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
@@ -119,7 +119,7 @@ export default function StudentPaymentsPage() {
         {/* Payment List Table */}
         {loading ? (
           <Card className="p-12 text-center bg-white border border-slate-200 rounded-3xl">
-            <Loader2 className="h-8 w-8 text-[#0B4F4B] animate-spin mx-auto mb-3" />
+            <Loader2 className="h-8 w-8 text-[#2563EB] animate-spin mx-auto mb-3" />
             <p className="text-xs text-slate-500 font-bold">Loading payment transaction records...</p>
           </Card>
         ) : filtered.length === 0 ? (
@@ -130,7 +130,7 @@ export default function StudentPaymentsPage() {
               You haven&apos;t completed any course purchases or live class bookings matching this filter yet.
             </p>
             <Link href="/courses" className="inline-block pt-2">
-              <Button variant="primary" size="sm" className="bg-[#0B4F4B] hover:bg-[#073F3C]">
+              <Button variant="student" size="sm">
                 Explore Courses
               </Button>
             </Link>
@@ -192,7 +192,7 @@ export default function StudentPaymentsPage() {
                       <td className="p-4 text-right">
                         <Link
                           href={`/student/payments/${p.id}`}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-teal-50 text-teal-800 hover:bg-teal-100 text-xs font-bold transition-colors border border-teal-200"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 text-xs font-bold transition-colors border border-blue-200"
                         >
                           <span>Receipt</span>
                           <ExternalLink className="w-3 h-3" />

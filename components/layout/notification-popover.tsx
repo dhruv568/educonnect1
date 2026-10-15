@@ -75,6 +75,11 @@ export function NotificationPopover({
 
   const isEducatorVariant = resolvedVariant === "educator";
   const isDarkVariant = resolvedVariant === "dark";
+  const isLearnerRoute =
+    typeof window !== "undefined" &&
+    (window.location.pathname.startsWith("/student") ||
+      window.location.pathname.startsWith("/learn") ||
+      window.location.hostname.startsWith("learner"));
 
   let triggerClasses =
     "relative h-10 w-10 flex items-center justify-center rounded-xl transition-all duration-200 cursor-pointer select-none group shrink-0 focus:outline-none ";
@@ -87,8 +92,9 @@ export function NotificationPopover({
       "bg-white/10 hover:bg-white/20 active:bg-white/25 active:scale-95 text-white/90 hover:text-white border border-white/20 hover:border-white/40 shadow-2xs focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900";
   } else {
     // light background (e.g. DashboardLayout)
+    const ringClass = isLearnerRoute ? "focus-visible:ring-blue-600" : "focus-visible:ring-teal-600";
     triggerClasses +=
-      "bg-slate-50 hover:bg-slate-100 active:bg-slate-200 active:scale-95 text-slate-700 hover:text-slate-950 border border-slate-200/80 shadow-2xs focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+      `bg-slate-50 hover:bg-slate-100 active:bg-slate-200 active:scale-95 text-slate-700 hover:text-slate-950 border border-slate-200/80 shadow-2xs focus-visible:ring-2 ${ringClass} focus-visible:ring-offset-2 focus-visible:ring-offset-white`;
   }
 
   if (buttonClassName) {

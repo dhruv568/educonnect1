@@ -89,18 +89,18 @@ export default function StudentAttendancePage() {
     <DashboardLayout role="STUDENT" userName="Learner">
       <div className="space-y-6 pb-16">
         {/* Header Title Banner */}
-        <div className="bg-gradient-to-r from-[#0B4F4B] via-[#073F3C] to-[#042826] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] text-white rounded-3xl p-6 lg:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
           <div className="space-y-2 relative z-10">
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-teal-200 border border-white/20 uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-bold text-blue-200 border border-white/20 uppercase tracking-wider">
                 Classroom Attendance Tracker
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-3">
-              <CalendarCheck className="w-8 h-8 text-teal-300 shrink-0" />
+              <CalendarCheck className="w-8 h-8 text-blue-200 shrink-0" />
               Live Class & Course Attendance
             </h1>
-            <p className="text-xs sm:text-sm text-teal-100 max-w-xl">
+            <p className="text-xs sm:text-sm text-blue-100 max-w-xl">
               Track your WebRTC live classroom session participation, duration spent in interactive classes, and lesson completion milestones.
             </p>
           </div>
@@ -117,15 +117,15 @@ export default function StudentAttendancePage() {
             title="Classes Attended"
             value={loading ? "..." : `${data.stats.attendedCount} / ${data.stats.totalBooked}`}
             subtitle="Verified live sessions"
-            icon={<UserCheck className="h-5 w-5 text-emerald-600" />}
-            variant="emerald"
+            icon={<UserCheck className="h-5 w-5 text-blue-600" />}
+            variant="blue"
           />
 
           <MetricCard
             title="Live Learning Time"
             value={loading ? "..." : `${data.stats.liveClassHours} hrs`}
             subtitle="Total session duration"
-            icon={<Clock className="h-5 w-5 text-[#0B4F4B]" />}
+            icon={<Clock className="h-5 w-5 text-blue-600" />}
             variant="blue"
           />
 
@@ -153,7 +153,7 @@ export default function StudentAttendancePage() {
               onClick={() => setActiveTab("LIVE")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "LIVE"
-                  ? "bg-[#0B4F4B] text-white shadow-xs"
+                  ? "bg-[#2563EB] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -163,7 +163,7 @@ export default function StudentAttendancePage() {
               onClick={() => setActiveTab("COURSES")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "COURSES"
-                  ? "bg-[#0B4F4B] text-white shadow-xs"
+                  ? "bg-[#2563EB] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -178,7 +178,7 @@ export default function StudentAttendancePage() {
               placeholder="Search by topic or educator..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#0B4F4B]"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB]"
             />
           </div>
         </Card>
@@ -186,7 +186,7 @@ export default function StudentAttendancePage() {
         {/* Tab Content Display */}
         {loading ? (
           <Card className="p-12 text-center bg-white border border-slate-200 rounded-3xl">
-            <Loader2 className="h-8 w-8 text-[#0B4F4B] animate-spin mx-auto mb-3" />
+            <Loader2 className="h-8 w-8 text-[#2563EB] animate-spin mx-auto mb-3" />
             <p className="text-xs text-slate-500 font-bold">Loading attendance records...</p>
           </Card>
         ) : activeTab === "LIVE" ? (

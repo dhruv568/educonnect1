@@ -135,7 +135,7 @@ export default function StudentPaymentReceiptPage() {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-xs text-slate-400 font-medium">Generating official receipt...</p>
         </div>
       </div>
@@ -319,7 +319,7 @@ export default function StudentPaymentReceiptPage() {
                   : "Processing payment status"}
               </p>
               <div className="flex items-center sm:justify-end gap-1.5 text-[11px] text-slate-400 print:text-gray-600">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 print:text-emerald-700" />
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-400 print:text-blue-700" />
                 <span>Processed securely via Cashfree Payments</span>
               </div>
             </div>
@@ -330,7 +330,7 @@ export default function StudentPaymentReceiptPage() {
             {/* Billed To (Customer Details + Reference Number) */}
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5 text-slate-400 print:text-gray-600 font-bold uppercase tracking-wider text-[10px]">
-                <FileText className="w-3.5 h-3.5 text-emerald-400 print:text-gray-500" />
+                <FileText className="w-3.5 h-3.5 text-blue-400 print:text-gray-500" />
                 <span>Billed To (Learner Details)</span>
               </div>
               
@@ -347,7 +347,7 @@ export default function StudentPaymentReceiptPage() {
                   Reference Number:
                 </span>
                 <span
-                  className="font-mono text-xs font-bold text-emerald-400 print:text-black bg-slate-950 print:bg-gray-100 px-2 py-0.5 rounded border border-slate-800 print:border-gray-300"
+                  className="font-mono text-xs font-bold text-blue-400 print:text-black bg-slate-950 print:bg-gray-100 px-2 py-0.5 rounded border border-slate-800 print:border-gray-300"
                   title={receipt.internalReference}
                 >
                   {formatReferenceNumber(receipt.internalReference)}
@@ -358,7 +358,7 @@ export default function StudentPaymentReceiptPage() {
             {/* Educator / Service Provider */}
             <div className="space-y-1.5 sm:text-right">
               <div className="flex items-center sm:justify-end gap-1.5 text-slate-400 print:text-gray-600 font-bold uppercase tracking-wider text-[10px]">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400 print:text-gray-500" />
+                <Sparkles className="w-3.5 h-3.5 text-blue-400 print:text-gray-500" />
                 <span>Educator / Service Provider</span>
               </div>
               <p className="font-extrabold text-sm text-white print:text-black">
@@ -396,7 +396,7 @@ export default function StudentPaymentReceiptPage() {
                       <p className="font-extrabold text-white print:text-black text-xs sm:text-sm">
                         {receipt.productTitle}
                       </p>
-                      <span className="inline-block text-[10px] font-semibold text-emerald-400 print:text-gray-600 capitalize">
+                      <span className="inline-block text-[10px] font-semibold text-blue-400 print:text-gray-600 capitalize">
                         {(receipt.productType || "COURSE").replace(/_/g, " ").toLowerCase()}
                       </span>
                     </td>
@@ -446,7 +446,7 @@ export default function StudentPaymentReceiptPage() {
                     <td colSpan={4} className="px-3.5 py-2.5 text-right font-extrabold text-slate-200 print:text-black text-xs sm:text-sm print:py-1.5">
                       Final Amount Paid:
                     </td>
-                    <td className="px-3.5 py-2.5 text-right font-black text-emerald-400 print:text-black text-sm sm:text-base print:py-1.5">
+                    <td className="px-3.5 py-2.5 text-right font-black text-blue-400 print:text-black text-sm sm:text-base print:py-1.5">
                       {formatCurrency(receipt.amount)}
                     </td>
                   </tr>
@@ -459,7 +459,7 @@ export default function StudentPaymentReceiptPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-950/60 print:bg-gray-50 border border-slate-800 print:border-gray-300 text-xs print:p-2.5">
             <div className="space-y-0.5">
               <div className="flex items-center gap-1.5 text-slate-400 print:text-gray-600 font-bold uppercase text-[10px]">
-                <CreditCard className="w-3 h-3 text-emerald-400 print:text-gray-500" />
+                <CreditCard className="w-3 h-3 text-blue-400 print:text-gray-500" />
                 <span>Payment Method</span>
               </div>
               <p className="font-semibold text-slate-200 print:text-black">
@@ -469,7 +469,7 @@ export default function StudentPaymentReceiptPage() {
 
             <div className="space-y-0.5">
               <div className="flex items-center gap-1.5 text-slate-400 print:text-gray-600 font-bold uppercase text-[10px]">
-                <Hash className="w-3 h-3 text-emerald-400 print:text-gray-500" />
+                <Hash className="w-3 h-3 text-blue-400 print:text-gray-500" />
                 <span>Gateway Order ID</span>
               </div>
               <p className="font-mono text-slate-300 print:text-black truncate" title={receipt.providerOrderId || "N/A"}>
@@ -479,7 +479,7 @@ export default function StudentPaymentReceiptPage() {
 
             <div className="space-y-0.5">
               <div className="flex items-center gap-1.5 text-slate-400 print:text-gray-600 font-bold uppercase text-[10px]">
-                <CheckCircle2 className="w-3 h-3 text-emerald-400 print:text-gray-500" />
+                <CheckCircle2 className="w-3 h-3 text-blue-400 print:text-gray-500" />
                 <span>Gateway Payment ID</span>
               </div>
               <p className="font-mono text-slate-300 print:text-black truncate" title={receipt.providerPaymentId || "Captured"}>
@@ -491,7 +491,7 @@ export default function StudentPaymentReceiptPage() {
           {/* Official Company Details & Support (Business Information Section) */}
           <div className="border-t border-slate-800 print:border-gray-300 pt-4 print:pt-3 space-y-2">
             <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-emerald-400 print:text-black" />
+              <Building2 className="w-4 h-4 text-blue-400 print:text-black" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 print:text-black">
                 Business Information
               </h3>
@@ -530,12 +530,12 @@ export default function StudentPaymentReceiptPage() {
                     EduConnects Support Team
                   </p>
                   <div className="flex items-center sm:justify-end gap-1.5 pt-0.5">
-                    <Phone className="w-3.5 h-3.5 text-emerald-400 print:text-black" />
+                    <Phone className="w-3.5 h-3.5 text-blue-400 print:text-black" />
                     <a
                       href="https://wa.me/918062181499"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-bold text-emerald-400 hover:text-emerald-300 print:text-black underline flex items-center gap-1"
+                      className="font-bold text-blue-400 hover:text-blue-300 print:text-black underline flex items-center gap-1"
                     >
                       <span>WhatsApp: +91 8062181499</span>
                     </a>

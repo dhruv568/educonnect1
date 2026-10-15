@@ -134,8 +134,8 @@ export default function StudentLiveClassesPage() {
             title="Completed Sessions"
             value={loading ? "..." : data.stats.completedCount}
             subtitle="Classes attended or finished"
-            icon={<CheckCircle2 className="h-5 w-5 text-emerald-600" />}
-            variant="emerald"
+            icon={<CheckCircle2 className="h-5 w-5 text-blue-600" />}
+            variant="blue"
           />
 
           <MetricCard
@@ -217,7 +217,7 @@ export default function StudentLiveClassesPage() {
                   : "Classes you attend will appear here with attendance history."}
               </p>
               <Link href="/student/teachers" className="inline-block pt-1">
-                <Button variant="primary" size="sm">
+                <Button variant="student" size="sm">
                   Find Educators & Book Session
                 </Button>
               </Link>
@@ -327,7 +327,7 @@ export default function StudentLiveClassesPage() {
                       {item.canJoin ? (
                         <Link href={item.meetingUrl} className="w-full md:w-auto">
                           <Button
-                            variant="primary"
+                            variant="student"
                             size="md"
                             className="w-full md:w-48 bg-[#2563EB] hover:bg-[#1E40AF] text-white font-black shadow-lg shadow-blue-600/20 animate-bounce-subtle"
                             rightIcon={<ExternalLink className="w-4 h-4" />}

@@ -779,7 +779,13 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
                   <input
                     type="text"
                     placeholder="Search portal..."
-                    className="w-full h-9 pl-9 pr-4 bg-[#F5F7F8] border border-[#DCE5E4] rounded-xl text-xs text-[#102A2A] focus:border-[#0B4F4B] outline-none"
+                    className={`w-full h-9 pl-9 pr-4 bg-[#F5F7F8] border border-[#DCE5E4] rounded-xl text-xs text-[#102A2A] ${
+                      isLearner
+                        ? "focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                        : isEducator
+                        ? "focus:border-[#0F766E] focus:ring-1 focus:ring-[#0F766E]"
+                        : "focus:border-[#0B4F4B] focus:ring-1 focus:ring-[#0B4F4B]"
+                    } outline-none`}
                   />
                 </div>
               )}
@@ -796,7 +802,13 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
                 <button
                   type="button"
                   onClick={() => setProfileDropdownOpen((prev) => !prev)}
-                  className="flex items-center gap-2 sm:gap-3 p-1 rounded-xl hover:bg-[#F5F7F8] transition-colors cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                  className={`flex items-center gap-2 sm:gap-3 p-1 rounded-xl hover:bg-[#F5F7F8] transition-colors cursor-pointer text-left focus:outline-none focus-visible:ring-2 ${
+                    isLearner
+                      ? "focus-visible:ring-blue-500"
+                      : isEducator
+                      ? "focus-visible:ring-teal-500"
+                      : "focus-visible:ring-emerald-500"
+                  }`}
                   aria-expanded={profileDropdownOpen}
                   aria-haspopup="true"
                   aria-label="User account menu"

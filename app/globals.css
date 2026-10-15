@@ -127,6 +127,12 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
+  [data-theme="learner"] ::selection,
+  .theme-learner ::selection {
+    background-color: rgba(37, 99, 235, 0.2);
+    color: #1E40AF;
+  }
+
   select {
     @apply glass-select;
   }
@@ -222,6 +228,44 @@ select.text-slate-700 option {
   color: #0F172A !important;
   font-weight: 600;
   padding: 10px 14px;
+}
+
+/* Learner Theme Selects & Dropdowns */
+[data-theme="learner"] .glass-select,
+[data-theme="learner"] select.bg-white,
+[data-theme="learner"] select.bg-slate-50,
+.theme-learner .glass-select,
+.theme-learner select.bg-white,
+.theme-learner select.bg-slate-50 {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='%232563EB'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E") !important;
+}
+
+[data-theme="learner"] .glass-select:hover,
+[data-theme="learner"] select.bg-white:hover,
+[data-theme="learner"] select.bg-slate-50:hover,
+.theme-learner .glass-select:hover,
+.theme-learner select.bg-white:hover,
+.theme-learner select.bg-slate-50:hover {
+  border-color: #2563EB !important;
+}
+
+[data-theme="learner"] .glass-select:focus,
+[data-theme="learner"] select.bg-white:focus,
+[data-theme="learner"] select.bg-slate-50:focus,
+.theme-learner .glass-select:focus,
+.theme-learner select.bg-white:focus,
+.theme-learner select.bg-slate-50:focus {
+  outline: none !important;
+  border-color: #2563EB !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Learner Theme Inputs & Form Controls Focus */
+[data-theme="learner"] input:focus,
+[data-theme="learner"] textarea:focus,
+.theme-learner input:focus,
+.theme-learner textarea:focus {
+  border-color: #2563EB !important;
 }
 
 /* Dark Theme Selects (Dark Forms, Dark Modals & Dark Dashboards) */
@@ -377,6 +421,12 @@ input[class*="bg-slate-900"]:-webkit-autofill:focus,
 .glass-dropdown-item:hover {
   background-color: rgba(22, 128, 91, 0.08);
   color: #0D5C41;
+}
+
+[data-theme="learner"] .glass-dropdown-item:hover,
+.theme-learner .glass-dropdown-item:hover {
+  background-color: rgba(37, 99, 235, 0.08);
+  color: #1E40AF;
 }
 
 /* Perspective container for 3D tilts */

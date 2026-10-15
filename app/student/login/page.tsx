@@ -248,7 +248,7 @@ export default function StudentLoginPage() {
 
                 <GlassButton
                   type="submit"
-                  variant="primary"
+                  variant="learner"
                   className="w-full mt-2 bg-[#2563EB] hover:bg-[#1E40AF] border-[#2563EB] shadow-[#2563EB]/20 text-white"
                   isLoading={loading}
                   rightIcon={<ArrowRight className="h-4 w-4" />}

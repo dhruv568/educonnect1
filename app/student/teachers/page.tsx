@@ -859,7 +859,7 @@ export default function StudentFindTeachersPage() {
                             </div>
 
                             <Link href={`/payment/checkout?type=COURSE_ENROLLMENT&courseId=${course.id}`}>
-                              <Button variant="primary" size="sm">
+                              <Button variant="student" size="sm">
                                 Enroll Now
                               </Button>
                             </Link>

@@ -137,8 +137,8 @@ export default function StudentCoursesDashboardPage() {
             title="Completed Courses"
             value={loading ? "..." : completedCount}
             subtitle="100% finished courses"
-            icon={<CheckCircle2 className="h-5 w-5 text-emerald-600" />}
-            variant="emerald"
+            icon={<CheckCircle2 className="h-5 w-5 text-blue-600" />}
+            variant="blue"
           />
 
           <MetricCard
@@ -283,7 +283,7 @@ export default function StudentCoursesDashboardPage() {
               </p>
               {enrolledCourses.length === 0 ? (
                 <Link href="/courses" className="inline-block pt-1">
-                  <Button variant="primary" size="sm">
+                  <Button variant="student" size="sm">
                     Browse Course Platform
                   </Button>
                 </Link>
