@@ -13,6 +13,28 @@ interface PhoneOtpVerifyInlineProps {
   className?: string;
 }
 
+/**
+ * Sanitizes provider error messages for inline verification.
+ */
+function sanitizeInlineErrorMessage(rawMessage: string | undefined): string {
+  if (!rawMessage) return "An unexpected error occurred. Please try again.";
+  const lower = rawMessage.toLowerCase();
+  if (
+    lower.includes("authenticationfailure") ||
+    lower.includes("invalid authkey") ||
+    lower.includes("widget id")
+  ) {
+    return "SMS verification service is temporarily unavailable. Please try again in a few moments.";
+  }
+  if (lower.includes("invalid captcha") || lower.includes("captcha")) {
+    return "Security verification required. Please try again.";
+  }
+  if (lower.includes("network") || lower.includes("failed to fetch")) {
+    return "Network connection issue. Please check your internet connection.";
+  }
+  return rawMessage;
+}
+
 export function PhoneOtpVerifyInline({
   phone,
   email,
@@ -44,22 +66,28 @@ export function PhoneOtpVerifyInline({
 
   // Initialize MSG91 Web SDK for client-side Captcha & OTP handling
   useEffect(() => {
+    let isMounted = true;
+
     const initWidget = async () => {
       try {
         let wid = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID || "";
-        if (!wid) {
+        let tokenAuth = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH || "";
+
+        if (!wid || !tokenAuth) {
           const res = await fetch("/api/auth/phone/config", { cache: "no-store" });
           if (res.ok) {
             const json = await res.json();
-            wid = json.data?.widgetId || "";
+            if (!wid) wid = json.data?.widgetId || "";
+            if (!tokenAuth) tokenAuth = json.data?.tokenAuth || "";
           }
         }
         if (!wid || wid.startsWith("your_")) return;
 
         const setupMsg91 = () => {
+          if (!isMounted) return;
           if (typeof (window as any).initSendOTP === "function") {
             try {
-              (window as any).initSendOTP({
+              const initConfig: Record<string, any> = {
                 widgetId: wid,
                 exposeMethods: true,
                 success: (data: any) => {
@@ -68,7 +96,11 @@ export function PhoneOtpVerifyInline({
                 failure: (err: any) => {
                   console.warn("[MSG91 Web SDK] Notice inline:", err);
                 },
-              });
+              };
+              if (tokenAuth) {
+                initConfig.tokenAuth = tokenAuth;
+              }
+              (window as any).initSendOTP(initConfig);
             } catch (initErr) {
               console.warn("[MSG91 Web SDK] init error inline:", initErr);
             }
@@ -91,6 +123,10 @@ export function PhoneOtpVerifyInline({
     };
 
     initWidget();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const cleanPhone = phone.replace(/\D/g, "");
@@ -124,28 +160,37 @@ export function PhoneOtpVerifyInline({
 
       const normalized = preCheckData.data?.phone || cleanPhone;
 
-      // 2. If Web SDK is available, send via window.sendOtp with native Captcha handling
+      let dispatched = false;
+
+      // 2. If Web SDK is available, attempt dispatch via window.sendOtp
       if (typeof window !== "undefined" && typeof (window as any).sendOtp === "function") {
-        await new Promise<void>((resolve, reject) => {
-          (window as any).sendOtp(
-            normalized,
-            (res: any) => {
-              const returnedReqId = res?.requestId || res?.reqId || res?.message || "";
-              setReqId(returnedReqId);
-              setIsOpen(true);
-              setCooldown(60);
-              showToast("Verification Code Sent! 📱", "Enter the 6-digit code received on your mobile.", "info");
-              setTimeout(() => inputRefs.current[0]?.focus(), 150);
-              resolve();
-            },
-            (err: any) => {
-              const errMsg = typeof err === "string" ? err : err?.message || "Failed to dispatch verification code.";
-              reject(new Error(errMsg));
-            }
-          );
-        });
-      } else {
-        // 3. Fallback to server dispatch
+        try {
+          await new Promise<void>((resolve, reject) => {
+            (window as any).sendOtp(
+              normalized,
+              (res: any) => {
+                const returnedReqId = res?.requestId || res?.reqId || res?.message || "";
+                setReqId(returnedReqId);
+                setIsOpen(true);
+                setCooldown(60);
+                showToast("Verification Code Sent! 📱", "Enter the 6-digit code received on your mobile.", "info");
+                setTimeout(() => inputRefs.current[0]?.focus(), 150);
+                dispatched = true;
+                resolve();
+              },
+              (err: any) => {
+                console.warn("[MSG91 Web SDK inline] sendOtp failed, attempting server fallback:", err);
+                reject(err);
+              }
+            );
+          });
+        } catch {
+          dispatched = false;
+        }
+      }
+
+      // 3. Fallback to server dispatch (if client SDK was unavailable or failed)
+      if (!dispatched) {
         const res = await fetch("/api/auth/phone/send-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -169,8 +214,9 @@ export function PhoneOtpVerifyInline({
         setTimeout(() => inputRefs.current[0]?.focus(), 150);
       }
     } catch (err: any) {
-      setErrorMsg(err.message);
-      showToast("Notice", err.message, "error");
+      const safeMsg = sanitizeInlineErrorMessage(err.message);
+      setErrorMsg(safeMsg);
+      showToast("Notice", safeMsg, "error");
     } finally {
       setLoading(false);
     }
@@ -240,8 +286,9 @@ export function PhoneOtpVerifyInline({
         onVerified(data.data?.phone || cleanPhone);
       }
     } catch (err: any) {
-      setErrorMsg(err.message);
-      showToast("Verification Error", err.message, "error");
+      const safeMsg = sanitizeInlineErrorMessage(err.message);
+      setErrorMsg(safeMsg);
+      showToast("Verification Error", safeMsg, "error");
     } finally {
       setLoading(false);
     }

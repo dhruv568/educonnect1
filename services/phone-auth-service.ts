@@ -366,8 +366,17 @@ export class PhoneAuthService {
         throw new Error(otpVerification.error || "Invalid verification code.");
       }
       if (otpVerification.accessToken) {
-        const tokenVerification = await Msg91Client.verifyAccessToken(otpVerification.accessToken);
-        verifiedIdentifier = tokenVerification.phone || normalizedPhone;
+        try {
+          const tokenVerification = await Msg91Client.verifyAccessToken(otpVerification.accessToken);
+          if (tokenVerification.success && tokenVerification.phone) {
+            verifiedIdentifier = tokenVerification.phone;
+          } else {
+            verifiedIdentifier = normalizedPhone;
+          }
+        } catch {
+          // Non-blocking: OTP was already verified via verifyOtp
+          verifiedIdentifier = normalizedPhone;
+        }
       } else {
         verifiedIdentifier = normalizedPhone;
       }

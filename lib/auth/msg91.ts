@@ -46,16 +46,34 @@ export class Msg91Client {
   private static readonly MSG91_API_BASE = "https://control.msg91.com/api/v5/widget";
 
   /**
+   * Sanitizes environment variable values by trimming whitespace and
+   * stripping enclosing single or double quotes.
+   */
+  static sanitizeEnv(val: string | undefined): string {
+    if (!val) return "";
+    let s = val.trim();
+    if (
+      (s.startsWith('"') && s.endsWith('"')) ||
+      (s.startsWith("'") && s.endsWith("'"))
+    ) {
+      s = s.slice(1, -1).trim();
+    }
+    return s;
+  }
+
+  /**
    * Retrieves active MSG91 configuration from environment variables.
    */
   static getConfig(): Msg91Config {
-    const authkey = (process.env.MSG91_AUTHKEY || "").trim();
-    const widgetId = (
+    const authkey = this.sanitizeEnv(process.env.MSG91_AUTHKEY);
+    const widgetId = this.sanitizeEnv(
       process.env.MSG91_WIDGET_ID ||
-      process.env.NEXT_PUBLIC_MSG91_WIDGET_ID ||
-      ""
-    ).trim();
-    const tokenAuth = (process.env.MSG91_TOKEN_AUTH || "").trim();
+      process.env.NEXT_PUBLIC_MSG91_WIDGET_ID
+    );
+    const tokenAuth = this.sanitizeEnv(
+      process.env.MSG91_TOKEN_AUTH ||
+      process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH
+    );
 
     const isPlaceholder =
       !authkey ||
@@ -71,7 +89,6 @@ export class Msg91Client {
       process.env.MSG91_SIMULATION === "true";
 
     const isConfigured = Boolean(!isPlaceholder && !isTestKey);
-
 
     return {
       authkey,
@@ -193,7 +210,7 @@ export class Msg91Client {
       if (captchaToken) {
         body.token = captchaToken;
       }
-      if (config.tokenAuth && !config.authkey) {
+      if (config.tokenAuth) {
         body.tokenAuth = config.tokenAuth;
       }
 
@@ -214,8 +231,15 @@ export class Msg91Client {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok || (data.type && data.type !== "success" && data.type !== "info")) {
-        const rawMsg = data.message || `MSG91 sendOtp failed (HTTP ${response.status})`;
-        console.error("❌ [MSG91 sendOtp Error]:", data);
+        const rawMsg = String(data.message || `MSG91 sendOtp failed (HTTP ${response.status})`);
+        console.error("❌ [MSG91 sendOtp Error]:", {
+          status: response.status,
+          type: data.type,
+          rawMsg,
+          hasAuthkey: Boolean(config.authkey),
+          hasTokenAuth: Boolean(config.tokenAuth),
+          hasWidgetId: Boolean(config.widgetId),
+        });
 
         // Handle MSG91 Captcha Token error gracefully with helpful diagnostics
         if (
@@ -230,6 +254,18 @@ export class Msg91Client {
             "or (2) toggle off 'Captcha Validation' in your MSG91 Dashboard under OTP Widget -> Settings."
           );
           return { success: false, error: userFriendlyMsg };
+        }
+
+        // Map raw provider AuthenticationFailure / 401 to safe, specific user-facing message
+        if (
+          rawMsg.toLowerCase().includes("authenticationfailure") ||
+          rawMsg.toLowerCase().includes("invalid authkey") ||
+          response.status === 401
+        ) {
+          return {
+            success: false,
+            error: "SMS service is temporarily unavailable. Please try again in a few moments or sign in with Email & Password.",
+          };
         }
 
         return { success: false, error: rawMsg };
@@ -312,8 +348,26 @@ export class Msg91Client {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok || (data.type && data.type !== "success")) {
-        const errMsg = data.message || "Invalid or expired OTP. Please try again.";
-        return { success: false, error: errMsg };
+        const rawMsg = String(data.message || "Invalid or expired OTP. Please try again.");
+        console.error("❌ [MSG91 verifyOtp Error]:", {
+          status: response.status,
+          type: data.type,
+          rawMsg,
+        });
+
+        // Map raw provider AuthenticationFailure / 401 to safe, specific user-facing message
+        if (
+          rawMsg.toLowerCase().includes("authenticationfailure") ||
+          rawMsg.toLowerCase().includes("invalid authkey") ||
+          response.status === 401
+        ) {
+          return {
+            success: false,
+            error: "SMS verification service is temporarily unavailable. Please try again or request a new OTP.",
+          };
+        }
+
+        return { success: false, error: rawMsg };
       }
 
       // MSG91 returns access token in message or token or access-token field
@@ -384,8 +438,27 @@ export class Msg91Client {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok || data.type !== "success") {
-        const errMsg = data.message || `Access token verification failed (HTTP ${response.status})`;
-        return { success: false, error: errMsg };
+        const rawMsg = String(data.message || `Access token verification failed (HTTP ${response.status})`);
+        console.error("❌ [MSG91 verifyAccessToken Error]:", {
+          status: response.status,
+          type: data.type,
+          rawMsg,
+          hasAuthkey: Boolean(config.authkey),
+        });
+
+        // Map raw provider AuthenticationFailure / 401 to safe, specific user-facing message
+        if (
+          rawMsg.toLowerCase().includes("authenticationfailure") ||
+          rawMsg.toLowerCase().includes("invalid authkey") ||
+          response.status === 401
+        ) {
+          return {
+            success: false,
+            error: "Authentication service error verifying security token. Please request a new verification code.",
+          };
+        }
+
+        return { success: false, error: rawMsg };
       }
 
       // MSG91 returns the verified identifier (e.g. '919999999999') in message

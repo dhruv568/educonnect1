@@ -16,6 +16,57 @@ interface PhoneOtpLoginCardProps {
   className?: string;
 }
 
+/**
+ * Sanitizes provider error messages to prevent raw technical leaks (e.g. AuthenticationFailure)
+ * and provide friendly, actionable feedback to users.
+ */
+function sanitizeClientErrorMessage(rawMessage: string | undefined): string {
+  if (!rawMessage) return "An unexpected error occurred. Please try again.";
+  const lower = rawMessage.toLowerCase();
+  if (
+    lower.includes("authenticationfailure") ||
+    lower.includes("invalid authkey") ||
+    lower.includes("widget id")
+  ) {
+    return "SMS verification service is temporarily unavailable. Please try again in a few moments or use Email & Password.";
+  }
+  if (lower.includes("invalid captcha") || lower.includes("captcha")) {
+    return "Security verification required. Please try again or refresh the page.";
+  }
+  if (lower.includes("network") || lower.includes("failed to fetch")) {
+    return "Network connection issue. Please check your internet connection and try again.";
+  }
+  return rawMessage;
+}
+
+/**
+ * Robustly extracts an MSG91 access-token from diverse response shapes returned by the Web SDK.
+ */
+function extractAccessToken(data: any): string | undefined {
+  if (!data) return undefined;
+  if (typeof data === "string" && data.length > 20) {
+    return data;
+  }
+  if (typeof data === "object") {
+    if (typeof data["access-token"] === "string" && data["access-token"]) {
+      return data["access-token"];
+    }
+    if (typeof data.accessToken === "string" && data.accessToken) {
+      return data.accessToken;
+    }
+    if (typeof data.token === "string" && data.token) {
+      return data.token;
+    }
+    if (typeof data.message === "string" && data.message.length > 20) {
+      return data.message;
+    }
+    if (data.data && typeof data.data === "object") {
+      return extractAccessToken(data.data);
+    }
+  }
+  return undefined;
+}
+
 export function PhoneOtpLoginCard({
   roleContext = "student",
   onSuccess,
@@ -53,31 +104,41 @@ export function PhoneOtpLoginCard({
 
   // Initialize MSG91 Web SDK for client-side Captcha & OTP handling
   useEffect(() => {
+    let isMounted = true;
+
     const initWidget = async () => {
       try {
         let wid = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID || "";
-        if (!wid) {
+        let tokenAuth = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH || "";
+
+        if (!wid || !tokenAuth) {
           const res = await fetch("/api/auth/phone/config", { cache: "no-store" });
           if (res.ok) {
             const json = await res.json();
-            wid = json.data?.widgetId || "";
+            if (!wid) wid = json.data?.widgetId || "";
+            if (!tokenAuth) tokenAuth = json.data?.tokenAuth || "";
           }
         }
         if (!wid || wid.startsWith("your_")) return;
 
         const setupMsg91 = () => {
+          if (!isMounted) return;
           if (typeof (window as any).initSendOTP === "function") {
             try {
-              (window as any).initSendOTP({
+              const initConfig: Record<string, any> = {
                 widgetId: wid,
                 exposeMethods: true,
                 success: (data: any) => {
-                  console.log("[MSG91 Web SDK] Verified:", data);
+                  console.log("[MSG91 Web SDK] Verified event received");
                 },
                 failure: (err: any) => {
                   console.warn("[MSG91 Web SDK] Notice:", err);
                 },
-              });
+              };
+              if (tokenAuth) {
+                initConfig.tokenAuth = tokenAuth;
+              }
+              (window as any).initSendOTP(initConfig);
             } catch (initErr) {
               console.warn("[MSG91 Web SDK] init error:", initErr);
             }
@@ -100,6 +161,10 @@ export function PhoneOtpLoginCard({
     };
 
     initWidget();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Handle Send OTP
@@ -137,32 +202,41 @@ export function PhoneOtpLoginCard({
       const normalized = preCheckData.data?.phone || clean;
       const masked = preCheckData.data?.maskedPhone || clean;
 
-      // 2. If MSG91 Web SDK is available in browser, dispatch via window.sendOtp
-      // This natively executes Google reCAPTCHA in the client browser, satisfying MSG91's widget security check!
+      let dispatched = false;
+
+      // 2. If MSG91 Web SDK is available in browser, attempt dispatch via window.sendOtp
       if (typeof window !== "undefined" && typeof (window as any).sendOtp === "function") {
-        await new Promise<void>((resolve, reject) => {
-          (window as any).sendOtp(
-            normalized,
-            (res: any) => {
-              const returnedReqId = res?.requestId || res?.reqId || res?.message || "";
-              setReqId(returnedReqId);
-              setMaskedPhone(masked);
-              setStep("OTP");
-              setCooldown(60);
-              showToast("OTP Sent! 📱", `A 6-digit verification code has been dispatched to ${masked}.`, "info");
-              setTimeout(() => {
-                inputRefs.current[0]?.focus();
-              }, 100);
-              resolve();
-            },
-            (err: any) => {
-              const errMsg = typeof err === "string" ? err : err?.message || "Failed to dispatch verification code.";
-              reject(new Error(errMsg));
-            }
-          );
-        });
-      } else {
-        // 3. Fallback to server-side dispatch (for testing, simulation mode, or if script is blocked)
+        try {
+          await new Promise<void>((resolve, reject) => {
+            (window as any).sendOtp(
+              normalized,
+              (res: any) => {
+                const returnedReqId = res?.requestId || res?.reqId || res?.message || "";
+                setReqId(returnedReqId);
+                setMaskedPhone(masked);
+                setStep("OTP");
+                setCooldown(60);
+                showToast("OTP Sent! 📱", `A 6-digit verification code has been dispatched to ${masked}.`, "info");
+                setTimeout(() => {
+                  inputRefs.current[0]?.focus();
+                }, 100);
+                dispatched = true;
+                resolve();
+              },
+              (err: any) => {
+                console.warn("[MSG91 Web SDK] sendOtp failed, attempting server-side fallback:", err);
+                reject(err);
+              }
+            );
+          });
+        } catch {
+          // Fall through to server-side dispatch
+          dispatched = false;
+        }
+      }
+
+      // 3. Fallback to server-side dispatch (for testing, simulation mode, or if client SDK failed)
+      if (!dispatched) {
         const res = await fetch("/api/auth/phone/send-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -189,8 +263,9 @@ export function PhoneOtpLoginCard({
         }, 100);
       }
     } catch (err: any) {
-      setErrorMessage(err.message);
-      showToast("Notice", err.message, "error");
+      const safeMsg = sanitizeClientErrorMessage(err.message);
+      setErrorMessage(safeMsg);
+      showToast("Notice", safeMsg, "error");
     } finally {
       setLoading(false);
     }
@@ -205,23 +280,32 @@ export function PhoneOtpLoginCard({
     try {
       const clean = phone.replace(/\D/g, "");
       const norm = "91" + (clean.length === 10 ? clean : clean.slice(-10));
+      let resent = false;
 
       if (typeof window !== "undefined" && typeof (window as any).retryOtp === "function") {
-        await new Promise<void>((resolve, reject) => {
-          (window as any).retryOtp(
-            "11", // SMS channel
-            () => {
-              setCooldown(60);
-              showToast("Code Resent!", "A fresh OTP has been dispatched to your mobile number.", "success");
-              resolve();
-            },
-            (err: any) => {
-              reject(new Error(typeof err === "string" ? err : err?.message || "Failed to resend code."));
-            },
-            reqId
-          );
-        });
-      } else {
+        try {
+          await new Promise<void>((resolve, reject) => {
+            (window as any).retryOtp(
+              "11", // SMS channel
+              () => {
+                setCooldown(60);
+                showToast("Code Resent!", "A fresh OTP has been dispatched to your mobile number.", "success");
+                resent = true;
+                resolve();
+              },
+              (err: any) => {
+                console.warn("[MSG91 Web SDK] retryOtp failed, attempting server-side fallback:", err);
+                reject(err);
+              },
+              reqId
+            );
+          });
+        } catch {
+          resent = false;
+        }
+      }
+
+      if (!resent) {
         const res = await fetch("/api/auth/phone/send-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -242,8 +326,9 @@ export function PhoneOtpLoginCard({
         showToast("Code Resent!", "A fresh OTP has been dispatched to your mobile number.", "success");
       }
     } catch (err: any) {
-      setErrorMessage(err.message);
-      showToast("Resend Error", err.message, "error");
+      const safeMsg = sanitizeClientErrorMessage(err.message);
+      setErrorMessage(safeMsg);
+      showToast("Resend Error", safeMsg, "error");
     } finally {
       setResending(false);
     }
@@ -339,10 +424,7 @@ export function PhoneOtpLoginCard({
             enteredOtp,
             async (data: any) => {
               try {
-                const token =
-                  data?.["access-token"] ||
-                  data?.accessToken ||
-                  (typeof data?.message === "string" && data.message.length > 20 ? data.message : undefined);
+                const token = extractAccessToken(data);
 
                 await submitServerLogin({
                   accessToken: token,
@@ -372,8 +454,9 @@ export function PhoneOtpLoginCard({
         await submitServerLogin({ otp: enteredOtp, reqId });
       }
     } catch (err: any) {
-      setErrorMessage(err.message);
-      showToast("Authentication Error", err.message, "error");
+      const safeMsg = sanitizeClientErrorMessage(err.message);
+      setErrorMessage(safeMsg);
+      showToast("Authentication Error", safeMsg, "error");
     } finally {
       setLoading(false);
     }

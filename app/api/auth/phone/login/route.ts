@@ -78,7 +78,42 @@ export async function POST(request: NextRequest) {
       return apiBadRequest(err.errors[0]?.message || "Invalid input format.");
     }
     const message = err.message || "Failed to authenticate via phone OTP.";
-    const isNotFound = message.includes("No account is registered");
-    return apiError(message, isNotFound ? 404 : 400);
+    const lower = message.toLowerCase();
+
+    // 1. Unregistered phone number (404 Not Found)
+    if (lower.includes("no account is registered")) {
+      return apiError(message, 404);
+    }
+
+    // 2. Suspended account / role mismatch (403 Forbidden)
+    if (
+      lower.includes("suspended") ||
+      lower.includes("deactivated") ||
+      lower.includes("access denied") ||
+      lower.includes("registered with an educator account") ||
+      lower.includes("registered with a learner account")
+    ) {
+      return apiError(message, 403);
+    }
+
+    // 3. Rate limiting (429 Too Many Requests)
+    if (lower.includes("please wait") || lower.includes("too many")) {
+      return apiError(message, 429);
+    }
+
+    // 4. Provider failure / SMS service temporarily unavailable (503 Service Unavailable)
+    if (
+      lower.includes("temporarily unavailable") ||
+      lower.includes("network error") ||
+      lower.includes("authenticationfailure")
+    ) {
+      return apiError(
+        "SMS verification service is temporarily unavailable. Please try again or sign in with Email & Password.",
+        503
+      );
+    }
+
+    // 5. Invalid OTP / expired token / validation error (400 Bad Request)
+    return apiError(message, 400);
   }
 }
