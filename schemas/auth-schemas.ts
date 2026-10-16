@@ -62,6 +62,8 @@ export const SendPhoneOTPSchema = z.object({
   phone: z.string().min(10, "Please enter a valid phone number with at least 10 digits"),
   purpose: z.enum(["LOGIN", "SIGNUP", "VERIFY"]).default("LOGIN"),
   role: z.string().optional(),
+  captchaToken: z.string().optional(),
+  checkOnly: z.boolean().optional(),
 });
 
 export type SendPhoneOTPInput = z.infer<typeof SendPhoneOTPSchema>;

@@ -24,10 +24,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = SendPhoneOTPSchema.parse(body);
 
+    if (validated.checkOnly) {
+      const checkResult = await PhoneAuthService.checkPhoneForOtp({
+        phone: validated.phone,
+        purpose: validated.purpose,
+        roleContext: validated.role,
+      });
+      return apiSuccess(checkResult, "Phone verified for OTP delivery.");
+    }
+
     const result = await PhoneAuthService.initiatePhoneOtp({
       phone: validated.phone,
       purpose: validated.purpose,
       roleContext: validated.role,
+      captchaToken: validated.captchaToken,
     });
 
     return apiSuccess(result, result.message);

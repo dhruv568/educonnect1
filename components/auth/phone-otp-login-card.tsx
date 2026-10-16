@@ -51,6 +51,57 @@ export function PhoneOtpLoginCard({
     }
   }, [cooldown]);
 
+  // Initialize MSG91 Web SDK for client-side Captcha & OTP handling
+  useEffect(() => {
+    const initWidget = async () => {
+      try {
+        let wid = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID || "";
+        if (!wid) {
+          const res = await fetch("/api/auth/phone/config", { cache: "no-store" });
+          if (res.ok) {
+            const json = await res.json();
+            wid = json.data?.widgetId || "";
+          }
+        }
+        if (!wid || wid.startsWith("your_")) return;
+
+        const setupMsg91 = () => {
+          if (typeof (window as any).initSendOTP === "function") {
+            try {
+              (window as any).initSendOTP({
+                widgetId: wid,
+                exposeMethods: true,
+                success: (data: any) => {
+                  console.log("[MSG91 Web SDK] Verified:", data);
+                },
+                failure: (err: any) => {
+                  console.warn("[MSG91 Web SDK] Notice:", err);
+                },
+              });
+            } catch (initErr) {
+              console.warn("[MSG91 Web SDK] init error:", initErr);
+            }
+          }
+        };
+
+        if (typeof (window as any).initSendOTP === "function") {
+          setupMsg91();
+        } else if (!document.getElementById("msg91-otp-provider-script")) {
+          const script = document.createElement("script");
+          script.id = "msg91-otp-provider-script";
+          script.src = "https://verify.msg91.com/otp-provider.js";
+          script.async = true;
+          script.onload = setupMsg91;
+          document.body.appendChild(script);
+        }
+      } catch (err) {
+        console.warn("[MSG91 Web SDK] Setup error:", err);
+      }
+    };
+
+    initWidget();
+  }, []);
+
   // Handle Send OTP
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,31 +116,78 @@ export function PhoneOtpLoginCard({
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/phone/send-otp", {
+      // 1. Pre-check phone with backend: validates rate limits & account existence
+      // (Requirement 7: Do not send OTP to unknown numbers!)
+      const preCheckRes = await fetch("/api/auth/phone/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone: clean,
           purpose: "LOGIN",
           role: roleContext === "student" ? "STUDENT" : roleContext === "teacher" ? "TEACHER" : undefined,
+          checkOnly: true,
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to send verification code.");
+      const preCheckData = await preCheckRes.json();
+      if (!preCheckRes.ok) {
+        throw new Error(preCheckData.error || "Unable to process phone login request.");
       }
 
-      setReqId(data.data?.reqId || "");
-      setMaskedPhone(data.data?.maskedPhone || clean);
-      setStep("OTP");
-      setCooldown(60);
-      showToast("OTP Sent! 📱", `A 6-digit verification code has been dispatched to ${data.data?.maskedPhone || clean}.`, "info");
+      const normalized = preCheckData.data?.phone || clean;
+      const masked = preCheckData.data?.maskedPhone || clean;
 
-      // Auto-focus first OTP slot
-      setTimeout(() => {
-        inputRefs.current[0]?.focus();
-      }, 100);
+      // 2. If MSG91 Web SDK is available in browser, dispatch via window.sendOtp
+      // This natively executes Google reCAPTCHA in the client browser, satisfying MSG91's widget security check!
+      if (typeof window !== "undefined" && typeof (window as any).sendOtp === "function") {
+        await new Promise<void>((resolve, reject) => {
+          (window as any).sendOtp(
+            normalized,
+            (res: any) => {
+              const returnedReqId = res?.requestId || res?.reqId || res?.message || "";
+              setReqId(returnedReqId);
+              setMaskedPhone(masked);
+              setStep("OTP");
+              setCooldown(60);
+              showToast("OTP Sent! 📱", `A 6-digit verification code has been dispatched to ${masked}.`, "info");
+              setTimeout(() => {
+                inputRefs.current[0]?.focus();
+              }, 100);
+              resolve();
+            },
+            (err: any) => {
+              const errMsg = typeof err === "string" ? err : err?.message || "Failed to dispatch verification code.";
+              reject(new Error(errMsg));
+            }
+          );
+        });
+      } else {
+        // 3. Fallback to server-side dispatch (for testing, simulation mode, or if script is blocked)
+        const res = await fetch("/api/auth/phone/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone: clean,
+            purpose: "LOGIN",
+            role: roleContext === "student" ? "STUDENT" : roleContext === "teacher" ? "TEACHER" : undefined,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to send verification code.");
+        }
+
+        setReqId(data.data?.reqId || "");
+        setMaskedPhone(data.data?.maskedPhone || clean);
+        setStep("OTP");
+        setCooldown(60);
+        showToast("OTP Sent! 📱", `A 6-digit verification code has been dispatched to ${data.data?.maskedPhone || clean}.`, "info");
+
+        setTimeout(() => {
+          inputRefs.current[0]?.focus();
+        }, 100);
+      }
     } catch (err: any) {
       setErrorMessage(err.message);
       showToast("Notice", err.message, "error");
@@ -105,24 +203,44 @@ export function PhoneOtpLoginCard({
     setErrorMessage(null);
 
     try {
-      const res = await fetch("/api/auth/phone/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: phone.replace(/\D/g, ""),
-          purpose: "LOGIN",
-          role: roleContext === "student" ? "STUDENT" : roleContext === "teacher" ? "TEACHER" : undefined,
-        }),
-      });
+      const clean = phone.replace(/\D/g, "");
+      const norm = "91" + (clean.length === 10 ? clean : clean.slice(-10));
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to resend code.");
+      if (typeof window !== "undefined" && typeof (window as any).retryOtp === "function") {
+        await new Promise<void>((resolve, reject) => {
+          (window as any).retryOtp(
+            "11", // SMS channel
+            () => {
+              setCooldown(60);
+              showToast("Code Resent!", "A fresh OTP has been dispatched to your mobile number.", "success");
+              resolve();
+            },
+            (err: any) => {
+              reject(new Error(typeof err === "string" ? err : err?.message || "Failed to resend code."));
+            },
+            reqId
+          );
+        });
+      } else {
+        const res = await fetch("/api/auth/phone/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone: clean,
+            purpose: "LOGIN",
+            role: roleContext === "student" ? "STUDENT" : roleContext === "teacher" ? "TEACHER" : undefined,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to resend code.");
+        }
+
+        setReqId(data.data?.reqId || reqId);
+        setCooldown(60);
+        showToast("Code Resent!", "A fresh OTP has been dispatched to your mobile number.", "success");
       }
-
-      setReqId(data.data?.reqId || reqId);
-      setCooldown(60);
-      showToast("Code Resent!", "A fresh OTP has been dispatched to your mobile number.", "success");
     } catch (err: any) {
       setErrorMessage(err.message);
       showToast("Resend Error", err.message, "error");
@@ -166,6 +284,40 @@ export function PhoneOtpLoginCard({
     }
   };
 
+  // Helper to submit verified result to our server for session creation & role redirect
+  const submitServerLogin = async (payload: { accessToken?: string; otp?: string; reqId?: string }) => {
+    const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const returnParam = searchParams?.get("returnTo") || searchParams?.get("redirectTo");
+    const safeReturn = returnParam && isSafeRedirectPath(returnParam) ? sanitizeRedirectUrl(returnParam) : undefined;
+
+    const res = await fetch("/api/auth/phone/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: phone.replace(/\D/g, ""),
+        role: roleContext === "student" ? "STUDENT" : roleContext === "teacher" ? "TEACHER" : undefined,
+        returnTo: safeReturn,
+        redirectTo: safeReturn,
+        ...payload,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Phone OTP verification failed.");
+    }
+
+    showToast("Signed In Successfully! 🎉", `Welcome back, ${data.data?.user?.firstName || "User"}!`, "success");
+
+    const destination = data.data?.redirectPath || safeReturn || (isEducator ? "/teacher/dashboard" : "/student/dashboard");
+
+    if (onSuccess) {
+      onSuccess(data.data.user, destination);
+    } else {
+      window.location.replace(destination);
+    }
+  };
+
   // Handle OTP Verification & Login
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,37 +332,44 @@ export function PhoneOtpLoginCard({
     setErrorMessage(null);
 
     try {
-      const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-      const returnParam = searchParams?.get("returnTo") || searchParams?.get("redirectTo");
-      const safeReturn = returnParam && isSafeRedirectPath(returnParam) ? sanitizeRedirectUrl(returnParam) : undefined;
+      // If MSG91 Web SDK verifyOtp is available, verify via client SDK to get access token
+      if (typeof window !== "undefined" && typeof (window as any).verifyOtp === "function") {
+        await new Promise<void>((resolve, reject) => {
+          (window as any).verifyOtp(
+            enteredOtp,
+            async (data: any) => {
+              try {
+                const token =
+                  data?.["access-token"] ||
+                  data?.accessToken ||
+                  (typeof data?.message === "string" && data.message.length > 20 ? data.message : undefined);
 
-      const res = await fetch("/api/auth/phone/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: phone.replace(/\D/g, ""),
-          otp: enteredOtp,
-          reqId,
-          role: roleContext === "student" ? "STUDENT" : roleContext === "teacher" ? "TEACHER" : undefined,
-          returnTo: safeReturn,
-          redirectTo: safeReturn,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Phone OTP verification failed.");
-      }
-
-      showToast("Signed In Successfully! 🎉", `Welcome back, ${data.data?.user?.firstName || "User"}!`, "success");
-
-      const destination = data.data?.redirectPath || safeReturn || (isEducator ? "/teacher/dashboard" : "/student/dashboard");
-
-      if (onSuccess) {
-        onSuccess(data.data.user, destination);
+                await submitServerLogin({
+                  accessToken: token,
+                  otp: enteredOtp,
+                  reqId,
+                });
+                resolve();
+              } catch (subErr) {
+                reject(subErr);
+              }
+            },
+            async (err: any) => {
+              // If client verify fails, fallback to direct server verification
+              try {
+                await submitServerLogin({ otp: enteredOtp, reqId });
+                resolve();
+              } catch (fallbackErr: any) {
+                const errMsg = typeof err === "string" ? err : err?.message || fallbackErr?.message || "Invalid OTP entered.";
+                reject(new Error(errMsg));
+              }
+            },
+            reqId
+          );
+        });
       } else {
-        // Direct navigation to destination
-        window.location.replace(destination);
+        // Direct server verification
+        await submitServerLogin({ otp: enteredOtp, reqId });
       }
     } catch (err: any) {
       setErrorMessage(err.message);

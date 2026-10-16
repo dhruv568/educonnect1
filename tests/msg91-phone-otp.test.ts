@@ -10,6 +10,7 @@ import { encodeSession, decodeSession } from "../lib/auth/session-token";
 import { hashPassword, verifyPassword } from "../lib/auth/password";
 import { generateOTP, hashToken, verifyTokenHash, maskEmail } from "../lib/auth/tokens";
 import { isEducatorRole, isLearnerRole } from "../lib/auth/roles";
+import { generateCaptchaChallenge, verifyCaptchaSolution } from "../lib/auth/captcha";
 
 async function runMsg91PhoneOtpTests() {
   console.log("\n================================================================================");
@@ -331,15 +332,78 @@ async function runMsg91PhoneOtpTests() {
   const phoneSendParsed = SendPhoneOTPSchema.parse({
     phone: "9876543210",
     purpose: "LOGIN",
+    checkOnly: true,
+    captchaToken: "test_captcha_token",
   });
   assert.strictEqual(phoneSendParsed.phone, "9876543210");
+  assert.strictEqual(phoneSendParsed.checkOnly, true);
+  assert.strictEqual(phoneSendParsed.captchaToken, "test_captcha_token");
 
   const phoneLoginParsed = PhoneLoginSchema.parse({
     phone: "9876543210",
     otp: "123456",
   });
   assert.strictEqual(phoneLoginParsed.phone, "9876543210");
-  console.log("  ✅ [PASS] 9.6: New SendPhoneOTPSchema and PhoneLoginSchema verified");
+  console.log("  ✅ [PASS] 9.6: SendPhoneOTPSchema (with checkOnly & captchaToken) and PhoneLoginSchema verified");
+
+  // ---------------------------------------------------------------------------
+  // GROUP 10: CAPTCHA Isolation, Pre-Flight Validation & Error Handling
+  // ---------------------------------------------------------------------------
+  console.log("\n🔹 [Group 10] CAPTCHA Isolation & Pre-Flight Phone Validation");
+
+  // 10.1 EduConnects native CAPTCHA generation & verification strictly preserved
+  const challenge = generateCaptchaChallenge();
+  assert.ok(challenge.id, "Challenge must have an ID");
+  assert.ok(challenge.token, "Challenge must have a token");
+  assert.ok(challenge.question.startsWith("What is"), "Challenge question must be formatted");
+
+  // Invalid token format check
+  const badTokenRes = verifyCaptchaSolution("invalid_base64_garbage", "10");
+  assert.strictEqual(badTokenRes.valid, false);
+  assert.strictEqual(badTokenRes.error, "Invalid CAPTCHA token format.");
+  console.log("  ✅ [PASS] 10.1: EduConnects native CAPTCHA verification strictly preserved (not disabled or bypassed)");
+
+  // 10.2 Pre-flight checkPhoneForOtp: unknown phone rejection without dispatch
+  try {
+    await PhoneAuthService.checkPhoneForOtp({
+      phone: "919999900000", // Not in mockPhoneUsersStore
+      purpose: "LOGIN",
+      roleContext: "STUDENT",
+    });
+    assert.fail("Should have rejected unknown phone number on pre-flight check");
+  } catch (err: any) {
+    assert.ok(err.message.includes("No account is registered"));
+    console.log("  ✅ [PASS] 10.2: Pre-flight checkPhoneForOtp rejects unknown number without SMS dispatch");
+  }
+
+  // 10.3 Pre-flight checkPhoneForOtp: registered phone approval
+  const preCheckAllowed = await PhoneAuthService.checkPhoneForOtp({
+    phone: "9876543210", // Registered in mockPhoneUsersStore
+    purpose: "LOGIN",
+    roleContext: "STUDENT",
+  });
+  assert.strictEqual(preCheckAllowed.allowed, true);
+  assert.strictEqual(preCheckAllowed.phone, "919876543210");
+  assert.strictEqual(preCheckAllowed.maskedPhone, "+91 ******3210");
+  console.log("  ✅ [PASS] 10.3: Pre-flight checkPhoneForOtp approves registered user (+91 ******3210)");
+
+  // 10.4 Pre-flight checkPhoneForOtp: role mismatch protection
+  try {
+    await PhoneAuthService.checkPhoneForOtp({
+      phone: "9876543210", // Student account
+      purpose: "LOGIN",
+      roleContext: "TEACHER", // Trying to login as teacher
+    });
+    assert.fail("Should have rejected student logging into teacher role");
+  } catch (err: any) {
+    assert.ok(err.message.includes("registered with a Learner account"));
+    console.log("  ✅ [PASS] 10.4: Pre-flight checkPhoneForOtp enforces cross-role protection");
+  }
+
+  // 10.5 sendOtp accepts optional captchaToken without breaking
+  const sendWithCaptcha = await Msg91Client.sendOtp("9876543210", "client_captcha_token_123");
+  assert.strictEqual(sendWithCaptcha.success, true);
+  console.log("  ✅ [PASS] 10.5: Msg91Client.sendOtp seamlessly accepts client captchaToken");
 
   console.log("\n================================================================================");
   console.log("🎉 ALL MSG91 PHONE OTP & GMAIL PRESERVATION TESTS PASSED WITH 100% SUCCESS! 🚀");

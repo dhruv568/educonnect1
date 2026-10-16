@@ -42,6 +42,57 @@ export function PhoneOtpVerifyInline({
     }
   }, [cooldown]);
 
+  // Initialize MSG91 Web SDK for client-side Captcha & OTP handling
+  useEffect(() => {
+    const initWidget = async () => {
+      try {
+        let wid = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID || "";
+        if (!wid) {
+          const res = await fetch("/api/auth/phone/config", { cache: "no-store" });
+          if (res.ok) {
+            const json = await res.json();
+            wid = json.data?.widgetId || "";
+          }
+        }
+        if (!wid || wid.startsWith("your_")) return;
+
+        const setupMsg91 = () => {
+          if (typeof (window as any).initSendOTP === "function") {
+            try {
+              (window as any).initSendOTP({
+                widgetId: wid,
+                exposeMethods: true,
+                success: (data: any) => {
+                  console.log("[MSG91 Web SDK] Verified inline:", data);
+                },
+                failure: (err: any) => {
+                  console.warn("[MSG91 Web SDK] Notice inline:", err);
+                },
+              });
+            } catch (initErr) {
+              console.warn("[MSG91 Web SDK] init error inline:", initErr);
+            }
+          }
+        };
+
+        if (typeof (window as any).initSendOTP === "function") {
+          setupMsg91();
+        } else if (!document.getElementById("msg91-otp-provider-script")) {
+          const script = document.createElement("script");
+          script.id = "msg91-otp-provider-script";
+          script.src = "https://verify.msg91.com/otp-provider.js";
+          script.async = true;
+          script.onload = setupMsg91;
+          document.body.appendChild(script);
+        }
+      } catch (err) {
+        console.warn("[MSG91 Web SDK] Setup error inline:", err);
+      }
+    };
+
+    initWidget();
+  }, []);
+
   const cleanPhone = phone.replace(/\D/g, "");
   const isValidLength = cleanPhone.length === 10 || (cleanPhone.length === 12 && cleanPhone.startsWith("91"));
 
@@ -54,27 +105,69 @@ export function PhoneOtpVerifyInline({
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await fetch("/api/auth/phone/send-otp", {
+      // 1. Pre-check with server: validate duplicate phone prevention
+      const preCheckRes = await fetch("/api/auth/phone/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone: cleanPhone,
           purpose: "SIGNUP",
           role: roleContext === "student" ? "STUDENT" : "TEACHER",
+          checkOnly: true,
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to dispatch verification code.");
+      const preCheckData = await preCheckRes.json();
+      if (!preCheckRes.ok) {
+        throw new Error(preCheckData.error || "Unable to process phone verification.");
       }
 
-      setReqId(data.data?.reqId || "");
-      setIsOpen(true);
-      setCooldown(60);
-      showToast("Verification Code Sent! 📱", "Enter the 6-digit code received on your mobile.", "info");
+      const normalized = preCheckData.data?.phone || cleanPhone;
 
-      setTimeout(() => inputRefs.current[0]?.focus(), 150);
+      // 2. If Web SDK is available, send via window.sendOtp with native Captcha handling
+      if (typeof window !== "undefined" && typeof (window as any).sendOtp === "function") {
+        await new Promise<void>((resolve, reject) => {
+          (window as any).sendOtp(
+            normalized,
+            (res: any) => {
+              const returnedReqId = res?.requestId || res?.reqId || res?.message || "";
+              setReqId(returnedReqId);
+              setIsOpen(true);
+              setCooldown(60);
+              showToast("Verification Code Sent! 📱", "Enter the 6-digit code received on your mobile.", "info");
+              setTimeout(() => inputRefs.current[0]?.focus(), 150);
+              resolve();
+            },
+            (err: any) => {
+              const errMsg = typeof err === "string" ? err : err?.message || "Failed to dispatch verification code.";
+              reject(new Error(errMsg));
+            }
+          );
+        });
+      } else {
+        // 3. Fallback to server dispatch
+        const res = await fetch("/api/auth/phone/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone: cleanPhone,
+            purpose: "SIGNUP",
+            role: roleContext === "student" ? "STUDENT" : "TEACHER",
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to dispatch verification code.");
+        }
+
+        setReqId(data.data?.reqId || "");
+        setIsOpen(true);
+        setCooldown(60);
+        showToast("Verification Code Sent! 📱", "Enter the 6-digit code received on your mobile.", "info");
+
+        setTimeout(() => inputRefs.current[0]?.focus(), 150);
+      }
     } catch (err: any) {
       setErrorMsg(err.message);
       showToast("Notice", err.message, "error");

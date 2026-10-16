@@ -10,6 +10,7 @@ export interface InitiatePhoneOtpOptions {
   purpose: "LOGIN" | "SIGNUP" | "VERIFY";
   roleContext?: "STUDENT" | "TEACHER" | string;
   currentUserId?: string;
+  captchaToken?: string;
 }
 
 export interface VerifyPhoneOtpLoginOptions {
@@ -197,6 +198,59 @@ export class PhoneAuthService {
   }
 
   /**
+   * Pre-flight validation for a phone number before dispatching OTP.
+   * Verifies number normalization, rate limits, account existence (for LOGIN),
+   * and duplicate prevention (for SIGNUP) without triggering SMS delivery.
+   */
+  static async checkPhoneForOtp(options: InitiatePhoneOtpOptions): Promise<{
+    allowed: boolean;
+    phone: string;
+    maskedPhone: string;
+  }> {
+    const { phone, purpose, roleContext, currentUserId } = options;
+
+    const norm = Msg91Client.normalizePhoneNumber(phone);
+    if (!norm.valid || !norm.normalized) {
+      throw new Error(norm.error || "Please enter a valid mobile number.");
+    }
+    const normalizedPhone = norm.normalized;
+
+    const rateLimit = this.checkPhoneRateLimit(normalizedPhone);
+    if (!rateLimit.allowed) {
+      throw new Error(rateLimit.error || "Rate limit exceeded.");
+    }
+
+    if (purpose === "LOGIN") {
+      const existingUser = await this.findUserByPhone(normalizedPhone);
+      if (!existingUser) {
+        throw new Error("No account is registered with this phone number. Please create an account first.");
+      }
+
+      if (existingUser.status !== "ACTIVE") {
+        throw new Error("Account is suspended or deactivated. Access denied.");
+      }
+
+      if (roleContext === "STUDENT" && isEducatorRole(existingUser.role)) {
+        throw new Error("This phone number is registered with an Educator account. Please sign in via the Educator Portal.");
+      }
+      if (roleContext === "TEACHER" && isLearnerRole(existingUser.role)) {
+        throw new Error("This phone number is registered with a Learner account. Please sign in via the Learner Portal.");
+      }
+    } else if (purpose === "SIGNUP" || purpose === "VERIFY") {
+      const isDuplicate = await this.isPhoneAlreadyRegistered(normalizedPhone, currentUserId);
+      if (isDuplicate) {
+        throw new Error("This phone number is already registered with another account. Please use a different phone number or sign in.");
+      }
+    }
+
+    return {
+      allowed: true,
+      phone: normalizedPhone,
+      maskedPhone: Msg91Client.maskPhone(normalizedPhone),
+    };
+  }
+
+  /**
    * Initiates Phone OTP dispatch via MSG91.
    *
    * Enforces:
@@ -206,7 +260,7 @@ export class PhoneAuthService {
    * - For SIGNUP: prevents duplicate phone number associations
    */
   static async initiatePhoneOtp(options: InitiatePhoneOtpOptions) {
-    const { phone, purpose, roleContext, currentUserId } = options;
+    const { phone, purpose, roleContext, currentUserId, captchaToken } = options;
 
     // 1. Validate & normalize phone number
     const norm = Msg91Client.normalizePhoneNumber(phone);
@@ -249,7 +303,7 @@ export class PhoneAuthService {
     }
 
     // 4. Dispatch OTP via MSG91
-    const dispatchResult = await Msg91Client.sendOtp(normalizedPhone);
+    const dispatchResult = await Msg91Client.sendOtp(normalizedPhone, captchaToken);
     if (!dispatchResult.success) {
       throw new Error(dispatchResult.error || "Failed to dispatch verification code via MSG91.");
     }

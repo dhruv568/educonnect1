@@ -161,8 +161,9 @@ export class Msg91Client {
 
   /**
    * Dispatches OTP via MSG91 Widget sendOtp endpoint.
+   * Supports optional client captchaToken when required by widget configuration.
    */
-  static async sendOtp(phone: string): Promise<Msg91SendOtpResult> {
+  static async sendOtp(phone: string, captchaToken?: string): Promise<Msg91SendOtpResult> {
     const { valid, normalized, error } = this.normalizePhoneNumber(phone);
     if (!valid || !normalized) {
       return { success: false, error: error || "Invalid phone number." };
@@ -189,7 +190,10 @@ export class Msg91Client {
         widgetId: config.widgetId,
         identifier: normalized,
       };
-      if (config.tokenAuth) {
+      if (captchaToken) {
+        body.token = captchaToken;
+      }
+      if (config.tokenAuth && !config.authkey) {
         body.tokenAuth = config.tokenAuth;
       }
 
@@ -210,9 +214,25 @@ export class Msg91Client {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok || (data.type && data.type !== "success" && data.type !== "info")) {
-        const errMsg = data.message || `MSG91 sendOtp failed (HTTP ${response.status})`;
+        const rawMsg = data.message || `MSG91 sendOtp failed (HTTP ${response.status})`;
         console.error("❌ [MSG91 sendOtp Error]:", data);
-        return { success: false, error: errMsg };
+
+        // Handle MSG91 Captcha Token error gracefully with helpful diagnostics
+        if (
+          rawMsg.toLowerCase().includes("captcha") ||
+          (data.type === "error" && rawMsg.includes("Invalid Captcha"))
+        ) {
+          const userFriendlyMsg =
+            "Security verification required. Please complete verification using the SMS prompt or try again.";
+          console.warn(
+            "⚠️ [MSG91 Captcha Requirement]: The configured MSG91 widget has 'Captcha Validation' enabled. " +
+            "For server API calls, either: (1) pass captchaToken from the Web SDK, " +
+            "or (2) toggle off 'Captcha Validation' in your MSG91 Dashboard under OTP Widget -> Settings."
+          );
+          return { success: false, error: userFriendlyMsg };
+        }
+
+        return { success: false, error: rawMsg };
       }
 
       const reqId = data.reqId || data.message || `req_${Date.now()}`;
