@@ -658,7 +658,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                 <div className="flex items-center gap-2 sm:gap-3">
                   <Link
                     href="/login"
-                    className="text-xs sm:text-sm font-bold text-slate-700 hover:text-[#083F3D] px-3.5 py-2 rounded-xl hover:bg-[#F2FAF8] transition-colors whitespace-nowrap"
+                    className="text-xs sm:text-sm font-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 hover:border-emerald-300/50 px-3.5 py-2 rounded-xl transition-all duration-200 whitespace-nowrap cursor-pointer shadow-2xs focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0D5C41] active:scale-95"
                   >
                     Login
                   </Link>
@@ -1431,7 +1431,7 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
                       <Link
                         href="/login"
                         onClick={() => setMobileOpen(false)}
-                        className="w-full py-2.5 rounded-xl border border-white/25 text-white text-sm font-semibold hover:bg-white/10 transition-colors text-center cursor-pointer block shadow-2xs"
+                        className="w-full py-2.5 rounded-xl border border-white/25 text-white text-sm font-semibold hover:bg-white/10 hover:border-emerald-300/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0D5C41] transition-all duration-200 text-center cursor-pointer block shadow-2xs active:scale-[0.99]"
                       >
                         Login
                       </Link>
