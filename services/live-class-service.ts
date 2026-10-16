@@ -6,6 +6,36 @@ import {
   canJoinClass,
   expireEndedLiveClasses,
 } from "@/lib/classroom/class-lifecycle";
+import {
+  INDIAN_TIMEZONE,
+  parseISTDateTime,
+  getISTDateString,
+  getISTDayOfWeek,
+  formatISTTime,
+  formatTime24to12,
+  formatISTTimeRange,
+  formatISTDisplayDate,
+  isSlotPastCutoff,
+} from "@/lib/timezone";
+import { toPaise } from "@/lib/currency";
+import crypto from "crypto";
+
+export interface BookSlotItem {
+  slotId?: string;
+  date: string; // "YYYY-MM-DD"
+  startTime: string; // "HH:mm"
+  endTime: string; // "HH:mm"
+  startIso?: string;
+  endIso?: string;
+  price?: number;
+}
+
+export interface BookEducatorSlotsInput {
+  studentUserId: string;
+  teacherId: string;
+  slots: BookSlotItem[];
+  offerCode?: string;
+}
 
 export interface CreateLiveClassInput {
   title: string;
@@ -524,6 +554,7 @@ export class LiveClassService {
    */
   static async getTeacherAvailability(userId: string) {
     const teacherId = await this.getTeacherProfileId(userId);
+    const now = new Date();
 
     const availabilities = await prisma.teacherAvailability.findMany({
       where: { teacherId },
@@ -549,7 +580,7 @@ export class LiveClassService {
               select: {
                 id: true,
                 email: true,
-                profile: { select: { firstName: true, lastName: true } },
+                profile: { select: { firstName: true, lastName: true, avatarUrl: true, phone: true } },
               },
             },
           },
@@ -558,7 +589,34 @@ export class LiveClassService {
       orderBy: { startTime: "asc" },
     });
 
-    return { availabilities, breaks, dateOverrides, slots };
+    // Also collect all confirmed and historical student bookings for the educator
+    const allBookings = slots.flatMap((s) =>
+      s.bookings.map((b) => ({
+        bookingId: b.id,
+        slotId: s.id,
+        title: s.title,
+        subject: s.subject,
+        startTime: s.startTime.toISOString(),
+        endTime: s.endTime.toISOString(),
+        startDisplay: formatISTDisplayDate(s.startTime),
+        timeDisplay: formatISTTimeRange(s.startTime, s.endTime),
+        status: b.status,
+        slotStatus: s.status,
+        isEnded: isClassEnded(s, now),
+        price: s.price,
+        student: {
+          id: b.student.id,
+          email: b.student.email,
+          name: b.student.profile
+            ? `${b.student.profile.firstName || ""} ${b.student.profile.lastName || ""}`.trim() || b.student.email
+            : b.student.email,
+          avatarUrl: b.student.profile?.avatarUrl || null,
+          phone: b.student.profile?.phone || null,
+        },
+      }))
+    );
+
+    return { teacherId, availabilities, breaks, dateOverrides, slots, allBookings };
   }
 
   /**
@@ -609,6 +667,29 @@ export class LiveClassService {
   ) {
     const teacherId = await this.getTeacherProfileId(userId);
 
+    // If BLOCKED, check if there are any confirmed bookings within this date and time range
+    if (input.type === "BLOCKED") {
+      const start = parseISTDateTime(input.date, input.startTime || "00:00");
+      const end = parseISTDateTime(input.date, input.endTime || "23:59");
+      const conflictingBooking = await prisma.booking.findFirst({
+        where: {
+          status: "CONFIRMED",
+          liveClassSlot: {
+            teacherId,
+            status: { not: "CANCELLED" },
+            startTime: { lt: end },
+            endTime: { gt: start },
+          },
+        },
+        include: { liveClassSlot: true, student: { include: { profile: true } } },
+      });
+      if (conflictingBooking) {
+        throw new Error(
+          `CONFIRMED_BOOKING_PROTECTION: Cannot block this time (${input.date} ${input.startTime}-${input.endTime}) because a confirmed session is already scheduled with student ${conflictingBooking.student?.profile?.firstName || 'Learner'}. Please manage the confirmed session in your Live Classes dashboard.`
+        );
+      }
+    }
+
     const override = await prisma.teacherDateOverride.create({
       data: {
         teacherId,
@@ -648,8 +729,16 @@ export class LiveClassService {
     if (params.slotId) {
       const slot = await prisma.liveClassSlot.findFirst({
         where: { id: params.slotId, teacherId },
+        include: { bookings: true },
       });
       if (!slot) throw new Error("Slot not found.");
+
+      const activeBookings = slot.bookings.filter((b) => b.status !== "CANCELLED");
+      if (activeBookings.length > 0) {
+        throw new Error(
+          `CONFIRMED_BOOKING_PROTECTION: Cannot block slot "${slot.title}" because it already has ${activeBookings.length} confirmed student booking(s). Confirmed bookings cannot be overridden accidentally.`
+        );
+      }
 
       const updated = await prisma.liveClassSlot.update({
         where: { id: params.slotId },
@@ -657,6 +746,26 @@ export class LiveClassService {
       });
       return updated;
     } else if (params.date && params.startTime && params.endTime) {
+      const start = parseISTDateTime(params.date, params.startTime);
+      const end = parseISTDateTime(params.date, params.endTime);
+      const conflictingBooking = await prisma.booking.findFirst({
+        where: {
+          status: "CONFIRMED",
+          liveClassSlot: {
+            teacherId,
+            status: { not: "CANCELLED" },
+            startTime: { lt: end },
+            endTime: { gt: start },
+          },
+        },
+        include: { liveClassSlot: true, student: { include: { profile: true } } },
+      });
+      if (conflictingBooking) {
+        throw new Error(
+          `CONFIRMED_BOOKING_PROTECTION: Cannot block this time (${params.date} ${params.startTime}-${params.endTime}) because a confirmed session is already scheduled with student ${conflictingBooking.student?.profile?.firstName || 'Learner'}. Confirmed bookings cannot be overridden accidentally.`
+        );
+      }
+
       const override = await prisma.teacherDateOverride.create({
         data: {
           teacherId,
@@ -698,12 +807,22 @@ export class LiveClassService {
   /**
    * Get dynamic educator availability for public booking flow
    */
-  static async getPublicEducatorAvailability(teacherIdOrUserId: string, daysAhead: number = 14) {
+  /**
+   * Get dynamic educator availability for calendar booking flow
+   */
+  static async getPublicEducatorAvailability(
+    teacherIdOrUserId: string,
+    daysAhead: number = 14,
+    studentUserId?: string,
+    customStartDate?: string,
+    customEndDate?: string
+  ) {
     let teacher = await prisma.teacherProfile.findFirst({
       where: { OR: [{ id: teacherIdOrUserId }, { userId: teacherIdOrUserId }] },
       include: {
         user: { include: { profile: true } },
         availabilities: true,
+        breaks: true,
         dateOverrides: true,
       },
     });
@@ -713,9 +832,11 @@ export class LiveClassService {
     }
 
     const teacherId = teacher.id;
-    const rawName = `${teacher.user.profile?.firstName || ''} ${teacher.user.profile?.lastName || ''}`.trim() || "Educator";
+    const rawName =
+      `${teacher.user.profile?.firstName || ""} ${teacher.user.profile?.lastName || ""}`.trim() || "Educator";
 
-    const isVerified = teacher.verificationStatus === "VERIFIED" || teacher.verificationStatus === "APPROVED";
+    const isVerified =
+      teacher.verificationStatus === "VERIFIED" || teacher.verificationStatus === "APPROVED";
     if (!isVerified) {
       return {
         educator: {
@@ -726,7 +847,8 @@ export class LiveClassService {
           hourlyRate: teacher.hourlyRate || 300,
           isVerified: false,
           isLocked: true,
-          verificationMessage: "Your educator account is pending verification. Teaching, live classes, course publishing, and content publishing will be available after verification.",
+          verificationMessage:
+            "Your educator account is pending verification. Teaching, live classes, course publishing, and content publishing will be available after verification.",
         },
         dates: [],
         totalAvailableSlots: 0,
@@ -734,65 +856,112 @@ export class LiveClassService {
     }
 
     const now = new Date();
-    const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysAhead, 23, 59, 59);
+    const todayStr = getISTDateString(now);
+
+    let startDayIdx = 0;
+    let endDayIdx = daysAhead;
+
+    let baseDate: Date;
+    if (customStartDate && customEndDate) {
+      baseDate = parseISTDateTime(customStartDate, "00:00");
+      const targetEnd = parseISTDateTime(customEndDate, "23:59");
+      const diffDays = Math.max(0, Math.round((targetEnd.getTime() - baseDate.getTime()) / (24 * 60 * 60 * 1000)));
+      startDayIdx = 0;
+      endDayIdx = Math.min(diffDays, 60);
+    } else {
+      baseDate = parseISTDateTime(todayStr, "00:00");
+    }
+
+    const rangeStart = new Date(baseDate.getTime() + startDayIdx * 24 * 60 * 60 * 1000);
+    const rangeEnd = new Date(baseDate.getTime() + (endDayIdx + 1) * 24 * 60 * 60 * 1000);
 
     const existingSlots = await prisma.liveClassSlot.findMany({
       where: {
         teacherId,
-        startTime: { gte: startDate, lte: endDate },
+        startTime: { gte: rangeStart, lte: rangeEnd },
       },
-      include: { bookings: true },
+      include: {
+        bookings: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                email: true,
+                profile: { select: { firstName: true, lastName: true } },
+              },
+            },
+          },
+        },
+      },
     });
 
+    let studentBookings: any[] = [];
+    if (studentUserId) {
+      studentBookings = await prisma.booking.findMany({
+        where: {
+          studentId: studentUserId,
+          status: "CONFIRMED",
+          liveClassSlot: {
+            status: { notIn: ["CANCELLED"] },
+            startTime: { gte: rangeStart, lte: rangeEnd },
+          },
+        },
+        include: { liveClassSlot: true },
+      });
+    }
+
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const fullDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     const datesResult = [];
-
-    const formatTime12h = (hourStr: string) => {
-      const [hStr, mStr] = hourStr.split(":");
-      const h = parseInt(hStr, 10);
-      const m = parseInt(mStr || "0", 10);
-      const ampm = h >= 12 ? "PM" : "AM";
-      const h12 = h % 12 === 0 ? 12 : h % 12;
-      return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
-    };
+    let totalAvailableCount = 0;
 
     const generateHourSlots = (startStr: string, endStr: string) => {
       const slots = [];
       const [startH] = startStr.split(":").map(Number);
       const [endH] = endStr.split(":").map(Number);
       for (let h = startH; h < endH; h++) {
-        const sTime = `${String(h).padStart(2, '0')}:00`;
-        const eTime = `${String(h + 1).padStart(2, '0')}:00`;
-        const label = `${formatTime12h(sTime)} - ${formatTime12h(eTime)}`;
+        const sTime = `${String(h).padStart(2, "0")}:00`;
+        const eTime = `${String(h + 1).padStart(2, "0")}:00`;
+        const label = `${formatTime24to12(sTime)} - ${formatTime24to12(eTime)}`;
         slots.push({ startTime: sTime, endTime: eTime, label });
       }
       return slots;
     };
 
-    for (let i = 1; i <= daysAhead; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
-      const dayOfWeek = d.getDay();
-      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      const dayName = i === 1 ? "Tomorrow" : days[dayOfWeek];
-      const displayDate = `${months[d.getMonth()]} ${d.getDate()}`;
+    const hasAnyCustomAvail = teacher.availabilities.length > 0;
 
-      const weeklyAvail = teacher.availabilities.filter((a) => a.dayOfWeek === dayOfWeek && a.isActive);
-      const dateOverrides = teacher.dateOverrides.filter((o) => o.date === dateStr);
-      const isBlockedDate = dateOverrides.some((o) => o.type === "BLOCKED" && (!o.startTime || o.startTime === "00:00"));
+    for (let i = startDayIdx; i <= endDayIdx; i++) {
+      const currentDayDate = new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000);
+      const dateStr = getISTDateString(currentDayDate);
+      const dayOfWeek = getISTDayOfWeek(currentDayDate);
 
-      if (isBlockedDate) {
-        datesResult.push({
-          dateStr,
-          dayName,
-          displayDate,
-          isAvailableDay: false,
-          slots: [],
-        });
-        continue;
+      const isToday = dateStr === todayStr;
+      const tomorrowStr = getISTDateString(new Date(now.getTime() + 24 * 60 * 60 * 1000));
+      const isTomorrow = dateStr === tomorrowStr;
+
+      const dayName = isToday ? "Today" : isTomorrow ? "Tomorrow" : days[dayOfWeek];
+      const [yPart, mPart, dPart] = dateStr.split("-").map(Number);
+      const displayDate = `${months[mPart - 1]} ${dPart}`;
+      const fullDate = `${fullDays[dayOfWeek]}, ${displayDate}, ${yPart}`;
+
+      // Configured weekly working hours
+      let weeklyAvail = teacher.availabilities.filter((a) => a.dayOfWeek === dayOfWeek && a.isActive);
+
+      // Default fallback if educator hasn't set any availability yet
+      if (!hasAnyCustomAvail) {
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+          weeklyAvail = [{ dayOfWeek, startTime: "09:00", endTime: "17:00", isActive: true } as any];
+        }
       }
+
+      const dateOverrides = teacher.dateOverrides.filter((o) => o.date === dateStr);
+      const dayBreaks = teacher.breaks.filter((b) => b.dayOfWeek === dayOfWeek);
+
+      const isFullDayBlocked = dateOverrides.some(
+        (o) => o.type === "BLOCKED" && (!o.startTime || o.startTime === "00:00" || (o.startTime <= "09:00" && o.endTime >= "18:00"))
+      );
 
       let candidateSlots: Array<{ startTime: string; endTime: string; label: string }> = [];
 
@@ -805,53 +974,97 @@ export class LiveClassService {
         candidateSlots.push(...generateHourSlots(ao.startTime, ao.endTime));
       }
 
-      const blockedOverrides = dateOverrides.filter((o) => o.type === "BLOCKED");
-      candidateSlots = candidateSlots.filter((cs) => {
-        return !blockedOverrides.some((bo) => bo.startTime <= cs.startTime && bo.endTime >= cs.endTime);
-      });
-
-      // Default fallback slots if educator hasn't customized weekly availability yet
-      if (candidateSlots.length === 0 && weeklyAvail.length === 0 && availOverrides.length === 0) {
-        candidateSlots = generateHourSlots("09:00", "17:00");
-      }
-
       const uniqueMap = new Map();
       for (const cs of candidateSlots) {
         uniqueMap.set(cs.startTime, cs);
       }
-      candidateSlots = Array.from(uniqueMap.values());
+      candidateSlots = Array.from(uniqueMap.values()).sort((a, b) => a.startTime.localeCompare(b.startTime));
 
       const processedSlots = candidateSlots.map((cs) => {
-        const slotStart = new Date(`${dateStr}T${cs.startTime}:00`);
-        const slotEnd = new Date(`${dateStr}T${cs.endTime}:00`);
+        const slotStart = parseISTDateTime(dateStr, cs.startTime);
+        const slotEnd = parseISTDateTime(dateStr, cs.endTime);
 
+        // Find existing slot overlapping
         const existing = existingSlots.find((es) => {
-          const esStart = new Date(es.startTime);
-          return Math.abs(esStart.getTime() - slotStart.getTime()) < 5 * 60 * 1000;
+          return es.startTime < slotEnd && es.endTime > slotStart;
         });
 
         let status = "AVAILABLE";
+        let reason: string | null = null;
         let slotId = existing?.id || null;
+        let bookedCount = 0;
+        let maxCapacity = existing?.maxCapacity || 1;
+        let classType = existing?.classType || "ONE_TO_ONE";
+        let slotPrice = existing?.price !== undefined ? existing.price : (teacher.hourlyRate || 300);
 
-        if (existing) {
+        const isBreak = dayBreaks.some((b) => b.startTime <= cs.startTime && b.endTime >= cs.endTime);
+        const isBlockedOverride = dateOverrides.some(
+          (bo) => bo.type === "BLOCKED" && bo.startTime <= cs.startTime && bo.endTime >= cs.endTime
+        );
+
+        if (isFullDayBlocked) {
+          status = "BLOCKED";
+          reason = "Educator Leave / Holiday";
+        } else if (isBlockedOverride) {
+          const overrideObj = dateOverrides.find(
+            (bo) => bo.type === "BLOCKED" && bo.startTime <= cs.startTime && bo.endTime >= cs.endTime
+          );
+          status = "BLOCKED";
+          reason = overrideObj?.reason || "Blocked by Educator";
+        } else if (isBreak) {
+          status = "UNAVAILABLE";
+          reason = "Educator Break";
+        } else if (existing) {
+          bookedCount = existing.bookings.filter((b) => b.status !== "CANCELLED").length;
+          maxCapacity = existing.maxCapacity;
+          classType = existing.classType;
+          slotPrice = existing.price;
+
           if (existing.status === "BLOCKED") {
             status = "BLOCKED";
+            reason = "Blocked by Educator";
           } else if (existing.status === "CANCELLED") {
+            // Cancelled live class slot does NOT occupy the time slot
             status = "AVAILABLE";
+          } else if (existing.status === "PENDING" && existing.lockedUntil && new Date(existing.lockedUntil) > now) {
+            status = "BOOKED";
+            reason = "In checkout by another student";
+          } else if (bookedCount >= maxCapacity || existing.status === "FULL") {
+            status = "BOOKED";
+            reason = "Already booked by another student";
+          } else if (classType === "ONE_TO_ONE" && bookedCount > 0) {
+            status = "BOOKED";
+            reason = "Already booked by another student";
           } else {
-            const activeBookings = existing.bookings.filter((b) => b.status !== "CANCELLED").length;
-            if (activeBookings >= existing.maxCapacity) {
-              status = "CONFIRMED";
-            } else if (existing.status === "PENDING" && existing.lockedUntil && new Date(existing.lockedUntil) > now) {
-              status = "PENDING";
-            } else if (existing.status === "SCHEDULED" || existing.status === "OPEN" || existing.status === "FULL") {
-              status = activeBookings > 0 ? "CONFIRMED" : "AVAILABLE";
-            }
+            status = "AVAILABLE";
           }
         }
 
-        if (slotStart < now) {
+        // Cutoff check: if slot is in the past or within 15 mins of start
+        if (isSlotPastCutoff(slotStart, 15)) {
           status = "EXPIRED";
+          reason = slotStart.getTime() <= now.getTime() ? "Past session time" : "Past booking cutoff (15 mins)";
+        }
+
+        const isAvailable = status === "AVAILABLE";
+        if (isAvailable) totalAvailableCount++;
+
+        // Visual State mapping:
+        // GREEN: Available and bookable
+        // RED: Already booked by another student or otherwise fully occupied
+        // GREY: Educator unavailable, outside configured working hours, during break, past booking cutoff, or blocked
+        const visualState = isAvailable ? "GREEN" : status === "BOOKED" ? "RED" : "GREY";
+
+        // Current student overlap/booking check
+        let isCurrentStudentBooked = false;
+        let hasStudentConflict = false;
+        if (studentUserId) {
+          if (existing && existing.bookings.some((b) => b.studentId === studentUserId && b.status !== "CANCELLED")) {
+            isCurrentStudentBooked = true;
+          }
+          if (studentBookings.some((sb) => sb.liveClassSlot.startTime < slotEnd && sb.liveClassSlot.endTime > slotStart)) {
+            hasStudentConflict = true;
+          }
         }
 
         return {
@@ -862,7 +1075,15 @@ export class LiveClassService {
           startIso: slotStart.toISOString(),
           endIso: slotEnd.toISOString(),
           status,
-          isAvailable: status === "AVAILABLE",
+          visualState,
+          isAvailable,
+          isCurrentStudentBooked,
+          hasStudentConflict,
+          price: slotPrice,
+          classType,
+          maxCapacity,
+          bookedCount,
+          reason,
         };
       });
 
@@ -872,7 +1093,10 @@ export class LiveClassService {
         dateStr,
         dayName,
         displayDate,
+        fullDate,
+        dayOfWeek,
         isAvailableDay: availableCount > 0,
+        availableCount,
         slots: processedSlots,
       });
     }
@@ -887,11 +1111,339 @@ export class LiveClassService {
         hourlyRate: teacher.hourlyRate || 300,
         subjects: teacher.subjects ? teacher.subjects.split(",").map((s) => s.trim()) : ["General"],
         rating: teacher.rating || 5.0,
+        experienceYears: teacher.experienceYears || 0,
+        location: teacher.location || null,
+        languages: teacher.languages || "English",
         isVerified: true,
         isLocked: false,
       },
       dates: datesResult,
+      totalAvailableSlots: totalAvailableCount,
     };
+  }
+
+  /**
+   * Book multiple educator availability slots atomically with double-booking and concurrency protection
+   */
+  static async bookEducatorSlots(input: BookEducatorSlotsInput) {
+    if (!input.slots || input.slots.length === 0) {
+      throw new Error("BAD_REQUEST: At least one time slot must be selected.");
+    }
+
+    // 1. Prevent duplicate selection within the request
+    const seenSlots = new Set<string>();
+    for (const s of input.slots) {
+      const key = `${s.date}_${s.startTime}`;
+      if (seenSlots.has(key)) {
+        throw new Error(`DUPLICATE_SELECTION: You have selected duplicate slot on ${s.date} at ${formatTime24to12(s.startTime)}.`);
+      }
+      seenSlots.add(key);
+    }
+
+    // 2. Prevent overlapping slots within the selected items
+    const parsedItems = input.slots.map((s) => ({
+      ...s,
+      start: parseISTDateTime(s.date, s.startTime),
+      end: parseISTDateTime(s.date, s.endTime),
+    }));
+
+    for (let i = 0; i < parsedItems.length; i++) {
+      for (let j = i + 1; j < parsedItems.length; j++) {
+        if (parsedItems[i].start < parsedItems[j].end && parsedItems[i].end > parsedItems[j].start) {
+          throw new Error(
+            `OVERLAPPING_SELECTION: You cannot select overlapping slots (${input.slots[i].date} ${input.slots[i].startTime} and ${input.slots[j].date} ${input.slots[j].startTime}).`
+          );
+        }
+      }
+    }
+
+    // 3. Resolve educator profile
+    const teacher = await prisma.teacherProfile.findFirst({
+      where: { OR: [{ id: input.teacherId }, { userId: input.teacherId }] },
+      include: { user: { include: { profile: true } } },
+    });
+    if (!teacher) {
+      throw new Error("NOT_FOUND: Educator profile not found.");
+    }
+
+    const isVerified = teacher.verificationStatus === "VERIFIED" || teacher.verificationStatus === "APPROVED";
+    if (!isVerified) {
+      throw new Error("FORBIDDEN: Educator account is pending verification.");
+    }
+
+    const teacherName =
+      `${teacher.user.profile?.firstName || ""} ${teacher.user.profile?.lastName || ""}`.trim() || "Educator";
+
+    // 4. Pre-check student overlapping bookings outside transaction
+    for (const item of parsedItems) {
+      const studentOverlap = await prisma.booking.findFirst({
+        where: {
+          studentId: input.studentUserId,
+          status: "CONFIRMED",
+          liveClassSlot: {
+            status: { notIn: ["CANCELLED", "COMPLETED"] },
+            startTime: { lt: item.end },
+            endTime: { gt: item.start },
+          },
+        },
+        include: { liveClassSlot: true },
+      });
+
+      if (studentOverlap) {
+        throw new Error(
+          `STUDENT_SCHEDULE_CONFLICT: You already have a confirmed session booked on ${formatISTDisplayDate(item.start)} from ${formatISTTime(studentOverlap.liveClassSlot.startTime)} to ${formatISTTime(studentOverlap.liveClassSlot.endTime)}. Overlapping bookings are not permitted.`
+        );
+      }
+    }
+
+    // 5. Execute atomic transaction to revalidate, lock, and book
+    const result = await prisma.$transaction(async (tx) => {
+      const now = new Date();
+      const lockExpiration = new Date(Date.now() + 15 * 60 * 1000);
+      const resolvedSlots: any[] = [];
+      let totalAmountPaise = 0;
+
+      for (const item of parsedItems) {
+        // Cutoff check
+        if (isSlotPastCutoff(item.start, 15)) {
+          throw new Error(
+            `SLOT_CUTOFF: The slot on ${formatISTDisplayDate(item.start)} at ${formatTime24to12(item.startTime)} has passed the booking cutoff time. Please select another slot.`
+          );
+        }
+
+        // Educator blocked date override check
+        const blockedOverride = await tx.teacherDateOverride.findFirst({
+          where: {
+            teacherId: teacher.id,
+            date: item.date,
+            type: "BLOCKED",
+            OR: [
+              { startTime: "00:00", endTime: "23:59" },
+              { startTime: { lte: item.startTime }, endTime: { gte: item.endTime } },
+            ],
+          },
+        });
+        if (blockedOverride) {
+          throw new Error(
+            `SLOT_CONFLICT: The slot on ${formatISTDisplayDate(item.start)} at ${formatTime24to12(item.startTime)} is marked unavailable by the educator (${blockedOverride.reason || "Blocked"}). Please select another slot.`
+          );
+        }
+
+        // Educator break check
+        const dayOfWeek = getISTDayOfWeek(item.start);
+        const breakConflict = await tx.teacherBreak.findFirst({
+          where: {
+            teacherId: teacher.id,
+            dayOfWeek,
+            startTime: { lte: item.startTime },
+            endTime: { gte: item.endTime },
+          },
+        });
+        if (breakConflict) {
+          throw new Error(
+            `SLOT_CONFLICT: The slot on ${formatISTDisplayDate(item.start)} at ${formatTime24to12(item.startTime)} falls during the educator's scheduled break. Please select another slot.`
+          );
+        }
+
+        // Existing LiveClassSlot check
+        let slot = null;
+        if (item.slotId) {
+          slot = await tx.liveClassSlot.findFirst({
+            where: { id: item.slotId, teacherId: teacher.id },
+            include: { bookings: true },
+          });
+        }
+        if (!slot) {
+          slot = await tx.liveClassSlot.findFirst({
+            where: {
+              teacherId: teacher.id,
+              status: { not: "CANCELLED" },
+              startTime: { lt: item.end },
+              endTime: { gt: item.start },
+            },
+            include: { bookings: true },
+          });
+        }
+
+        if (slot) {
+          if (slot.status === "BLOCKED") {
+            throw new Error(
+              `SLOT_CONFLICT: The slot on ${formatISTDisplayDate(item.start)} at ${formatTime24to12(item.startTime)} is blocked by the educator. Please select another slot.`
+            );
+          }
+          if (slot.status === "PENDING" && slot.lockedUntil && new Date(slot.lockedUntil) > now) {
+            throw new Error(
+              `SLOT_CONFLICT: The slot on ${formatISTDisplayDate(item.start)} at ${formatTime24to12(item.startTime)} is currently in checkout by another learner. Please choose another slot.`
+            );
+          }
+          const activeBookings = slot.bookings.filter((b) => b.status !== "CANCELLED");
+          if (activeBookings.length >= slot.maxCapacity || slot.status === "FULL") {
+            throw new Error(
+              `SLOT_CONFLICT: The slot on ${formatISTDisplayDate(item.start)} at ${formatTime24to12(item.startTime)} has already been booked by another student. Please select another slot.`
+            );
+          }
+          const alreadyBooked = activeBookings.some((b) => b.studentId === input.studentUserId);
+          if (alreadyBooked) {
+            throw new Error(
+              `DUPLICATE_BOOKING: You have already booked the slot on ${formatISTDisplayDate(item.start)} at ${formatTime24to12(item.startTime)}.`
+            );
+          }
+
+          // Lock slot in PENDING state
+          await tx.liveClassSlot.update({
+            where: { id: slot.id },
+            data: { status: "PENDING", lockedUntil: lockExpiration },
+          });
+          resolvedSlots.push(slot);
+          totalAmountPaise += toPaise(slot.price);
+        } else {
+          // Create slot in PENDING state
+          const price = item.price !== undefined ? item.price : (teacher.hourlyRate || 300);
+          const createdSlot = await tx.liveClassSlot.create({
+            data: {
+              teacherId: teacher.id,
+              title: `1-on-1 Session with ${teacherName}`,
+              description: `Personalized 1-on-1 live session with ${teacherName}`,
+              subject: teacher.subjects?.split(",")[0]?.trim() || "General",
+              startTime: item.start,
+              endTime: item.end,
+              timezone: "Asia/Kolkata",
+              durationMinutes: Math.round((item.end.getTime() - item.start.getTime()) / (60 * 1000)),
+              price,
+              classType: "ONE_TO_ONE",
+              maxCapacity: 1,
+              status: "PENDING",
+              lockedUntil: lockExpiration,
+            },
+          });
+          resolvedSlots.push(createdSlot);
+          totalAmountPaise += toPaise(price);
+        }
+      }
+
+      // Handle offer code if provided
+      let discountAmountPaise = 0;
+      if (input.offerCode && input.offerCode.trim() && totalAmountPaise > 0) {
+        try {
+          const { OfferService } = require("@/services/offer-service");
+          const applied = await OfferService.validateOfferCode(input.offerCode, totalAmountPaise, {
+            userId: input.studentUserId,
+            targetAudience: "LEARNERS",
+          });
+          discountAmountPaise = applied.discountAmountPaise;
+          totalAmountPaise = applied.finalAmountPaise;
+        } catch {}
+      }
+
+      // Free Session Booking (Price == 0 or 100% discount)
+      if (totalAmountPaise === 0) {
+        const bookings = [];
+        for (const sl of resolvedSlots) {
+          const booking = await tx.booking.create({
+            data: {
+              liveClassSlotId: sl.id,
+              studentId: input.studentUserId,
+              status: "CONFIRMED",
+            },
+          });
+          await tx.liveClassSlot.update({
+            where: { id: sl.id },
+            data: { status: "FULL", lockedUntil: null },
+          });
+
+          await tx.paymentTransaction.create({
+            data: {
+              userId: input.studentUserId,
+              type: "LIVE_CLASS_BOOKING",
+              status: "CAPTURED",
+              amountPaise: 0,
+              currency: "INR",
+              provider: "INTERNAL_FREE",
+              providerOrderId: `FREE_ORD_${Date.now()}_${sl.id.substring(0, 6)}`,
+              providerPaymentId: `FREE_PAY_${Date.now()}_${sl.id.substring(0, 6)}`,
+              internalReference: `EDU_FREE_${Date.now()}_${crypto.randomBytes(4).toString("hex").toUpperCase()}`,
+              liveClassSlotId: sl.id,
+              bookingId: booking.id,
+              capturedAt: new Date(),
+            },
+          });
+
+          try {
+            const { EventService } = require("@/services/event-service");
+            await EventService.emit("class.booked", {
+              userId: input.studentUserId,
+              actorId: input.studentUserId,
+              actorRole: "STUDENT",
+              data: {
+                slotId: sl.id,
+                classTitle: sl.title,
+                startTime: sl.startTime.toISOString(),
+                teacherUserId: teacher.userId,
+                entityType: "LiveClassSlot",
+                entityId: sl.id,
+              },
+              idempotencyKey: `book-${sl.id}-${input.studentUserId}`,
+            });
+          } catch (evtErr) {
+            console.error("Failed to emit free class booked event:", evtErr);
+          }
+
+          bookings.push(booking);
+        }
+
+        return {
+          isFree: true,
+          success: true,
+          slotCount: resolvedSlots.length,
+          slots: resolvedSlots,
+          bookings,
+          message: `Successfully booked ${resolvedSlots.length} session(s)!`,
+        };
+      }
+
+      // Paid Session Booking (Create Cashfree PaymentOrder)
+      const internalReference = `EDU_MULTI_${Date.now()}_${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+      const cfOrderId = `CF_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+      const amountRupees = totalAmountPaise / 100;
+      const receipt = `rcpt_${internalReference}`;
+
+      const paymentOrder = await tx.paymentOrder.create({
+        data: {
+          userId: input.studentUserId,
+          type: "LIVE_CLASS_BOOKING",
+          referenceId: resolvedSlots[0].id,
+          liveClassSlotId: resolvedSlots[0].id,
+          provider: "CASHFREE",
+          providerOrderId: cfOrderId,
+          amountPaise: totalAmountPaise,
+          currency: "INR",
+          status: "CREATED",
+          receipt,
+          notes: JSON.stringify({
+            slotIds: resolvedSlots.map((sl) => sl.id),
+            teacherId: teacher.id,
+            slotCount: resolvedSlots.length,
+          }),
+          expiresAt: lockExpiration,
+        },
+      });
+
+      return {
+        isFree: false,
+        success: true,
+        orderId: paymentOrder.id,
+        providerOrderId: cfOrderId,
+        internalReference,
+        totalAmount: amountRupees,
+        totalAmountPaise,
+        slotCount: resolvedSlots.length,
+        slots: resolvedSlots,
+        checkoutUrl: `/payment/checkout?type=LIVE_CLASS_BOOKING&orderId=${paymentOrder.id}&slotId=${resolvedSlots[0].id}`,
+        message: `Initialized checkout for ${resolvedSlots.length} session(s).`,
+      };
+    });
+
+    return result;
   }
 
   /**

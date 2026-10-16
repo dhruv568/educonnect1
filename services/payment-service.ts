@@ -746,9 +746,19 @@ export class PaymentService {
           },
         });
 
-        if (transaction.liveClassSlotId) {
-          await prisma.liveClassSlot.update({
-            where: { id: transaction.liveClassSlotId },
+        let slotIdsToUnlock: string[] = [];
+        if (transaction.order?.notes) {
+          try {
+            const parsed = JSON.parse(transaction.order.notes);
+            if (Array.isArray(parsed.slotIds)) slotIdsToUnlock = parsed.slotIds;
+          } catch {}
+        }
+        if (slotIdsToUnlock.length === 0 && transaction.liveClassSlotId) {
+          slotIdsToUnlock = [transaction.liveClassSlotId];
+        }
+        for (const sid of slotIdsToUnlock) {
+          await prisma.liveClassSlot.updateMany({
+            where: { id: sid, status: "PENDING" },
             data: {
               status: "OPEN",
               lockedUntil: null,
@@ -814,51 +824,84 @@ export class PaymentService {
         where: { id: transaction.id },
         data: { enrollmentId: enrollment.id },
       });
-    } else if (transaction.type === "LIVE_CLASS_BOOKING" && transaction.liveClassSlotId) {
-      teacherId = transaction.liveClassSlot?.teacherId || "";
+    } else if (transaction.type === "LIVE_CLASS_BOOKING" && (transaction.liveClassSlotId || transaction.order?.notes)) {
+      let slotIdsToConfirm: string[] = [];
+      if (transaction.order?.notes) {
+        try {
+          const parsed = JSON.parse(transaction.order.notes);
+          if (Array.isArray(parsed.slotIds) && parsed.slotIds.length > 0) {
+            slotIdsToConfirm = parsed.slotIds;
+          }
+        } catch {}
+      }
+      if (slotIdsToConfirm.length === 0 && transaction.liveClassSlotId) {
+        slotIdsToConfirm = [transaction.liveClassSlotId];
+      }
 
-      // Transactional capacity re-check
-      const slot = await prisma.liveClassSlot.findUnique({
-        where: { id: transaction.liveClassSlotId },
-        include: { bookings: true },
-      });
-
-      if (slot) {
-        const activeBookings = slot.bookings.filter((b) => b.status !== "CANCELLED").length;
-        if (activeBookings >= slot.maxCapacity) {
-          console.warn(`Class capacity full during payment capture for slot ${slot.id}`);
-        }
-
-        const existingBooking = slot.bookings.find(
-          (b) => b.studentId === userId && b.status !== "CANCELLED"
-        );
-
-        const booking = existingBooking
-          ? existingBooking
-          : await prisma.booking.create({
-              data: {
-                liveClassSlotId: transaction.liveClassSlotId,
-                studentId: userId,
-                status: "CONFIRMED",
-              },
-            });
-
-        bookingId = booking.id;
-
-        const newCount = activeBookings + (existingBooking ? 0 : 1);
-        const updatedSlotStatus = newCount >= slot.maxCapacity ? "FULL" : "SCHEDULED";
-
-        await prisma.liveClassSlot.update({
-          where: { id: slot.id },
-          data: {
-            status: updatedSlotStatus,
-            lockedUntil: null,
-          },
+      for (const slotIdToConfirm of slotIdsToConfirm) {
+        const slot = await prisma.liveClassSlot.findUnique({
+          where: { id: slotIdToConfirm },
+          include: { bookings: true },
         });
 
+        if (slot) {
+          teacherId = slot.teacherId;
+          const activeBookings = slot.bookings.filter((b) => b.status !== "CANCELLED").length;
+          const existingBooking = slot.bookings.find(
+            (b) => b.studentId === userId && b.status !== "CANCELLED"
+          );
+
+          const booking = existingBooking
+            ? existingBooking
+            : await prisma.booking.create({
+                data: {
+                  liveClassSlotId: slot.id,
+                  studentId: userId,
+                  status: "CONFIRMED",
+                },
+              });
+
+          if (!bookingId) bookingId = booking.id;
+
+          const newCount = activeBookings + (existingBooking ? 0 : 1);
+          const updatedSlotStatus = newCount >= slot.maxCapacity ? "FULL" : "SCHEDULED";
+
+          await prisma.liveClassSlot.update({
+            where: { id: slot.id },
+            data: {
+              status: updatedSlotStatus,
+              lockedUntil: null,
+            },
+          });
+
+          try {
+            const { EventService } = require("@/services/event-service");
+            await EventService.emit("class.booked", {
+              userId,
+              actorId: userId,
+              actorRole: "STUDENT",
+              data: {
+                slotId: slot.id,
+                classTitle: slot.title,
+                startTime: slot.startTime.toISOString(),
+                teacherUserId: (
+                  await prisma.teacherProfile.findUnique({ where: { id: slot.teacherId } })
+                )?.userId,
+                entityType: "LiveClassSlot",
+                entityId: slot.id,
+              },
+              idempotencyKey: `book-${slot.id}-${userId}`,
+            });
+          } catch (evtErr) {
+            console.error("Failed to emit class.booked event:", evtErr);
+          }
+        }
+      }
+
+      if (bookingId) {
         await prisma.paymentTransaction.update({
           where: { id: transaction.id },
-          data: { bookingId: booking.id },
+          data: { bookingId },
         });
       }
     }

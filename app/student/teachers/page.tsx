@@ -35,6 +35,7 @@ import {
   DIPLOMA_BRANCHES,
   isSeniorSecondaryGrade,
 } from "@/lib/constants/academic";
+import { EducatorBookingCalendar } from "@/components/booking/educator-booking-calendar";
 
 export default function StudentFindTeachersPage() {
   const router = useRouter();
@@ -58,7 +59,7 @@ export default function StudentFindTeachersPage() {
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
   const [teacherDetail, setTeacherDetail] = useState<any | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [activeModalTab, setActiveModalTab] = useState<"about" | "slots" | "courses">("about");
+  const [activeModalTab, setActiveModalTab] = useState<"about" | "calendar" | "slots" | "courses">("about");
   const [bookingLoadingSlotId, setBookingLoadingSlotId] = useState<string | null>(null);
   const [bookingFeedback, setBookingFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -136,11 +137,14 @@ export default function StudentFindTeachersPage() {
   };
 
   // Open teacher profile details modal
-  const handleOpenProfile = async (teacherId: string) => {
+  const handleOpenProfile = async (
+    teacherId: string,
+    initialTab: "about" | "calendar" | "slots" | "courses" = "about"
+  ) => {
     setSelectedTeacherId(teacherId);
     setDetailLoading(true);
     setBookingFeedback(null);
-    setActiveModalTab("about");
+    setActiveModalTab(initialTab);
 
     try {
       const res = await fetch(`/api/teachers/${teacherId}`);
@@ -575,14 +579,23 @@ export default function StudentFindTeachersPage() {
                         <div className="text-lg font-black text-slate-900">{formatCurrency(t.hourlyRate)}/hr</div>
                       </div>
 
-                      <Button
-                        variant="student"
-                        size="sm"
-                        onClick={() => handleOpenProfile(t.id)}
-                        rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
-                      >
-                        View Profile
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenProfile(t.id, "about")}
+                        >
+                          View Profile
+                        </Button>
+                        <Button
+                          variant="student"
+                          size="sm"
+                          onClick={() => handleOpenProfile(t.id, "calendar")}
+                          leftIcon={<Calendar className="h-3.5 w-3.5" />}
+                        >
+                          Book Session
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))}
@@ -595,7 +608,7 @@ export default function StudentFindTeachersPage() {
       {/* Teacher Profile & Booking Slide-over Modal */}
       {selectedTeacherId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto space-y-6">
+          <div className="relative w-full max-w-4xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto space-y-6">
             {/* Close button */}
             <button
               onClick={handleCloseProfile}
@@ -655,10 +668,10 @@ export default function StudentFindTeachersPage() {
                 )}
 
                 {/* Tab Navigation in Modal */}
-                <div className="flex border-b border-slate-200 gap-6">
+                <div className="flex border-b border-slate-200 gap-6 overflow-x-auto">
                   <button
                     onClick={() => setActiveModalTab("about")}
-                    className={`pb-3 text-xs font-extrabold transition-colors border-b-2 ${
+                    className={`pb-3 text-xs font-extrabold transition-colors border-b-2 shrink-0 ${
                       activeModalTab === "about"
                         ? "border-blue-600 text-blue-600"
                         : "border-transparent text-slate-500 hover:text-slate-800"
@@ -667,8 +680,19 @@ export default function StudentFindTeachersPage() {
                     About Educator
                   </button>
                   <button
+                    onClick={() => setActiveModalTab("calendar")}
+                    className={`pb-3 text-xs font-extrabold transition-colors border-b-2 flex items-center gap-1.5 shrink-0 ${
+                      activeModalTab === "calendar"
+                        ? "border-blue-600 text-blue-600"
+                        : "border-transparent text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    Book Session (Calendar)
+                  </button>
+                  <button
                     onClick={() => setActiveModalTab("slots")}
-                    className={`pb-3 text-xs font-extrabold transition-colors border-b-2 flex items-center gap-1.5 ${
+                    className={`pb-3 text-xs font-extrabold transition-colors border-b-2 flex items-center gap-1.5 shrink-0 ${
                       activeModalTab === "slots"
                         ? "border-blue-600 text-blue-600"
                         : "border-transparent text-slate-500 hover:text-slate-800"
@@ -679,7 +703,7 @@ export default function StudentFindTeachersPage() {
                   </button>
                   <button
                     onClick={() => setActiveModalTab("courses")}
-                    className={`pb-3 text-xs font-extrabold transition-colors border-b-2 flex items-center gap-1.5 ${
+                    className={`pb-3 text-xs font-extrabold transition-colors border-b-2 flex items-center gap-1.5 shrink-0 ${
                       activeModalTab === "courses"
                         ? "border-blue-600 text-blue-600"
                         : "border-transparent text-slate-500 hover:text-slate-800"
@@ -728,11 +752,24 @@ export default function StudentFindTeachersPage() {
                       <Button
                         variant="student"
                         size="sm"
-                        onClick={() => setActiveModalTab("slots")}
+                        onClick={() => setActiveModalTab("calendar")}
+                        leftIcon={<Calendar className="w-3.5 h-3.5" />}
                       >
                         Book Live Session
                       </Button>
                     </div>
+                  </div>
+                )}
+
+                {activeModalTab === "calendar" && (
+                  <div className="space-y-4">
+                    <EducatorBookingCalendar
+                      teacherId={teacherDetail.id}
+                      teacherName={teacherDetail.name}
+                      hourlyRate={teacherDetail.hourlyRate}
+                      subjects={teacherDetail.subjects}
+                      compact={true}
+                    />
                   </div>
                 )}
 
