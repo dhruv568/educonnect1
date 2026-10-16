@@ -8,38 +8,33 @@ import {
   Clock,
   CheckCircle2,
   ShieldCheck,
-  ArrowRight,
   ListFilter,
   CreditCard,
-  ArrowDownCircle,
   Building2,
   Smartphone,
-  X,
   AlertCircle,
   CheckCircle,
   Loader2,
-  HelpCircle,
+  Calendar,
+  AlertOctagon,
+  ArrowUpRight,
   ExternalLink,
+  Percent,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { BackButton } from "@/components/ui/back-button";
 import { BackToHomeButton } from "@/components/ui/back-to-home-button";
-import { MIN_WITHDRAWAL_RUPEES } from "@/lib/withdrawal-config";
+import {
+  MIN_PAYOUT_RUPEES,
+  PLATFORM_FEE_PERCENT,
+  NET_PAYOUT_PERCENT,
+} from "@/lib/withdrawal-config";
 
 export default function TeacherEarningsPage() {
   const [data, setData] = useState<any>(null);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
-
-  // Modal states
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [payoutMethod, setPayoutMethod] = useState<"BANK_TRANSFER" | "UPI">("BANK_TRANSFER");
-  const [withdrawAmount, setWithdrawAmount] = useState<string>("");
-  const [upiIdInput, setUpiIdInput] = useState<string>("");
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     fetchEarnings();
@@ -52,9 +47,6 @@ export default function TeacherEarningsPage() {
       const json = await res.json();
       if (res.ok) {
         setData(json.data);
-        if (json.data?.payoutDetails?.upiId) {
-          setUpiIdInput(json.data.payoutDetails.upiId);
-        }
       }
     } catch {
       // Error
@@ -81,115 +73,25 @@ export default function TeacherEarningsPage() {
   const summary = data?.summary || {
     totalEarnings: 0,
     thisMonthEarnings: 0,
-    pendingAmount: 0,
+    platformFeeDeducted: 0,
+    currentPlatformFee: 0,
+    netEligibleBalance: 0,
     availableAmount: 0,
-    refundedAmount: 0,
+    pendingAmount: 0,
+    minPayoutRequirement: MIN_PAYOUT_RUPEES,
+    isEligibleForPayout: false,
+    nextPayoutDateFormatted: "10th of every month",
+    lastPayout: null,
   };
 
-  const payoutAccount = data?.payoutAccount || { status: "NOT_STARTED" };
   const payoutDetails = data?.payoutDetails || {};
-  const minWithdrawal = data?.minWithdrawalRupees ?? MIN_WITHDRAWAL_RUPEES;
-
-  // Check if educator has an active withdrawal in progress
-  const activeWithdrawal = withdrawals.find((w) =>
-    ["PENDING", "APPROVED", "PROCESSING"].includes(w.status)
-  );
-
-  const canWithdraw = summary.availableAmount >= minWithdrawal && !activeWithdrawal;
-
-  const handleOpenModal = () => {
-    setFormError(null);
-    setFormSuccess(null);
-    setWithdrawAmount("");
-    if (payoutDetails.upiId) {
-      setUpiIdInput(payoutDetails.upiId);
-    }
-    // Default to Bank if bank details exist, else UPI
-    if (payoutDetails.accountNumber) {
-      setPayoutMethod("BANK_TRANSFER");
-    } else if (payoutDetails.upiId) {
-      setPayoutMethod("UPI");
-    }
-    setIsModalOpen(true);
-  };
-
-  const handleQuickAmount = (amt: number) => {
-    setWithdrawAmount(amt.toString());
-    setFormError(null);
-  };
-
-  const handleMaxAmount = () => {
-    setWithdrawAmount(Math.floor(summary.availableAmount).toString());
-    setFormError(null);
-  };
-
-  const handleSubmitWithdrawal = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
-    setFormSuccess(null);
-
-    const amountNum = parseFloat(withdrawAmount);
-    if (isNaN(amountNum) || amountNum < minWithdrawal) {
-      setFormError(`Minimum withdrawal amount is ₹${minWithdrawal}.`);
-      return;
-    }
-
-    if (amountNum > summary.availableAmount) {
-      setFormError(
-        `Amount cannot exceed your available balance of ${formatCurrency(summary.availableAmount)}.`
-      );
-      return;
-    }
-
-    if (payoutMethod === "BANK_TRANSFER") {
-      if (!payoutDetails.accountNumber || !payoutDetails.ifscCode) {
-        setFormError("Please configure your bank account number and IFSC code before requesting a bank transfer.");
-        return;
-      }
-    } else if (payoutMethod === "UPI") {
-      const trimmedUpi = upiIdInput.trim();
-      const upiRegex = /^[\w.\-_]{2,256}@[a-zA-Z]{2,64}$/;
-      if (!trimmedUpi || !upiRegex.test(trimmedUpi)) {
-        setFormError("Please enter a valid UPI ID (e.g. yourname@okhdfcbank).");
-        return;
-      }
-    }
-
-    setSubmitting(true);
-    try {
-      const idempotencyKey = `wd_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-      const res = await fetch("/api/teacher/withdraw", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: amountNum,
-          payoutMethod,
-          upiId: payoutMethod === "UPI" ? upiIdInput.trim() : undefined,
-          idempotencyKey,
-        }),
-      });
-
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error || "Failed to submit withdrawal request.");
-      }
-
-      setFormSuccess(
-        `Withdrawal request for ${formatCurrency(amountNum)} submitted successfully. Funds are held in escrow pending admin settlement.`
-      );
-      // Refresh earnings summary and withdrawal history
-      fetchEarnings();
-      fetchWithdrawalHistory();
-
-      setTimeout(() => {
-        setIsModalOpen(false);
-      }, 2000);
-    } catch (err: any) {
-      setFormError(err.message || "An unexpected error occurred.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const minPayout = summary.minPayoutRequirement || MIN_PAYOUT_RUPEES;
+  const netBalance = summary.netEligibleBalance ?? summary.availableAmount ?? 0;
+  const feePercent = data?.platformFeePercent ?? PLATFORM_FEE_PERCENT;
+  const netPercent = data?.netPayoutPercent ?? NET_PAYOUT_PERCENT;
+  const isEligible = netBalance >= minPayout;
+  const nextPayoutDate = summary.nextPayoutDateFormatted || "10th of every month";
+  const lastPayout = summary.lastPayout;
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
@@ -229,25 +131,14 @@ export default function TeacherEarningsPage() {
             <BackToHomeButton variant="dark" />
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-            <IndianRupee className="w-8 h-8 text-emerald-400" /> Educator Earnings & Withdrawals
+            <IndianRupee className="w-8 h-8 text-emerald-400" /> Educator Earnings & Monthly Payouts
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Real-time track of your course sales, live class earnings, commission, and bank/UPI payouts.
+            Automated monthly educator payouts scheduled for the 10th of every month with 25% platform fee deduction.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={handleOpenModal}
-            disabled={!canWithdraw}
-            className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-lg ${
-              canWithdraw
-                ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/25 hover:shadow-emerald-600/40 cursor-pointer"
-                : "bg-slate-800 text-slate-500 border border-slate-700/50 cursor-not-allowed"
-            }`}
-          >
-            <ArrowDownCircle className="w-4 h-4" /> Withdraw Funds
-          </button>
           <Link
             href="/teacher/earnings/transactions"
             className="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-xs font-bold text-slate-300 flex items-center gap-2 transition-all shadow-sm"
@@ -255,132 +146,241 @@ export default function TeacherEarningsPage() {
             <ListFilter className="w-4 h-4 text-slate-400" /> Transaction Ledger
           </Link>
           <Link
-            href="/teacher/earnings/setup"
+            href="/teacher/onboarding"
             className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#0F766E] to-[#115E59] hover:from-[#115E59] hover:to-[#0F766E] text-xs font-bold text-white flex items-center gap-2 transition-all shadow-lg shadow-teal-700/20"
           >
-            <CreditCard className="w-4 h-4" /> Split Payouts
+            <CreditCard className="w-4 h-4" /> Bank Account Details
           </Link>
         </div>
       </div>
 
-      {/* Active Withdrawal Banner if any */}
-      {activeWithdrawal && (
-        <div className="p-4 rounded-2xl bg-amber-950/30 border border-amber-800/40 text-amber-200 text-xs flex items-center justify-between gap-3">
+      {/* Monthly Payout Schedule Notice Banner */}
+      <div className="p-5 rounded-3xl bg-gradient-to-r from-teal-950/80 via-slate-900/90 to-slate-900/80 border border-teal-800/50 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2.5">
-            <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>
-              You have an active withdrawal request of{" "}
-              <strong className="text-white font-semibold">
-                {formatCurrency(activeWithdrawal.amountPaise / 100)}
-              </strong>{" "}
-              ({activeWithdrawal.status}). Additional withdrawals are temporarily disabled until processed.
+            <Calendar className="w-5 h-5 text-teal-400 shrink-0" />
+            <h3 className="text-base font-bold text-white">
+              Automated Monthly Payout Schedule: 10th of Every Month
+            </h3>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-900/60 text-teal-300 border border-teal-700/50">
+              Next: {nextPayoutDate}
             </span>
           </div>
-          <span className="text-[11px] text-amber-400 font-mono bg-amber-900/40 px-2.5 py-1 rounded-lg border border-amber-800/60">
-            Status: {activeWithdrawal.status}
-          </span>
+          <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+            EduConnects automatically calculates and disburses your net earnings ({netPercent}%) directly to your verified bank account on the 10th of every month. No manual withdrawal request is required.
+          </p>
         </div>
-      )}
 
-      {/* Metrics Grid */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+          <div className="px-4 py-2 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs">
+            <span className="text-slate-400 block text-[10px]">Minimum Payout Threshold</span>
+            <span className="text-white font-extrabold text-sm">{formatCurrency(minPayout)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Primary Metrics Grid: Earnings Breakdown */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Total Gross Earnings */}
         <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-2 shadow-xl">
           <div className="flex justify-between items-center text-slate-400 text-xs font-semibold">
-            <span>Total Gross Earnings</span>
+            <span>Total Earnings</span>
             <IndianRupee className="w-4 h-4 text-teal-400" />
           </div>
           <p className="text-3xl font-black text-white">{formatCurrency(summary.totalEarnings)}</p>
           <p className="text-[11px] text-teal-400 font-medium flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" /> Cumulative earnings to date
+            <TrendingUp className="w-3 h-3" /> Cumulative gross earnings (100%)
           </p>
         </div>
 
+        {/* Platform Fee (25%) */}
         <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-2 shadow-xl">
           <div className="flex justify-between items-center text-slate-400 text-xs font-semibold">
-            <span>This Month</span>
-            <TrendingUp className="w-4 h-4 text-teal-300" />
+            <span>Platform Fee ({feePercent}%)</span>
+            <Percent className="w-4 h-4 text-amber-400" />
           </div>
-          <p className="text-3xl font-black text-teal-300">{formatCurrency(summary.thisMonthEarnings)}</p>
-          <p className="text-[11px] text-slate-400">Current calendar month sales</p>
-        </div>
-
-        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-2 shadow-xl">
-          <div className="flex justify-between items-center text-slate-400 text-xs font-semibold">
-            <span>Pending Payout</span>
-            <Clock className="w-4 h-4 text-amber-400" />
-          </div>
-          <p className="text-3xl font-black text-amber-400">{formatCurrency(summary.pendingAmount)}</p>
-          <p className="text-[11px] text-slate-400">In escrow or processing</p>
-        </div>
-
-        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-3 shadow-xl relative overflow-hidden">
-          <div className="flex justify-between items-center text-slate-400 text-xs font-semibold">
-            <span>Available for Payout</span>
-            <CheckCircle2 className="w-4 h-4 text-teal-400" />
-          </div>
-          <div>
-            <p className="text-3xl font-black text-teal-400">{formatCurrency(summary.availableAmount)}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">Eligible for instant withdrawal (Min ₹{minWithdrawal})</p>
-          </div>
-          <button
-            onClick={handleOpenModal}
-            disabled={!canWithdraw}
-            className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              canWithdraw
-                ? "bg-[#0F766E] hover:bg-[#115E59] text-white shadow-md shadow-teal-700/30"
-                : "bg-slate-800 text-slate-500 border border-slate-700/50 cursor-not-allowed"
-            }`}
-          >
-            <ArrowDownCircle className="w-3.5 h-3.5" />
-            {canWithdraw ? "Request Withdrawal" : summary.availableAmount < minWithdrawal ? `Min ₹${minWithdrawal} Required` : "Payout In Progress"}
-          </button>
-        </div>
-      </div>
-
-      {/* Payout Account Status Banner */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-teal-950/60 via-slate-900/80 to-slate-900/70 border border-teal-800/40 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-teal-400" />
-            <h3 className="text-base font-bold text-white">Cashfree Automated Payouts Enabled</h3>
-          </div>
-          <p className="text-xs text-slate-300">
-            Withdraw your earned balance directly to your bank account via IMPS/NEFT or instantly to your UPI ID.
+          <p className="text-3xl font-black text-amber-400">
+            {formatCurrency(summary.currentPlatformFee || (summary.totalEarnings * feePercent) / 100)}
+          </p>
+          <p className="text-[11px] text-slate-400">
+            Deducted once before monthly payout
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link
-            href="/teacher/onboarding"
-            className="px-4 py-2 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5"
-          >
-            Update Bank/UPI Details <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-          </Link>
+        {/* Net Eligible Balance (75%) */}
+        <div className="p-6 rounded-3xl bg-slate-900/70 border border-teal-700/40 backdrop-blur-xl space-y-2 shadow-xl relative overflow-hidden">
+          <div className="flex justify-between items-center text-slate-300 text-xs font-semibold">
+            <span>Net Eligible Balance ({netPercent}%)</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          </div>
+          <p className="text-3xl font-black text-emerald-400">{formatCurrency(netBalance)}</p>
+          <p className="text-[11px] text-slate-300 font-medium">
+            Net payout amount after 25% fee
+          </p>
+        </div>
+
+        {/* Minimum Balance Status & Next Cycle Card */}
+        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-2 shadow-xl">
+          <div className="flex justify-between items-center text-slate-400 text-xs font-semibold">
+            <span>Minimum Requirement</span>
+            <Building2 className="w-4 h-4 text-teal-400" />
+          </div>
+          <p className="text-3xl font-black text-white">{formatCurrency(minPayout)}</p>
+          <div className="pt-0.5">
+            {isEligible ? (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800/50">
+                <CheckCircle className="w-3 h-3" /> Eligible for next payout
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded-md border border-amber-800/50">
+                <Clock className="w-3 h-3" /> Carries forward to next cycle
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Withdrawal Requests History Section */}
+      {/* Threshold / Payout Status Banner */}
+      {!isEligible && netBalance > 0 && (
+        <div className="p-4 rounded-2xl bg-amber-950/30 border border-amber-800/40 text-amber-200 text-xs flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>
+              Your current net eligible balance of <strong>{formatCurrency(netBalance)}</strong> is below the minimum payout requirement of <strong>{formatCurrency(minPayout)}</strong>. This balance will safely carry forward to the next monthly cycle on <strong>{nextPayoutDate}</strong>.
+            </span>
+          </div>
+          <span className="text-[11px] text-amber-400 font-mono bg-amber-900/40 px-2.5 py-1 rounded-lg border border-amber-800/60 shrink-0">
+            Status: Carry Forward
+          </span>
+        </div>
+      )}
+
+      {/* Last Payout & Verified Bank Snapshot */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Last Payout Snapshot */}
+        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-4 shadow-xl">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <Clock className="w-4 h-4 text-teal-400" /> Last Payout Information
+            </h3>
+            {lastPayout && (
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadgeClass(lastPayout.status)}`}>
+                {lastPayout.status}
+              </span>
+            )}
+          </div>
+
+          {lastPayout ? (
+            <div className="space-y-3">
+              <div className="flex items-baseline justify-between border-b border-slate-800/60 pb-3">
+                <span className="text-xs text-slate-400">Net Disbursed Amount:</span>
+                <span className="text-2xl font-black text-white">{formatCurrency(lastPayout.amountRupees)}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs text-slate-300">
+                <div>
+                  <span className="text-[10px] text-slate-400 block">Gross Earnings</span>
+                  <span className="font-semibold">{formatCurrency(lastPayout.grossRupees)}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block">Platform Fee (25%)</span>
+                  <span className="font-semibold text-amber-400">{formatCurrency(lastPayout.feeRupees)}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block">Payout Date</span>
+                  <span className="font-semibold">
+                    {new Date(lastPayout.requestedAt).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block">Bank Reference / UTR</span>
+                  <span className="font-mono text-[11px] text-teal-300 truncate block">
+                    {lastPayout.providerReferenceId || "—"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-6 text-center text-slate-400 text-xs space-y-1">
+              <Clock className="w-8 h-8 mx-auto text-slate-600 mb-2" />
+              <p className="font-semibold text-slate-300">No previous payouts processed yet.</p>
+              <p className="text-slate-500 text-[11px]">Your eligible earnings will be automatically disbursed on the 10th of every month.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Verified Bank Account Snapshot */}
+        <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-4 shadow-xl flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" /> Verified Payout Bank Account
+              </h3>
+              <Link
+                href="/teacher/onboarding"
+                className="text-[11px] text-teal-400 hover:text-teal-300 flex items-center gap-1 font-semibold"
+              >
+                Update <ArrowUpRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Account Holder:</span>
+                <span className="text-white font-medium">{payoutDetails.accountHolderName || "Configured in KYC"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Bank & IFSC:</span>
+                <span className="text-white font-medium">
+                  {payoutDetails.bankName || "Bank"} ({payoutDetails.ifscCode || "N/A"})
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Account Number:</span>
+                <span className="text-emerald-400 font-mono font-medium">
+                  {payoutDetails.accountNumber ? `•••• •••• ${payoutDetails.accountNumber.slice(-4)}` : "Missing"}
+                </span>
+              </div>
+              {payoutDetails.upiId && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">UPI ID:</span>
+                  <span className="text-blue-400 font-mono">{payoutDetails.upiId}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <p className="text-[11px] text-slate-400 leading-relaxed">
+            Payouts are deposited automatically via IMPS/NEFT bank transfer on the 10th of every month. Ensure your bank details are verified.
+          </p>
+        </div>
+      </div>
+
+      {/* Payout History Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Clock className="w-5 h-5 text-teal-400" /> Withdrawal & Payout History
+            <Clock className="w-5 h-5 text-teal-400" /> Monthly Payout History
           </h2>
-          <span className="text-xs text-slate-400">{withdrawals.length} request(s)</span>
+          <span className="text-xs text-slate-400">{withdrawals.length} payout cycle(s)</span>
         </div>
 
         <div className="rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl overflow-hidden shadow-xl">
           {loadingWithdrawals ? (
             <div className="p-10 flex items-center justify-center text-slate-400">
-              <Loader2 className="w-6 h-6 animate-spin text-teal-400 mr-2" /> Loading withdrawal records...
+              <Loader2 className="w-6 h-6 animate-spin text-teal-400 mr-2" /> Loading payout records...
             </div>
           ) : withdrawals.length === 0 ? (
             <div className="p-12 text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-slate-800/80 text-slate-400 flex items-center justify-center mx-auto">
-                <ArrowDownCircle className="w-6 h-6" />
+                <Calendar className="w-6 h-6 text-teal-400" />
               </div>
-              <h3 className="text-sm font-semibold text-slate-300">No Withdrawal Requests Yet</h3>
+              <h3 className="text-sm font-semibold text-slate-300">No Monthly Payouts Yet</h3>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                When your available balance reaches ₹{minWithdrawal} or more, you can submit a withdrawal request to transfer earnings to your bank account or UPI ID.
+                Automatic payouts are scheduled for the 10th of every month when your net eligible balance reaches {formatCurrency(minPayout)} or more.
               </p>
             </div>
           ) : (
@@ -390,9 +390,10 @@ export default function TeacherEarningsPage() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-950/40">
-                      <th className="py-3.5 px-6">Date</th>
-                      <th className="py-3.5 px-6">Amount</th>
-                      <th className="py-3.5 px-6">Method</th>
+                      <th className="py-3.5 px-6">Payout Date</th>
+                      <th className="py-3.5 px-6">Total Earnings</th>
+                      <th className="py-3.5 px-6">Platform Fee (25%)</th>
+                      <th className="py-3.5 px-6">Net Payout (75%)</th>
                       <th className="py-3.5 px-6">Destination</th>
                       <th className="py-3.5 px-6">Status</th>
                       <th className="py-3.5 px-6">Reference / UTR</th>
@@ -400,357 +401,130 @@ export default function TeacherEarningsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60 text-xs">
-                    {withdrawals.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
-                        <td className="py-4 px-6 text-slate-300 font-medium">
-                          {new Date(item.requestedAt).toLocaleDateString("en-IN", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </td>
-                        <td className="py-4 px-6 font-bold text-white">
-                          {formatCurrency(item.amountPaise / 100)}
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-300">
-                            {item.payoutMethod === "UPI" ? (
-                              <>
-                                <Smartphone className="w-3.5 h-3.5 text-blue-400" /> UPI
-                              </>
+                    {withdrawals.map((item) => {
+                      const grossAmt = item.grossAmount ?? ((item.amountPaise || 0) / 75);
+                      const feeAmt = item.platformFeeAmount ?? (grossAmt * 0.25);
+                      const netAmt = item.netPayoutAmount ?? ((item.amountPaise || 0) / 100);
+
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
+                          <td className="py-4 px-6 text-slate-300 font-medium">
+                            {new Date(item.requestedAt).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </td>
+                          <td className="py-4 px-6 text-slate-300">
+                            {formatCurrency(grossAmt)}
+                          </td>
+                          <td className="py-4 px-6 text-amber-400">
+                            {formatCurrency(feeAmt)}
+                          </td>
+                          <td className="py-4 px-6 font-bold text-emerald-400">
+                            {formatCurrency(netAmt)}
+                          </td>
+                          <td className="py-4 px-6 text-slate-300 font-mono text-[11px]">
+                            {item.payoutMethod === "UPI" && item.upiId ? (
+                              <span className="flex items-center gap-1">
+                                <Smartphone className="w-3.5 h-3.5 text-blue-400" /> {item.upiId}
+                              </span>
                             ) : (
-                              <>
-                                <Building2 className="w-3.5 h-3.5 text-emerald-400" /> Bank Transfer
-                              </>
+                              <span className="flex items-center gap-1">
+                                <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+                                {item.accountNumber ? `••••${item.accountNumber.slice(-4)}` : "Bank"}
+                                {item.ifscCode && ` (${item.ifscCode})`}
+                              </span>
                             )}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-slate-300 font-mono text-[11px]">
-                          {item.payoutMethod === "UPI" ? (
-                            item.upiId || "N/A"
-                          ) : (
-                            <span>
-                              {item.accountNumber ? `••••${item.accountNumber.slice(-4)}` : "N/A"}{" "}
-                              {item.ifscCode && `(${item.ifscCode})`}
+                          </td>
+                          <td className="py-4 px-6">
+                            <span
+                              className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border ${getStatusBadgeClass(
+                                item.status
+                              )}`}
+                            >
+                              {item.status}
                             </span>
-                          )}
-                        </td>
-                        <td className="py-4 px-6">
-                          <span
-                            className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border ${getStatusBadgeClass(
-                              item.status
-                            )}`}
-                          >
-                            {item.status}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-slate-400 font-mono text-[11px]">
-                          {item.providerReferenceId || item.providerTransferId || "—"}
-                        </td>
-                        <td className="py-4 px-6 text-slate-400 text-[11px] max-w-xs truncate">
-                          {item.rejectionReason ? (
-                            <span className="text-rose-400">Rejected: {item.rejectionReason}</span>
-                          ) : item.failureReason ? (
-                            <span className="text-red-400">Failed: {item.failureReason}</span>
-                          ) : item.adminNotes ? (
-                            item.adminNotes
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="py-4 px-6 text-slate-400 font-mono text-[11px]">
+                            {item.providerReferenceId || item.providerTransferId || "—"}
+                          </td>
+                          <td className="py-4 px-6 text-slate-400 text-[11px] max-w-xs truncate">
+                            {item.rejectionReason ? (
+                              <span className="text-rose-400">Rejected: {item.rejectionReason}</span>
+                            ) : item.failureReason ? (
+                              <span className="text-red-400">Failed: {item.failureReason}</span>
+                            ) : item.adminNotes ? (
+                              item.adminNotes
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
 
               {/* Mobile Card List */}
               <div className="md:hidden divide-y divide-slate-800/60">
-                {withdrawals.map((item) => (
-                  <div key={item.id} className="p-4 space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <span className="text-[10px] text-slate-400 block font-semibold">
-                          {new Date(item.requestedAt).toLocaleDateString("en-IN", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                        <p className="text-lg font-black text-white mt-0.5">
-                          {formatCurrency(item.amountPaise / 100)}
-                        </p>
-                      </div>
-                      <span
-                        className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border shrink-0 ${getStatusBadgeClass(
-                          item.status
-                        )}`}
-                      >
-                        {item.status}
-                      </span>
-                    </div>
+                {withdrawals.map((item) => {
+                  const grossAmt = item.grossAmount ?? ((item.amountPaise || 0) / 75);
+                  const feeAmt = item.platformFeeAmount ?? (grossAmt * 0.25);
+                  const netAmt = item.netPayoutAmount ?? ((item.amountPaise || 0) / 100);
 
-                    <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/80 text-xs space-y-2">
-                      <div className="flex items-center justify-between text-slate-300">
-                        <span className="text-slate-400 text-[11px]">Method:</span>
-                        <span className="inline-flex items-center gap-1 font-semibold">
-                          {item.payoutMethod === "UPI" ? (
-                            <>
-                              <Smartphone className="w-3.5 h-3.5 text-blue-400" /> UPI
-                            </>
-                          ) : (
-                            <>
-                              <Building2 className="w-3.5 h-3.5 text-emerald-400" /> Bank Transfer
-                            </>
-                          )}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-slate-300">
-                        <span className="text-slate-400 text-[11px]">Destination:</span>
-                        <span className="font-mono text-[11px] text-slate-200">
-                          {item.payoutMethod === "UPI" ? (
-                            item.upiId || "N/A"
-                          ) : (
-                            <span>
-                              {item.accountNumber ? `••••${item.accountNumber.slice(-4)}` : "N/A"}{" "}
-                              {item.ifscCode && `(${item.ifscCode})`}
-                            </span>
-                          )}
-                        </span>
-                      </div>
-
-                      {(item.providerReferenceId || item.providerTransferId) && (
-                        <div className="pt-1.5 border-t border-slate-800/60">
-                          <span className="text-slate-400 text-[10px] block mb-0.5">UTR / Reference:</span>
-                          <span className="font-mono text-[10px] text-teal-300 break-all select-all block bg-slate-900 px-2 py-1 rounded border border-slate-800">
-                            {item.providerReferenceId || item.providerTransferId}
+                  return (
+                    <div key={item.id} className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <span className="text-[10px] text-slate-400 block font-semibold">
+                            {new Date(item.requestedAt).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
                           </span>
+                          <p className="text-lg font-black text-emerald-400 mt-0.5">
+                            {formatCurrency(netAmt)}
+                          </p>
                         </div>
-                      )}
+                        <span
+                          className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold border shrink-0 ${getStatusBadgeClass(
+                            item.status
+                          )}`}
+                        >
+                          {item.status}
+                        </span>
+                      </div>
 
-                      {(item.rejectionReason || item.failureReason || item.adminNotes) && (
-                        <div className="pt-1.5 border-t border-slate-800/60 text-[11px]">
-                          {item.rejectionReason && (
-                            <p className="text-rose-400 font-medium">Rejection Reason: {item.rejectionReason}</p>
-                          )}
-                          {item.failureReason && (
-                            <p className="text-red-400 font-medium">Failure Reason: {item.failureReason}</p>
-                          )}
-                          {item.adminNotes && (
-                            <p className="text-slate-400">Notes: {item.adminNotes}</p>
-                          )}
+                      <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800/80 text-xs space-y-1.5">
+                        <div className="flex justify-between text-slate-300">
+                          <span className="text-slate-400 text-[11px]">Gross Earnings:</span>
+                          <span>{formatCurrency(grossAmt)}</span>
                         </div>
-                      )}
+                        <div className="flex justify-between text-slate-300">
+                          <span className="text-slate-400 text-[11px]">Platform Fee (25%):</span>
+                          <span className="text-amber-400">{formatCurrency(feeAmt)}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-300">
+                          <span className="text-slate-400 text-[11px]">Net Disbursed:</span>
+                          <span className="font-bold text-emerald-400">{formatCurrency(netAmt)}</span>
+                        </div>
+                        {(item.providerReferenceId || item.providerTransferId) && (
+                          <div className="pt-1 text-[10px] text-slate-400 font-mono truncate">
+                            Ref: {item.providerReferenceId || item.providerTransferId}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}
         </div>
       </div>
-
-      {/* Withdraw Funds Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-6 right-6 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div>
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <ArrowDownCircle className="w-6 h-6 text-emerald-400" /> Withdraw Funds
-              </h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Disburse your available earnings directly to your bank account or UPI ID.
-              </p>
-            </div>
-
-            {/* Available Balance Box */}
-            <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
-              <div>
-                <p className="text-[11px] text-slate-400 font-medium">Available to Withdraw</p>
-                <p className="text-2xl font-black text-teal-400">{formatCurrency(summary.availableAmount)}</p>
-              </div>
-              <button
-                type="button"
-                onClick={handleMaxAmount}
-                className="px-3 py-1.5 rounded-xl bg-teal-950/60 hover:bg-teal-900/60 border border-teal-700/50 text-[11px] font-bold text-teal-300 transition-colors cursor-pointer"
-              >
-                Withdraw All
-              </button>
-            </div>
-
-            {formError && (
-              <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                <span>{formError}</span>
-              </div>
-            )}
-
-            {formSuccess && (
-              <div className="p-3.5 rounded-xl bg-emerald-950/50 border border-emerald-800/60 text-emerald-300 text-xs flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>{formSuccess}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmitWithdrawal} className="space-y-5">
-              {/* Method Selector */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-300">Select Payout Destination</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setPayoutMethod("BANK_TRANSFER")}
-                    className={`p-3 rounded-2xl border text-left transition-all flex flex-col gap-1 ${
-                      payoutMethod === "BANK_TRANSFER"
-                        ? "bg-emerald-950/30 border-emerald-500 text-white shadow-md shadow-emerald-500/10"
-                        : "bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700"
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 font-bold text-xs">
-                      <Building2 className="w-4 h-4 text-emerald-400" /> Bank Transfer
-                    </div>
-                    <span className="text-[10px] text-slate-400">IMPS / NEFT settlement</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPayoutMethod("UPI")}
-                    className={`p-3 rounded-2xl border text-left transition-all flex flex-col gap-1 ${
-                      payoutMethod === "UPI"
-                        ? "bg-blue-950/30 border-blue-500 text-white shadow-md shadow-blue-500/10"
-                        : "bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700"
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 font-bold text-xs">
-                      <Smartphone className="w-4 h-4 text-blue-400" /> Instant UPI
-                    </div>
-                    <span className="text-[10px] text-slate-400">VPA handle payout</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Destination Details Display */}
-              {payoutMethod === "BANK_TRANSFER" ? (
-                <div className="p-3.5 rounded-2xl bg-slate-950/40 border border-slate-800 space-y-1.5 text-xs">
-                  <div className="flex justify-between text-slate-400">
-                    <span>Account Holder:</span>
-                    <span className="text-slate-200 font-medium">
-                      {payoutDetails.accountHolderName || "Not configured"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-slate-400">
-                    <span>Bank & IFSC:</span>
-                    <span className="text-slate-200 font-medium">
-                      {payoutDetails.bankName || "—"} ({payoutDetails.ifscCode || "N/A"})
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-slate-400">
-                    <span>Account Number:</span>
-                    <span className="text-slate-200 font-mono font-medium">
-                      {payoutDetails.accountNumber
-                        ? `•••• •••• ${payoutDetails.accountNumber.slice(-4)}`
-                        : "Missing"}
-                    </span>
-                  </div>
-                  {(!payoutDetails.accountNumber || !payoutDetails.ifscCode) && (
-                    <div className="pt-2">
-                      <Link
-                        href="/teacher/onboarding"
-                        className="text-[11px] text-emerald-400 hover:underline flex items-center gap-1"
-                      >
-                        Configure bank details in profile <ExternalLink className="w-3 h-3" />
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-300">Educator UPI ID (VPA)</label>
-                  <input
-                    type="text"
-                    value={upiIdInput}
-                    onChange={(e) => setUpiIdInput(e.target.value)}
-                    placeholder="e.g. yourname@okhdfcbank"
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-blue-500 text-white text-xs outline-none transition-colors"
-                  />
-                  <p className="text-[10px] text-slate-500">
-                    Payout will be sent directly to this UPI address.
-                  </p>
-                </div>
-              )}
-
-              {/* Amount Input */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs font-semibold text-slate-300">
-                  <span>Withdrawal Amount (₹)</span>
-                  <span className="text-[11px] text-slate-400 font-normal">Min: ₹{minWithdrawal}</span>
-                </div>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">₹</span>
-                  <input
-                    type="number"
-                    min={minWithdrawal}
-                    max={summary.availableAmount}
-                    step="1"
-                    value={withdrawAmount}
-                    onChange={(e) => setWithdrawAmount(e.target.value)}
-                    placeholder={`Enter amount (min ₹${minWithdrawal})`}
-                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-teal-500 text-white font-bold text-sm outline-none transition-colors"
-                  />
-                </div>
-
-                {/* Quick Selection Chips */}
-                <div className="flex items-center gap-2 pt-1">
-                  {[100, 500, 1000, 2500, 5000].map((amt) => (
-                    <button
-                      key={amt}
-                      type="button"
-                      onClick={() => handleQuickAmount(amt)}
-                      disabled={amt > summary.availableAmount}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors ${
-                        amt > summary.availableAmount
-                          ? "bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed"
-                          : "bg-slate-900 border-slate-700/80 text-slate-300 hover:bg-slate-800 cursor-pointer"
-                      }`}
-                    >
-                      ₹{amt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={submitting || !!formSuccess}
-                className="w-full py-3 rounded-2xl bg-[#0F766E] hover:bg-[#115E59] text-white font-bold text-xs transition-all shadow-lg shadow-teal-700/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" /> Submitting Request...
-                  </>
-                ) : (
-                  <>
-                    <ArrowDownCircle className="w-4 h-4" /> Confirm & Withdraw Funds
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

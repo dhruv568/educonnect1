@@ -544,6 +544,10 @@ export class AnalyticsService {
     const totalEarningsRupees = (earningsAgg._sum.amountPaise || 0) / 100;
     const monthlyEarningsRupees = (monthlyEarningsAgg._sum.amountPaise || 0) / 100;
 
+    // Educator payout metrics (25% Platform Fee & Monthly Payout Schedule)
+    const { PayoutService } = await import("@/services/payout-service");
+    const payoutCalc = await PayoutService.calculateEligiblePayout(teacherId);
+
     // 3. Today's active schedule (strictly ongoing or upcoming today)
     const todaySlots = await prisma.liveClassSlot.findMany({
       where: {
@@ -619,8 +623,16 @@ export class AnalyticsService {
         upcomingClassesCount,
         activeStudentsCount,
         activeCoursesCount,
-        totalEarningsRupees,
+        totalEarningsRupees: payoutCalc.totalEarningsRupees,
         monthlyEarningsRupees,
+        platformFeePercent: payoutCalc.platformFeePercent,
+        platformFeeRupees: payoutCalc.currentFeeRupees,
+        netEligibleBalanceRupees: payoutCalc.netEligibleBalance,
+        minPayoutRequirementRupees: payoutCalc.minPayoutRequirementRupees,
+        isEligibleForPayout: payoutCalc.isEligibleForPayout,
+        nextScheduledPayoutDate: payoutCalc.nextScheduledPayoutDate,
+        nextPayoutDateFormatted: payoutCalc.nextPayoutDateFormatted,
+        lastPayout: payoutCalc.lastPayout,
       },
       todaySchedule,
       upcomingClasses,

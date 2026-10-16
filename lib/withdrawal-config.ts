@@ -1,39 +1,43 @@
 /**
- * Centralized Educator Withdrawal Configuration
+ * Centralized Educator Payout & Withdrawal Configuration
  *
- * ---------------------------------------------------------------------------
- * TEMPORARY TESTING CONFIGURATION:
- * The minimum educator withdrawal amount has been temporarily reduced from
- * ₹500 to ₹100 to allow verification and testing of the withdrawal workflow.
- *
- * To restore production settings later:
- * 1. Change DEFAULT_MIN_WITHDRAWAL_RUPEES from 100 back to 500
- * 2. Set IS_TEMPORARY_TEST_MINIMUM to false
- * ---------------------------------------------------------------------------
+ * Requirements:
+ * 1. Platform Fee: 25% deducted from educator eligible earnings before final payout.
+ * 2. Automatic Monthly Payout: Scheduled for the 10th of every month.
+ * 3. Minimum Balance Requirement: Each educator must maintain a minimum eligible
+ *    balance of ₹2,500 (checked after applying the 25% platform fee).
+ * 4. Manual withdrawals are disabled.
  */
 
-/** Production baseline minimum amount in Rupees */
-export const PRODUCTION_MIN_WITHDRAWAL_RUPEES = 500;
+/** Platform commission fee percentage (25%) */
+export const PLATFORM_FEE_PERCENT = 25;
 
-/** Flag indicating temporary test configuration is active */
-export const IS_TEMPORARY_TEST_MINIMUM = true;
+/** Educator net payout percentage (75%) */
+export const NET_PAYOUT_PERCENT = 75;
 
-/**
- * Temporary test minimum withdrawal amount in Rupees (₹100).
- * Set to 500 when restoring production configuration.
- */
-export const DEFAULT_MIN_WITHDRAWAL_RUPEES = 100;
+/** Day of month when automatic educator payouts are scheduled (10th of every month) */
+export const PAYOUT_SCHEDULE_DAY_OF_MONTH = 10;
 
-/**
- * Minimum withdrawal amount in Rupees (evaluates env var or defaults to 100).
- */
+/** Minimum required eligible balance in Rupees for automated payout processing (₹2,500) */
+export const MIN_PAYOUT_RUPEES = 2500;
+
+/** Minimum required eligible balance in subunit paise (250,000 paise = ₹2,500) */
+export const MIN_PAYOUT_PAISE = MIN_PAYOUT_RUPEES * 100;
+
+/** Default baseline minimum amount in Rupees */
+export const PRODUCTION_MIN_WITHDRAWAL_RUPEES = 2500;
+
+/** Default minimum payout amount in Rupees */
+export const DEFAULT_MIN_WITHDRAWAL_RUPEES = 2500;
+
+/** Minimum payout amount in Rupees (evaluates env var or defaults to 2500) */
 export const MIN_WITHDRAWAL_RUPEES: number =
   typeof process !== "undefined" && process.env?.NEXT_PUBLIC_MIN_EDUCATOR_WITHDRAWAL_RUPEES
     ? parseInt(process.env.NEXT_PUBLIC_MIN_EDUCATOR_WITHDRAWAL_RUPEES, 10) || DEFAULT_MIN_WITHDRAWAL_RUPEES
     : DEFAULT_MIN_WITHDRAWAL_RUPEES;
 
-/**
- * Minimum withdrawal amount in subunit paise (1 Rupee = 100 Paise).
- * For ₹100, this is 10,000 paise. (For ₹500, this is 50,000 paise).
- */
+/** Minimum payout amount in subunit paise */
 export const MIN_WITHDRAWAL_PAISE: number = MIN_WITHDRAWAL_RUPEES * 100;
+
+/** Flag indicating whether temporary testing minimum is active */
+export const IS_TEMPORARY_TEST_MINIMUM = false;

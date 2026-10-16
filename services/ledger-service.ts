@@ -147,78 +147,51 @@ export class LedgerService {
   }
 
   /**
-   * Get teacher earnings metrics breakdown
+   * Get teacher earnings metrics breakdown with 25% platform fee & monthly payout schedule
    */
   static async getTeacherEarningsSummary(teacherId: string) {
-    const ledgerEntries = await prisma.financialLedgerEntry.findMany({
-      where: { teacherId },
-    });
-
-    let totalEarningsPaise = 0;
-    let thisMonthEarningsPaise = 0;
-    let refundedPaise = 0;
-
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    for (const entry of ledgerEntries) {
-      if (entry.type === "TEACHER_EARNING") {
-        totalEarningsPaise += entry.amountPaise;
-        if (entry.createdAt >= startOfMonth) {
-          thisMonthEarningsPaise += entry.amountPaise;
-        }
-      } else if (entry.type === "REFUND_REVERSAL") {
-        totalEarningsPaise -= entry.amountPaise;
-        if (entry.createdAt >= startOfMonth) {
-          thisMonthEarningsPaise -= entry.amountPaise;
-        }
-        refundedPaise += entry.amountPaise;
-      }
-    }
-
-    // Payout status counts (from TeacherPayout and WithdrawalRequest)
-    const payouts = await prisma.teacherPayout.findMany({
-      where: { teacherId },
-    });
-
-    let paidPaise = 0;
-    let pendingPaise = 0;
-
-    for (const payout of payouts) {
-      if (payout.status === "PAID") {
-        paidPaise += payout.amountPaise;
-      } else if (payout.status === "PENDING" || payout.status === "PROCESSING") {
-        pendingPaise += payout.amountPaise;
-      }
-    }
-
-    const withdrawals = await prisma.withdrawalRequest.findMany({
-      where: { teacherId },
-    });
-
-    for (const wd of withdrawals) {
-      if (wd.status === "COMPLETED") {
-        paidPaise += wd.amountPaise;
-      } else if (wd.status === "PENDING" || wd.status === "APPROVED" || wd.status === "PROCESSING") {
-        pendingPaise += wd.amountPaise;
-      }
-      // Note: REJECTED or FAILED are intentionally excluded from both,
-      // which automatically releases and restores the held balance to availablePaise.
-    }
-
-    const availablePaise = Math.max(0, totalEarningsPaise - paidPaise - pendingPaise);
+    const { PayoutService } = await import("@/services/payout-service");
+    const calc = await PayoutService.calculateEligiblePayout(teacherId);
 
     return {
-      totalEarningsPaise: Math.max(0, totalEarningsPaise),
-      thisMonthEarningsPaise: Math.max(0, thisMonthEarningsPaise),
-      pendingPaise,
-      availablePaise,
-      refundedPaise,
-      totalEarnings: Math.max(0, totalEarningsPaise / 100),
-      thisMonthEarnings: Math.max(0, thisMonthEarningsPaise / 100),
-      pendingAmount: pendingPaise / 100,
-      availableAmount: availablePaise / 100,
-      refundedAmount: refundedPaise / 100,
+      totalEarningsPaise: calc.totalEarningsPaise,
+      totalEarnings: calc.totalEarningsRupees,
+      thisMonthEarningsPaise: calc.thisMonthEarningsPaise,
+      thisMonthEarnings: calc.thisMonthEarningsRupees,
+      pendingPaise: calc.pendingPayoutPaise,
+      pendingAmount: calc.pendingPayoutRupees,
+      availablePaise: calc.netEligibleBalancePaise,
+      availableAmount: calc.netEligibleBalance,
+      refundedPaise: 0,
+      refundedAmount: 0,
+
+      // Platform Fee & Net Payout Breakdown (25% Platform Fee, 75% Net)
+      platformFeePercent: calc.platformFeePercent,
+      netPayoutPercent: calc.netPayoutPercent,
+      platformFeeDeducted: calc.settledFeeRupees,
+      platformFeeDeductedPaise: calc.settledFeePaise,
+      currentPlatformFee: calc.currentFeeRupees,
+      currentPlatformFeePaise: calc.currentFeePaise,
+      netEligibleBalance: calc.netEligibleBalance,
+      netEligibleBalancePaise: calc.netEligibleBalancePaise,
+      netPayoutAmount: calc.netEligibleBalance,
+      netPayoutAmountPaise: calc.netEligibleBalancePaise,
+      unsettledGrossAmount: calc.unsettledGrossRupees,
+      unsettledGrossPaise: calc.unsettledGrossPaise,
+
+      // Minimum Balance Requirement (₹2,500)
+      minPayoutRequirement: calc.minPayoutRequirementRupees,
+      minPayoutRequirementPaise: calc.minPayoutRequirementPaise,
+      isEligibleForPayout: calc.isEligibleForPayout,
+
+      // Automatic Monthly Schedule (10th of every month)
+      nextScheduledPayoutDate: calc.nextScheduledPayoutDate,
+      nextPayoutDateFormatted: calc.nextPayoutDateFormatted,
+
+      // Bank verification & Last payout snapshot
+      hasVerifiedBankDetails: calc.hasVerifiedBankDetails,
+      bankDetails: calc.bankDetails,
+      lastPayout: calc.lastPayout,
     };
   }
 

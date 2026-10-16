@@ -140,47 +140,45 @@ async function runBatch3And4Tests() {
   // =========================================================================
   console.log("\n--- BATCH 4: Educator Withdrawals & Cashfree Payouts ---");
 
-  test("5. Withdrawal configuration confirms active ₹100 testing minimum", () => {
-    assert.strictEqual(MIN_WITHDRAWAL_RUPEES, 100, "MIN_WITHDRAWAL_RUPEES is ₹100");
-    assert.strictEqual(MIN_WITHDRAWAL_PAISE, 10000, "MIN_WITHDRAWAL_PAISE is 10,000 paise");
-    assert.strictEqual(DEFAULT_MIN_WITHDRAWAL_RUPEES, 100, "DEFAULT_MIN_WITHDRAWAL_RUPEES is 100");
-    assert.strictEqual(PRODUCTION_MIN_WITHDRAWAL_RUPEES, 500, "PRODUCTION_MIN_WITHDRAWAL_RUPEES baseline is 500");
-    assert.strictEqual(IS_TEMPORARY_TEST_MINIMUM, true, "IS_TEMPORARY_TEST_MINIMUM flag is true");
+  test("5. Withdrawal configuration confirms updated ₹2,500 minimum requirement", () => {
+    assert.strictEqual(MIN_WITHDRAWAL_RUPEES, 2500, "MIN_WITHDRAWAL_RUPEES is ₹2,500");
+    assert.strictEqual(MIN_WITHDRAWAL_PAISE, 250000, "MIN_WITHDRAWAL_PAISE is 250,000 paise");
+    assert.strictEqual(DEFAULT_MIN_WITHDRAWAL_RUPEES, 2500, "DEFAULT_MIN_WITHDRAWAL_RUPEES is 2,500");
+    assert.strictEqual(PRODUCTION_MIN_WITHDRAWAL_RUPEES, 2500, "PRODUCTION_MIN_WITHDRAWAL_RUPEES is 2,500");
   });
 
-  test("6. Reject withdrawal amounts below ₹100 minimum threshold", async () => {
-    for (const badAmt of [0, 50, 99, 99.99]) {
+  test("6. Reject manual withdrawal requests (individual withdrawals disabled)", async () => {
+    try {
+      await WithdrawalService.requestWithdrawal({
+        teacherId: "test-teacher-id",
+        amountRupees: 500,
+        payoutMethod: "UPI",
+        upiId: "educator@okhdfcbank",
+      });
+      assert.fail("Should have rejected manual withdrawal");
+    } catch (err: any) {
+      assert(
+        err.message.includes("MANUAL_WITHDRAWALS_DISABLED"),
+        `Expected MANUAL_WITHDRAWALS_DISABLED, got: ${err.message}`
+      );
+    }
+  });
+
+  test("7. Reject amounts below ₹2,500 when override is used", async () => {
+    for (const badAmt of [0, 50, 100, 500, 2499]) {
       try {
         await WithdrawalService.requestWithdrawal({
           teacherId: "test-teacher-id",
           amountRupees: badAmt,
           payoutMethod: "UPI",
           upiId: "educator@okhdfcbank",
+          allowManualOverride: true,
         });
         assert.fail(`Should have rejected ₹${badAmt}`);
       } catch (err: any) {
         assert(
-          err.message.includes("Minimum withdrawal amount is ₹100."),
-          `Expected ₹100 minimum error, got: ${err.message}`
-        );
-      }
-    }
-  });
-
-  test("7. Reject invalid, negative, or NaN amounts", async () => {
-    for (const badAmt of [-1, -500, NaN]) {
-      try {
-        await WithdrawalService.requestWithdrawal({
-          teacherId: "test-teacher-id",
-          amountRupees: badAmt,
-          payoutMethod: "UPI",
-          upiId: "educator@okhdfcbank",
-        });
-        assert.fail(`Should have rejected ${badAmt}`);
-      } catch (err: any) {
-        assert(
-          err.message.includes("Minimum withdrawal amount is ₹100."),
-          `Expected ₹100 minimum error for ${badAmt}, got: ${err.message}`
+          err.message.includes("Minimum withdrawal amount is ₹2500."),
+          `Expected ₹2,500 minimum error for ${badAmt}, got: ${err.message}`
         );
       }
     }

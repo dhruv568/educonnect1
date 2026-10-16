@@ -2,51 +2,26 @@ import { NextRequest } from "next/server";
 import { requireRole } from "@/lib/auth/guards";
 import { apiSuccess, apiBadRequest, handleApiError } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
-import { WithdrawalService } from "@/services/withdrawal-service";
+import { PayoutService } from "@/services/payout-service";
 
-export async function POST(request: NextRequest) {
-  try {
-    const session = await requireRole(["TEACHER"]);
-    const body = await request.json();
-
-    const teacher = await prisma.teacherProfile.findUnique({
-      where: { userId: session.userId || session.id },
-    });
-
-    if (!teacher) {
-      return apiBadRequest("Educator profile not found.");
-    }
-
-    const { amount, payoutMethod = "BANK_TRANSFER", upiId, idempotencyKey } = body;
-
-    const amountRupees = Number(amount);
-    if (isNaN(amountRupees) || amountRupees <= 0) {
-      return apiBadRequest("Please provide a valid withdrawal amount.");
-    }
-
-    if (payoutMethod !== "BANK_TRANSFER" && payoutMethod !== "UPI") {
-      return apiBadRequest("Invalid payout method. Supported options: BANK_TRANSFER, UPI.");
-    }
-
-    const result = await WithdrawalService.requestWithdrawal({
-      teacherId: teacher.id,
-      amountRupees,
-      payoutMethod,
-      upiId,
-      idempotencyKey,
-    });
-
-    return apiSuccess({
-      message: "Withdrawal request submitted successfully.",
-      withdrawal: result.withdrawal,
-      summary: result.summary,
-    });
-  } catch (error: any) {
-    return handleApiError(error);
-  }
+/**
+ * POST /api/teacher/withdraw
+ *
+ * Manual withdrawals are disabled. Payouts are processed automatically
+ * on the 10th of every month.
+ */
+export async function POST(_request: NextRequest) {
+  return apiBadRequest(
+    "MANUAL_WITHDRAWALS_DISABLED: Manual withdrawals are disabled. Educator payouts are processed automatically on the 10th of every month according to the monthly payout schedule."
+  );
 }
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/teacher/withdraw
+ *
+ * Returns educator's payout history with gross, 25% platform fee, net payout, and status.
+ */
+export async function GET(_request: NextRequest) {
   try {
     const session = await requireRole(["TEACHER"]);
 
@@ -58,7 +33,7 @@ export async function GET(request: NextRequest) {
       return apiBadRequest("Educator profile not found.");
     }
 
-    const withdrawals = await WithdrawalService.getTeacherWithdrawals(teacher.id);
+    const withdrawals = await PayoutService.getTeacherPayoutHistory(teacher.id);
 
     return apiSuccess({
       withdrawals,

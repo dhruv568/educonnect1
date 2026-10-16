@@ -42,6 +42,29 @@ export default function AdminWithdrawalsPage() {
   const [referenceId, setReferenceId] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [runningMonthlyJob, setRunningMonthlyJob] = useState(false);
+
+  const handleRunMonthlyPayouts = async () => {
+    if (!confirm("Are you sure you want to run the automated monthly educator payout job? (25% Platform Fee, ₹2,500 minimum net balance requirement)")) {
+      return;
+    }
+    setRunningMonthlyJob(true);
+    try {
+      const res = await fetch("/api/admin/payments/payouts/monthly", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dryRun: false }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to run monthly payouts");
+      alert(`Monthly payouts executed successfully! Processed: ${json.data?.result?.processedCount}, Disbursed: ₹${json.data?.result?.totalDisbursedRupees}, Platform Fee (25%): ₹${json.data?.result?.totalPlatformFeeRupees}`);
+      fetchWithdrawals();
+    } catch (err: any) {
+      alert(`Error running monthly payouts: ${err.message}`);
+    } finally {
+      setRunningMonthlyJob(false);
+    }
+  };
 
   useEffect(() => {
     fetchWithdrawals();
@@ -201,7 +224,15 @@ export default function AdminWithdrawalsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleRunMonthlyPayouts}
+              disabled={runningMonthlyJob}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <IndianRupee className={`w-3.5 h-3.5 ${runningMonthlyJob ? "animate-spin" : ""}`} />
+              {runningMonthlyJob ? "Executing Job..." : "Run Monthly Payouts (10th)"}
+            </button>
             <button
               onClick={fetchWithdrawals}
               className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2 shadow-sm transition-all"

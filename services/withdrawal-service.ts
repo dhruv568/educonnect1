@@ -15,6 +15,7 @@ export interface RequestWithdrawalParams {
   payoutMethod: "BANK_TRANSFER" | "UPI";
   upiId?: string;
   idempotencyKey?: string;
+  allowManualOverride?: boolean;
 }
 
 export interface AdminWithdrawalFilters {
@@ -27,8 +28,17 @@ export interface AdminWithdrawalFilters {
 export class WithdrawalService {
   /**
    * Request a new educator withdrawal
+   *
+   * NOTE: Manual withdrawals are removed. Educators must receive automatic payouts
+   * on the 10th of every month.
    */
   static async requestWithdrawal(params: RequestWithdrawalParams) {
+    if (!params.allowManualOverride) {
+      throw new Error(
+        "MANUAL_WITHDRAWALS_DISABLED: Individual manual withdrawals have been removed. Educator payouts are processed automatically on the 10th of every month according to the monthly payout schedule."
+      );
+    }
+
     const { teacherId, amountRupees, payoutMethod, idempotencyKey } = params;
 
     const amountPaise = Math.round(amountRupees * 100);

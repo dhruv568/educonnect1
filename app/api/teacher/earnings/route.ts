@@ -4,9 +4,14 @@ import { apiSuccess, handleApiError } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 import { LedgerService } from "@/services/ledger-service";
 import { RouteService } from "@/services/route-service";
-import { MIN_WITHDRAWAL_RUPEES } from "@/lib/withdrawal-config";
+import {
+  MIN_PAYOUT_RUPEES,
+  PLATFORM_FEE_PERCENT,
+  NET_PAYOUT_PERCENT,
+  PAYOUT_SCHEDULE_DAY_OF_MONTH,
+} from "@/lib/withdrawal-config";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await requireRole(["TEACHER"]);
 
@@ -22,7 +27,11 @@ export async function GET(request: NextRequest) {
     const payoutAccount = await RouteService.getOrCreatePayoutAccount(teacherProfile.id);
 
     return apiSuccess({
-      minWithdrawalRupees: MIN_WITHDRAWAL_RUPEES,
+      platformFeePercent: PLATFORM_FEE_PERCENT,
+      netPayoutPercent: NET_PAYOUT_PERCENT,
+      minPayoutRequirement: MIN_PAYOUT_RUPEES,
+      payoutScheduleDayOfMonth: PAYOUT_SCHEDULE_DAY_OF_MONTH,
+      payoutScheduleDescription: "10th of every month",
       summary,
       payoutAccount: {
         id: payoutAccount.id,
