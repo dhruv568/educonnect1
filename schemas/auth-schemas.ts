@@ -56,3 +56,35 @@ export const ContactSchema = z.object({
 });
 
 export type ContactInput = z.infer<typeof ContactSchema>;
+
+// MSG91 Phone OTP Schemas
+export const SendPhoneOTPSchema = z.object({
+  phone: z.string().min(10, "Please enter a valid phone number with at least 10 digits"),
+  purpose: z.enum(["LOGIN", "SIGNUP", "VERIFY"]).default("LOGIN"),
+  role: z.string().optional(),
+});
+
+export type SendPhoneOTPInput = z.infer<typeof SendPhoneOTPSchema>;
+
+export const PhoneLoginSchema = z.object({
+  phone: z.string().min(10, "Please enter a valid phone number with at least 10 digits"),
+  otp: z.string().optional(),
+  reqId: z.string().optional(),
+  accessToken: z.string().optional(),
+  returnTo: z.string().optional(),
+  redirectTo: z.string().optional(),
+  role: z.string().optional(),
+});
+
+export type PhoneLoginInput = z.infer<typeof PhoneLoginSchema>;
+
+export const VerifyPhoneOTPSchema = z.object({
+  phone: z.string().min(10, "Please enter a valid phone number with at least 10 digits"),
+  email: z.string().email("Invalid email").optional(),
+  otp: z.string().optional(),
+  reqId: z.string().optional(),
+  accessToken: z.string().optional(),
+});
+
+export type VerifyPhoneOTPInput = z.infer<typeof VerifyPhoneOTPSchema>;
+

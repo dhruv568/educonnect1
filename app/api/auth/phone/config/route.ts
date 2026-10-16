@@ -1,0 +1,22 @@
+export const dynamic = "force-dynamic";
+
+import { NextResponse } from "next/server";
+import { Msg91Client } from "@/lib/auth/msg91";
+
+/**
+ * GET /api/auth/phone/config
+ * Returns public MSG91 widget configuration safely for client initialization.
+ * Never exposes the master authkey or tokenAuth secret values.
+ */
+export async function GET() {
+  const config = Msg91Client.getConfig();
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      widgetId: config.widgetId || "",
+      isConfigured: config.isConfigured,
+      tokenAuthEnabled: Boolean(config.tokenAuth),
+    },
+  });
+}

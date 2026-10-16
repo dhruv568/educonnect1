@@ -12,8 +12,10 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { isEducatorRole } from "@/lib/auth/roles";
 import { Logo } from "@/components/brand/logo";
+import { PhoneOtpLoginCard } from "@/components/auth/phone-otp-login-card";
 import {
   Mail,
+  Phone,
   Lock,
   ArrowRight,
   GraduationCap,
@@ -26,8 +28,10 @@ import {
 } from "lucide-react";
 
 export default function TeacherLoginPage() {
+  const [authMethod, setAuthMethod] = useState<"EMAIL" | "PHONE">("EMAIL");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
 
@@ -209,46 +213,79 @@ export default function TeacherLoginPage() {
                 </div>
               )}
 
-              <form onSubmit={handleLogin} className="space-y-4">
-                <Input
-                  label="Educator Email Address"
-                  type="email"
-                  placeholder="educator@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  leftIcon={<Mail className="h-4 w-4 text-[#0F766E]" />}
-                />
-
-                <Input
-                  label="Password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  leftIcon={<Lock className="h-4 w-4 text-[#0F766E]" />}
-                />
-
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <Link href="/forgot-password" className="text-[#0F766E] hover:text-[#115E59] hover:underline">
-                    Forgot password?
-                  </Link>
-                  <Link href="/teacher/register" className="text-slate-600 hover:text-[#115E59]">
-                    Become an Educator →
-                  </Link>
-                </div>
-
-                <GlassButton
-                  type="submit"
-                  variant="educator"
-                  className="w-full mt-2 text-white font-black text-sm shadow-md"
-                  isLoading={loading}
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
+              {/* Method Switch: Email & Password vs Phone OTP */}
+              <div className="flex p-1 bg-teal-50/70 rounded-2xl border border-teal-100">
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod("EMAIL")}
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    authMethod === "EMAIL"
+                      ? "bg-white text-[#0F766E] shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
                 >
-                  Sign In to Educator Portal
-                </GlassButton>
-              </form>
+                  <Mail className="h-3.5 w-3.5" />
+                  <span>Email & Password</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod("PHONE")}
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    authMethod === "PHONE"
+                      ? "bg-white text-[#0F766E] shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                  <span>Phone OTP</span>
+                </button>
+              </div>
+
+              {authMethod === "EMAIL" ? (
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <Input
+                    label="Educator Email Address"
+                    type="email"
+                    placeholder="educator@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    leftIcon={<Mail className="h-4 w-4 text-[#0F766E]" />}
+                  />
+
+                  <Input
+                    label="Password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    leftIcon={<Lock className="h-4 w-4 text-[#0F766E]" />}
+                  />
+
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <Link href="/forgot-password" className="text-[#0F766E] hover:text-[#115E59] hover:underline">
+                      Forgot password?
+                    </Link>
+                    <Link href="/teacher/register" className="text-slate-600 hover:text-[#115E59]">
+                      Become an Educator →
+                    </Link>
+                  </div>
+
+                  <GlassButton
+                    type="submit"
+                    variant="educator"
+                    className="w-full mt-2 text-white font-black text-sm shadow-md"
+                    isLoading={loading}
+                    rightIcon={<ArrowRight className="h-4 w-4" />}
+                  >
+                    Sign In to Educator Portal
+                  </GlassButton>
+                </form>
+              ) : (
+                <PhoneOtpLoginCard roleContext="teacher" />
+              )}
+
 
               <div className="pt-2 text-center text-xs text-slate-500 border-t border-slate-100 font-medium">
                 New to EduConnects?{" "}

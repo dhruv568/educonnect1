@@ -11,7 +11,9 @@ import { useToast } from "@/components/ui/toast";
 import { RegistrationCaptcha } from "@/components/auth/registration-captcha";
 import { formatCurrency } from "@/lib/currency";
 import { extractOtpDigits } from "@/lib/auth/otp-utils";
+import { PhoneOtpVerifyInline } from "@/components/auth/phone-otp-verify-inline";
 import {
+
   User,
   Mail,
   Phone,
@@ -787,7 +789,17 @@ function LearnerRegistrationFlowContent() {
                   leftIcon={<Phone className="h-4 w-4 text-[#2563EB]" />}
                   helperText="10-digit Indian mobile number"
                 />
+
+                <PhoneOtpVerifyInline
+                  phone={state.phone}
+                  email={state.email}
+                  roleContext="student"
+                  onVerified={(verified) => {
+                    setState((p) => ({ ...p, phone: verified.slice(-10) }));
+                  }}
+                />
               </div>
+
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input

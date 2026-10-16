@@ -11,7 +11,9 @@ import { useToast } from "@/components/ui/toast";
 import { RegistrationCaptcha } from "@/components/auth/registration-captcha";
 import { extractOtpDigits } from "@/lib/auth/otp-utils";
 import { parseHourlyRate } from "@/lib/currency";
+import { PhoneOtpVerifyInline } from "@/components/auth/phone-otp-verify-inline";
 import {
+
   GraduationCap,
   Mail,
   Phone,
@@ -626,7 +628,17 @@ function EducatorRegistrationFlowContent() {
                 required
                 helperText="For session notifications and payout updates"
               />
+
+              <PhoneOtpVerifyInline
+                phone={state.phone}
+                email={state.email}
+                roleContext="teacher"
+                onVerified={(verified) => {
+                  setState((p) => ({ ...p, phone: verified.slice(-10) }));
+                }}
+              />
             </div>
+
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input

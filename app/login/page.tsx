@@ -13,11 +13,14 @@ import { useToast } from "@/components/ui/toast";
 import { isEducatorRole, isLearnerRole } from "@/lib/auth/roles";
 import { isSafeRedirectPath, sanitizeRedirectUrl } from "@/lib/auth/redirect-validator";
 import { Logo } from "@/components/brand/logo";
-import { LogIn, Mail, Lock, ArrowRight, Sparkles, AlertCircle } from "lucide-react";
+import { PhoneOtpLoginCard } from "@/components/auth/phone-otp-login-card";
+import { LogIn, Mail, Phone, Lock, ArrowRight, Sparkles, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
+  const [authMethod, setAuthMethod] = useState<"EMAIL" | "PHONE">("EMAIL");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
 
@@ -224,47 +227,80 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <form onSubmit={handleLogin} className="space-y-4">
-                <Input
-                  label="Email Address"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  leftIcon={<Mail className="h-4 w-4" />}
-                />
-
-                <Input
-                  label="Password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  leftIcon={<Lock className="h-4 w-4" />}
-                />
-
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <Link href="/forgot-password" className="text-[#16805B] hover:text-[#0D5C41] hover:underline">
-                    Forgot password?
-                  </Link>
-                  <Link href="/register" className="text-slate-500 hover:text-slate-900">
-                    Need an account?
-                  </Link>
-                </div>
-
-                <GlassButton
-                  type="submit"
-                  variant="primary"
-                  className="w-full mt-2"
-                  isLoading={loading}
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
+              {/* Method Switch: Email & Password vs Phone OTP */}
+              <div className="flex p-1 bg-emerald-50/70 rounded-2xl border border-emerald-100">
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod("EMAIL")}
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    authMethod === "EMAIL"
+                      ? "bg-white text-[#16805B] shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
                 >
-                  Sign In
-                </GlassButton>
-              </form>
+                  <Mail className="h-3.5 w-3.5" />
+                  <span>Email & Password</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod("PHONE")}
+                  className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    authMethod === "PHONE"
+                      ? "bg-white text-[#16805B] shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                  <span>Phone OTP</span>
+                </button>
+              </div>
+
+              {authMethod === "EMAIL" ? (
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <Input
+                    label="Email Address"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    leftIcon={<Mail className="h-4 w-4" />}
+                  />
+
+                  <Input
+                    label="Password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    leftIcon={<Lock className="h-4 w-4" />}
+                  />
+
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <Link href="/forgot-password" className="text-[#16805B] hover:text-[#0D5C41] hover:underline">
+                      Forgot password?
+                    </Link>
+                    <Link href="/register" className="text-slate-500 hover:text-slate-900">
+                      Need an account?
+                    </Link>
+                  </div>
+
+                  <GlassButton
+                    type="submit"
+                    variant="primary"
+                    className="w-full mt-2"
+                    isLoading={loading}
+                    rightIcon={<ArrowRight className="h-4 w-4" />}
+                  >
+                    Sign In
+                  </GlassButton>
+                </form>
+              ) : (
+                <PhoneOtpLoginCard roleContext="general" />
+              )}
             </GlassCard>
+
           </div>
         </div>
       </main>
