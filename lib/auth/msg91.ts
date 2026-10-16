@@ -221,6 +221,9 @@ export class Msg91Client {
       if (config.authkey) {
         headers.authkey = config.authkey;
       }
+      if (config.tokenAuth) {
+        headers.tokenAuth = config.tokenAuth;
+      }
 
       const response = await fetch(`${this.MSG91_API_BASE}/sendOtp`, {
         method: "POST",
@@ -247,11 +250,10 @@ export class Msg91Client {
           (data.type === "error" && rawMsg.includes("Invalid Captcha"))
         ) {
           const userFriendlyMsg =
-            "Security verification required. Please complete verification using the SMS prompt or try again.";
+            "Security verification required. Please complete the captcha verification to receive your OTP.";
           console.warn(
             "⚠️ [MSG91 Captcha Requirement]: The configured MSG91 widget has 'Captcha Validation' enabled. " +
-            "For server API calls, either: (1) pass captchaToken from the Web SDK, " +
-            "or (2) toggle off 'Captcha Validation' in your MSG91 Dashboard under OTP Widget -> Settings."
+            "Ensure the client solves the rendered CAPTCHA or pass captchaToken to the sendOtp endpoint."
           );
           return { success: false, error: userFriendlyMsg };
         }
@@ -288,6 +290,7 @@ export class Msg91Client {
 
   /**
    * Verifies an OTP entered by the user against MSG91 Widget verifyOtp endpoint.
+   * Expects exactly 4 digits as configured in the MSG91 widget.
    * Returns an access token on success.
    */
   static async verifyOtp(reqId: string, otp: string): Promise<Msg91VerifyOtpResult> {
@@ -296,13 +299,13 @@ export class Msg91Client {
     }
 
     const cleanOtp = otp.trim().replace(/\D/g, "");
-    if (cleanOtp.length < 4 || cleanOtp.length > 8) {
-      return { success: false, error: "Invalid OTP format." };
+    if (cleanOtp.length !== 4) {
+      return { success: false, error: "OTP must be exactly 4 digits." };
     }
 
     // Handle simulation mode
     if (reqId.startsWith("sim_msg91_")) {
-      // In simulation mode, accept standard 6-digit test OTP or '123456'
+      // In simulation mode, accept standard 4-digit test OTP
       return {
         success: true,
         accessToken: `sim_token_${reqId}_${cleanOtp}`,
@@ -338,6 +341,9 @@ export class Msg91Client {
       if (config.authkey) {
         headers.authkey = config.authkey;
       }
+      if (config.tokenAuth) {
+        headers.tokenAuth = config.tokenAuth;
+      }
 
       const response = await fetch(`${this.MSG91_API_BASE}/verifyOtp`, {
         method: "POST",
@@ -354,6 +360,19 @@ export class Msg91Client {
           type: data.type,
           rawMsg,
         });
+
+        // Map invalid OTP responses specifically
+        if (
+          rawMsg.toLowerCase().includes("invalid otp") ||
+          rawMsg.toLowerCase().includes("otp not match") ||
+          rawMsg.toLowerCase().includes("incorrect otp") ||
+          rawMsg.toLowerCase().includes("expired")
+        ) {
+          return {
+            success: false,
+            error: "Invalid or expired verification code. Please check the 4-digit code and try again.",
+          };
+        }
 
         // Map raw provider AuthenticationFailure / 401 to safe, specific user-facing message
         if (
@@ -423,15 +442,22 @@ export class Msg91Client {
     }
 
     try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      };
+      if (config.authkey) {
+        headers.authkey = config.authkey;
+      }
+      if (config.tokenAuth) {
+        headers.tokenAuth = config.tokenAuth;
+      }
+
       let response: Response;
       try {
         response = await fetch("https://api.msg91.com/api/v5/widget/verifyAccessToken", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            authkey: config.authkey,
-          },
+          headers,
           body: JSON.stringify({
             "access-token": accessToken,
           }),
@@ -440,11 +466,7 @@ export class Msg91Client {
         // Fallback to control.msg91.com if api.msg91.com network call fails
         response = await fetch(`${this.MSG91_API_BASE}/verifyAccessToken`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            authkey: config.authkey,
-          },
+          headers,
           body: JSON.stringify({
             "access-token": accessToken,
           }),
@@ -458,19 +480,33 @@ export class Msg91Client {
         console.error("❌ [MSG91 verifyAccessToken Error]:", {
           status: response.status,
           type: data.type,
+          code: data.code,
           rawMsg,
           hasAuthkey: Boolean(config.authkey),
+          hasTokenAuth: Boolean(config.tokenAuth),
         });
 
         // Map raw provider AuthenticationFailure / 401 to safe, specific user-facing message
         if (
           rawMsg.toLowerCase().includes("authenticationfailure") ||
           rawMsg.toLowerCase().includes("invalid authkey") ||
+          data.code === "201" ||
+          data.code === 401 ||
           response.status === 401
         ) {
           return {
             success: false,
-            error: "Authentication service error verifying security token. Please request a new verification code.",
+            error: "Authentication service error verifying security token. Please check your MSG91 AuthKey and IP whitelisting settings.",
+          };
+        }
+
+        if (
+          rawMsg.toLowerCase().includes("expired") ||
+          rawMsg.toLowerCase().includes("invalid token")
+        ) {
+          return {
+            success: false,
+            error: "Verification session has expired. Please request a new 4-digit verification code.",
           };
         }
 
@@ -520,13 +556,20 @@ export class Msg91Client {
         body.tokenAuth = config.tokenAuth;
       }
 
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      };
+      if (config.authkey) {
+        headers.authkey = config.authkey;
+      }
+      if (config.tokenAuth) {
+        headers.tokenAuth = config.tokenAuth;
+      }
+
       const response = await fetch(`${this.MSG91_API_BASE}/retryOtp`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          authkey: config.authkey,
-        },
+        headers,
         body: JSON.stringify(body),
       });
 

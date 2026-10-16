@@ -351,6 +351,14 @@ export class PhoneAuthService {
     }
     const normalizedPhone = norm.normalized;
 
+    // Validate 4-digit OTP length if OTP is provided
+    if (otp) {
+      const clean = otp.trim().replace(/\D/g, "");
+      if (clean.length !== 4) {
+        throw new Error("OTP must be exactly 4 digits.");
+      }
+    }
+
     // 2. REQUIREMENT 4: Verify OTP / access-token securely on server before granting login
     let verifiedIdentifier: string | undefined;
 
@@ -363,7 +371,7 @@ export class PhoneAuthService {
           if (otpFallback.success) {
             verifiedIdentifier = normalizedPhone;
           } else {
-            throw new Error(tokenVerification.error || "Invalid or expired access token.");
+            throw new Error(otpFallback.error || tokenVerification.error || "Invalid or expired verification code. Please check the 4-digit code and try again.");
           }
         } else {
           throw new Error(tokenVerification.error || "Invalid or expired access token.");
@@ -374,7 +382,7 @@ export class PhoneAuthService {
     } else if (reqId && otp) {
       const otpVerification = await Msg91Client.verifyOtp(reqId, otp);
       if (!otpVerification.success) {
-        throw new Error(otpVerification.error || "Invalid verification code.");
+        throw new Error(otpVerification.error || "Invalid or expired verification code. Please check the 4-digit code and try again.");
       }
       verifiedIdentifier = normalizedPhone;
     } else {
@@ -487,6 +495,14 @@ export class PhoneAuthService {
       throw new Error("This phone number is already registered with another account.");
     }
 
+    // Validate 4-digit OTP length if OTP is provided
+    if (otp) {
+      const clean = otp.trim().replace(/\D/g, "");
+      if (clean.length !== 4) {
+        throw new Error("OTP must be exactly 4 digits.");
+      }
+    }
+
     // Verify with MSG91 securely on server
     if (accessToken) {
       const tokenVerification = await Msg91Client.verifyAccessToken(accessToken);
@@ -494,7 +510,7 @@ export class PhoneAuthService {
         if (reqId && otp) {
           const otpFallback = await Msg91Client.verifyOtp(reqId, otp);
           if (!otpFallback.success) {
-            throw new Error(tokenVerification.error || "Invalid access token.");
+            throw new Error(otpFallback.error || tokenVerification.error || "Invalid or expired verification code. Please check the 4-digit code and try again.");
           }
         } else {
           throw new Error(tokenVerification.error || "Invalid access token.");
@@ -503,7 +519,7 @@ export class PhoneAuthService {
     } else if (reqId && otp) {
       const otpVerification = await Msg91Client.verifyOtp(reqId, otp);
       if (!otpVerification.success) {
-        throw new Error(otpVerification.error || "Invalid verification code.");
+        throw new Error(otpVerification.error || "Invalid or expired verification code. Please check the 4-digit code and try again.");
       }
     } else {
       throw new Error("Verification code or access token is required.");

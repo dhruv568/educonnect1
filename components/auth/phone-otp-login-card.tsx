@@ -7,7 +7,7 @@ import { Phone, ArrowRight, RefreshCw, CheckCircle2, ShieldCheck, AlertCircle } 
 import { Input } from "@/components/ui/input";
 import { GlassButton } from "@/components/glass/glass-button";
 import { useToast } from "@/components/ui/toast";
-import { extractOtpDigits } from "@/lib/auth/otp-utils";
+import { extractOtpDigits, extractPhoneOtpDigits } from "@/lib/auth/otp-utils";
 import { isSafeRedirectPath, sanitizeRedirectUrl } from "@/lib/auth/redirect-validator";
 
 interface PhoneOtpLoginCardProps {
@@ -31,7 +31,17 @@ function sanitizeClientErrorMessage(rawMessage: string | undefined): string {
     return "SMS verification service is temporarily unavailable. Please try again in a few moments or use Email & Password.";
   }
   if (lower.includes("invalid captcha") || lower.includes("captcha")) {
-    return "Security verification required. Please try again or refresh the page.";
+    return "Security verification required. Please complete the captcha verification to proceed.";
+  }
+  if (
+    lower.includes("invalid otp") ||
+    lower.includes("incorrect otp") ||
+    lower.includes("otp not match")
+  ) {
+    return "Invalid or expired verification code. Please check the 4-digit code and try again.";
+  }
+  if (lower.includes("no account is registered")) {
+    return "No account is registered with this phone number. Please create an account first.";
   }
   if (lower.includes("network") || lower.includes("failed to fetch")) {
     return "Network connection issue. Please check your internet connection and try again.";
@@ -79,7 +89,7 @@ export function PhoneOtpLoginCard({
   const [step, setStep] = useState<"PHONE" | "OTP">("PHONE");
   const [reqId, setReqId] = useState<string>("");
   const [maskedPhone, setMaskedPhone] = useState<string>("");
-  const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
+  const [otp, setOtp] = useState<string[]>(Array(4).fill(""));
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
@@ -128,8 +138,9 @@ export function PhoneOtpLoginCard({
               const initConfig: Record<string, any> = {
                 widgetId: wid,
                 exposeMethods: true,
+                captchaRenderId: "msg91-captcha-login",
                 success: (data: any) => {
-                  console.log("[MSG91 Web SDK] Verified event received");
+                  console.log("[MSG91 Web SDK] Verified event received:", data);
                 },
                 failure: (err: any) => {
                   console.warn("[MSG91 Web SDK] Notice:", err);
@@ -216,7 +227,7 @@ export function PhoneOtpLoginCard({
                 setMaskedPhone(masked);
                 setStep("OTP");
                 setCooldown(60);
-                showToast("OTP Sent! 📱", `A 6-digit verification code has been dispatched to ${masked}.`, "info");
+                showToast("OTP Sent! 📱", `A 4-digit verification code has been dispatched to ${masked}.`, "info");
                 setTimeout(() => {
                   inputRefs.current[0]?.focus();
                 }, 100);
@@ -224,12 +235,19 @@ export function PhoneOtpLoginCard({
                 resolve();
               },
               (err: any) => {
-                console.warn("[MSG91 Web SDK] sendOtp failed, attempting server-side fallback:", err);
-                reject(err);
+                console.warn("[MSG91 Web SDK] sendOtp notice:", err);
+                if (err && typeof err === "object" && (err.pending || err.siteKeyError)) {
+                  reject(new Error("Security verification required. Please complete the captcha verification to receive your OTP."));
+                } else {
+                  reject(err);
+                }
               }
             );
           });
-        } catch {
+        } catch (sdkErr: any) {
+          if (sdkErr?.message?.includes("Security verification required")) {
+            throw sdkErr;
+          }
           // Fall through to server-side dispatch
           dispatched = false;
         }
@@ -256,7 +274,7 @@ export function PhoneOtpLoginCard({
         setMaskedPhone(data.data?.maskedPhone || clean);
         setStep("OTP");
         setCooldown(60);
-        showToast("OTP Sent! 📱", `A 6-digit verification code has been dispatched to ${data.data?.maskedPhone || clean}.`, "info");
+        showToast("OTP Sent! 📱", `A 4-digit verification code has been dispatched to ${data.data?.maskedPhone || clean}.`, "info");
 
         setTimeout(() => {
           inputRefs.current[0]?.focus();
@@ -336,17 +354,17 @@ export function PhoneOtpLoginCard({
 
   // Handle OTP Slot Inputs
   const handleOtpChange = (index: number, value: string) => {
-    const digits = extractOtpDigits(value);
+    const digits = extractPhoneOtpDigits(value);
     setErrorMessage(null);
 
-    // If pasted full 6-digit code
-    if (digits.length === 6) {
+    // If pasted full 4-digit code
+    if (digits.length === 4) {
       const arr = digits.split("");
       setOtp(arr);
       arr.forEach((d, i) => {
         if (inputRefs.current[i]) inputRefs.current[i]!.value = d;
       });
-      inputRefs.current[5]?.focus();
+      inputRefs.current[3]?.focus();
       return;
     }
 
@@ -356,7 +374,7 @@ export function PhoneOtpLoginCard({
     setOtp(newOtp);
 
     // Auto-advance
-    if (singleDigit && index < 5) {
+    if (singleDigit && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -407,9 +425,9 @@ export function PhoneOtpLoginCard({
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const enteredOtp = otp.join("");
-    if (enteredOtp.length !== 6) {
-      setErrorMessage("Please enter the complete 6-digit verification code.");
-      showToast("Validation Error", "Please enter all 6 digits of the verification code.", "error");
+    if (enteredOtp.length !== 4) {
+      setErrorMessage("Please enter the complete 4-digit verification code.");
+      showToast("Validation Error", "Please enter all 4 digits of the verification code.", "error");
       return;
     }
 
@@ -498,6 +516,9 @@ export function PhoneOtpLoginCard({
             </p>
           </div>
 
+          {/* MSG91 CAPTCHA challenge container */}
+          <div id="msg91-captcha-login" className="flex justify-center my-2" />
+
           <div className="flex items-center justify-between text-xs font-semibold">
             <Link href={registerUrl} className="text-slate-600 hover:text-slate-900 hover:underline">
               Don&apos;t have an account? Sign up
@@ -519,7 +540,7 @@ export function PhoneOtpLoginCard({
         <form onSubmit={handleVerifyOtp} className="space-y-4">
           <div className="text-center space-y-1">
             <div className="text-xs font-bold text-slate-700">
-              Enter 6-digit code sent to
+              Enter 4-digit code sent to
             </div>
             <div className="text-sm font-black text-slate-900 flex items-center justify-center gap-1.5">
               <span>{maskedPhone}</span>
@@ -533,8 +554,8 @@ export function PhoneOtpLoginCard({
             </div>
           </div>
 
-          {/* 6 OTP Input Boxes */}
-          <div className="flex justify-center gap-2 py-2">
+          {/* 4 OTP Input Boxes */}
+          <div className="flex justify-center gap-3 py-2">
             {otp.map((digit, index) => (
               <input
                 key={index}
@@ -548,7 +569,7 @@ export function PhoneOtpLoginCard({
                 value={digit}
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-11 h-12 text-center text-lg font-black rounded-xl border border-slate-200 bg-white/90 text-slate-900 focus:outline-none focus:ring-2 transition-all"
+                className="w-12 h-14 text-center text-xl font-black rounded-xl border border-slate-200 bg-white/90 text-slate-900 focus:outline-none focus:ring-2 transition-all shadow-sm"
                 style={{ "--tw-ring-color": primaryColor } as any}
               />
             ))}

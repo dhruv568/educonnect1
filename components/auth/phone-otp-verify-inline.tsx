@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ShieldCheck, Phone, CheckCircle2, RefreshCw, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
-import { extractOtpDigits } from "@/lib/auth/otp-utils";
+import { extractOtpDigits, extractPhoneOtpDigits } from "@/lib/auth/otp-utils";
 
 interface PhoneOtpVerifyInlineProps {
   phone: string;
@@ -28,7 +28,14 @@ function sanitizeInlineErrorMessage(rawMessage: string | undefined): string {
     return "SMS verification service is temporarily unavailable. Please try again in a few moments.";
   }
   if (lower.includes("invalid captcha") || lower.includes("captcha")) {
-    return "Security verification required. Please try again.";
+    return "Security verification required. Please complete the captcha verification to proceed.";
+  }
+  if (
+    lower.includes("invalid otp") ||
+    lower.includes("incorrect otp") ||
+    lower.includes("otp not match")
+  ) {
+    return "Invalid or expired verification code. Please check the 4-digit code and try again.";
   }
   if (lower.includes("network") || lower.includes("failed to fetch")) {
     return "Network connection issue. Please check your internet connection.";
@@ -48,13 +55,16 @@ export function PhoneOtpVerifyInline({
 
   const [isOpen, setIsOpen] = useState(false);
   const [reqId, setReqId] = useState<string>("");
-  const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
+  const [otp, setOtp] = useState<string[]>(Array(4).fill(""));
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const captchaContainerId = useRef(
+    `msg91-captcha-inline-${Math.random().toString(36).substring(2, 8)}`
+  ).current;
 
   const isEducator = roleContext === "teacher";
   const primaryColor = isEducator ? "#0F766E" : "#2563EB";
@@ -66,7 +76,7 @@ export function PhoneOtpVerifyInline({
       prevPhoneRef.current = phone;
       setIsVerified(false);
       setIsOpen(false);
-      setOtp(Array(6).fill(""));
+      setOtp(Array(4).fill(""));
       setErrorMsg(null);
       if (onStatusChange) {
         onStatusChange(false);
@@ -107,6 +117,7 @@ export function PhoneOtpVerifyInline({
               const initConfig: Record<string, any> = {
                 widgetId: wid,
                 exposeMethods: true,
+                captchaRenderId: captchaContainerId,
                 success: (data: any) => {
                   console.log("[MSG91 Web SDK] Verified inline:", data);
                 },
@@ -190,18 +201,25 @@ export function PhoneOtpVerifyInline({
                 setReqId(returnedReqId);
                 setIsOpen(true);
                 setCooldown(60);
-                showToast("Verification Code Sent! 📱", "Enter the 6-digit code received on your mobile.", "info");
+                showToast("Verification Code Sent! 📱", "Enter the 4-digit code received on your mobile.", "info");
                 setTimeout(() => inputRefs.current[0]?.focus(), 150);
                 dispatched = true;
                 resolve();
               },
               (err: any) => {
-                console.warn("[MSG91 Web SDK inline] sendOtp failed, attempting server fallback:", err);
-                reject(err);
+                console.warn("[MSG91 Web SDK inline] sendOtp notice:", err);
+                if (err && typeof err === "object" && (err.pending || err.siteKeyError)) {
+                  reject(new Error("Security verification required. Please complete the captcha verification to receive your OTP."));
+                } else {
+                  reject(err);
+                }
               }
             );
           });
-        } catch {
+        } catch (sdkErr: any) {
+          if (sdkErr?.message?.includes("Security verification required")) {
+            throw sdkErr;
+          }
           dispatched = false;
         }
       }
@@ -226,7 +244,7 @@ export function PhoneOtpVerifyInline({
         setReqId(data.data?.reqId || "");
         setIsOpen(true);
         setCooldown(60);
-        showToast("Verification Code Sent! 📱", "Enter the 6-digit code received on your mobile.", "info");
+        showToast("Verification Code Sent! 📱", "Enter the 4-digit code received on your mobile.", "info");
 
         setTimeout(() => inputRefs.current[0]?.focus(), 150);
       }
@@ -240,16 +258,16 @@ export function PhoneOtpVerifyInline({
   };
 
   const handleOtpChange = (index: number, val: string) => {
-    const digits = extractOtpDigits(val);
+    const digits = extractPhoneOtpDigits(val);
     setErrorMsg(null);
 
-    if (digits.length === 6) {
+    if (digits.length === 4) {
       const arr = digits.split("");
       setOtp(arr);
       arr.forEach((d, i) => {
         if (inputRefs.current[i]) inputRefs.current[i]!.value = d;
       });
-      inputRefs.current[5]?.focus();
+      inputRefs.current[3]?.focus();
       return;
     }
 
@@ -258,7 +276,7 @@ export function PhoneOtpVerifyInline({
     newOtp[index] = single;
     setOtp(newOtp);
 
-    if (single && index < 5) {
+    if (single && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -269,41 +287,77 @@ export function PhoneOtpVerifyInline({
     }
   };
 
+  const submitServerVerify = async (payload: { accessToken?: string; otp: string; reqId?: string }) => {
+    const res = await fetch("/api/auth/phone/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: cleanPhone,
+        email,
+        ...payload,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Verification failed. Invalid code.");
+    }
+
+    setIsVerified(true);
+    setIsOpen(false);
+    showToast("Phone Verified! ✓", "Your phone number has been verified via MSG91.", "success");
+    if (onVerified) {
+      onVerified(data.data?.phone || cleanPhone);
+    }
+    if (onStatusChange) {
+      onStatusChange(true);
+    }
+  };
+
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     const entered = otp.join("");
-    if (entered.length !== 6) {
-      setErrorMsg("Please enter all 6 digits.");
+    if (entered.length !== 4) {
+      setErrorMsg("Please enter all 4 digits.");
       return;
     }
 
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await fetch("/api/auth/phone/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone: cleanPhone,
-          otp: entered,
-          reqId,
-          email,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Verification failed. Invalid code.");
-      }
-
-      setIsVerified(true);
-      setIsOpen(false);
-      showToast("Phone Verified! ✓", "Your phone number has been verified via MSG91.", "success");
-      if (onVerified) {
-        onVerified(data.data?.phone || cleanPhone);
-      }
-      if (onStatusChange) {
-        onStatusChange(true);
+      if (typeof window !== "undefined" && typeof (window as any).verifyOtp === "function") {
+        await new Promise<void>((resolve, reject) => {
+          (window as any).verifyOtp(
+            entered,
+            async (data: any) => {
+              try {
+                const token =
+                  typeof data === "string" && data.length > 20
+                    ? data
+                    : data?.["access-token"] ||
+                      data?.accessToken ||
+                      data?.token ||
+                      (typeof data?.message === "string" && data.message.length > 20 ? data.message : undefined);
+                await submitServerVerify({ accessToken: token, otp: entered, reqId });
+                resolve();
+              } catch (subErr) {
+                reject(subErr);
+              }
+            },
+            async (err: any) => {
+              try {
+                await submitServerVerify({ otp: entered, reqId });
+                resolve();
+              } catch (fallbackErr: any) {
+                const errMsg = typeof err === "string" ? err : err?.message || fallbackErr?.message || "Invalid OTP entered.";
+                reject(new Error(errMsg));
+              }
+            },
+            reqId
+          );
+        });
+      } else {
+        await submitServerVerify({ otp: entered, reqId });
       }
     } catch (err: any) {
       const safeMsg = sanitizeInlineErrorMessage(err.message);
@@ -354,6 +408,9 @@ export function PhoneOtpVerifyInline({
             </button>
           </div>
 
+          {/* MSG91 inline CAPTCHA container */}
+          <div id={captchaContainerId} className="flex justify-center my-1.5" />
+
           {errorMsg && (
             <div className="text-[11px] text-red-600 font-semibold flex items-center gap-1">
               <AlertCircle className="h-3.5 w-3.5 shrink-0" />
@@ -361,7 +418,7 @@ export function PhoneOtpVerifyInline({
             </div>
           )}
 
-          <div className="flex justify-center gap-1.5">
+          <div className="flex justify-center gap-2">
             {otp.map((digit, i) => (
               <input
                 key={i}
@@ -374,7 +431,7 @@ export function PhoneOtpVerifyInline({
                 value={digit}
                 onChange={(e) => handleOtpChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
-                className="w-8 h-9 text-center text-sm font-black rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2"
+                className="w-10 h-11 text-center text-base font-black rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2"
                 style={{ "--tw-ring-color": primaryColor } as any}
               />
             ))}
@@ -394,8 +451,8 @@ export function PhoneOtpVerifyInline({
             <button
               type="button"
               onClick={handleVerify}
-              disabled={loading || otp.join("").length !== 6}
-              className="px-3 py-1.5 rounded-xl text-white text-xs font-bold disabled:opacity-50 transition-all cursor-pointer shadow-sm"
+              disabled={loading || otp.join("").length !== 4}
+              className="px-3.5 py-1.5 rounded-xl text-white text-xs font-bold disabled:opacity-50 transition-all cursor-pointer shadow-sm"
               style={{ backgroundColor: primaryColor }}
             >
               {loading ? "Verifying..." : "Confirm OTP"}

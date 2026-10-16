@@ -70,7 +70,7 @@ export type SendPhoneOTPInput = z.infer<typeof SendPhoneOTPSchema>;
 
 export const PhoneLoginSchema = z.object({
   phone: z.string().min(10, "Please enter a valid phone number with at least 10 digits"),
-  otp: z.string().optional(),
+  otp: z.string().length(4, "OTP must be exactly 4 digits").regex(/^\d+$/, "OTP must contain only numbers").optional(),
   reqId: z.string().optional(),
   accessToken: z.string().optional(),
   returnTo: z.string().optional(),
@@ -83,7 +83,7 @@ export type PhoneLoginInput = z.infer<typeof PhoneLoginSchema>;
 export const VerifyPhoneOTPSchema = z.object({
   phone: z.string().min(10, "Please enter a valid phone number with at least 10 digits"),
   email: z.string().email("Invalid email").optional(),
-  otp: z.string().optional(),
+  otp: z.string().length(4, "OTP must be exactly 4 digits").regex(/^\d+$/, "OTP must contain only numbers").optional(),
   reqId: z.string().optional(),
   accessToken: z.string().optional(),
 });

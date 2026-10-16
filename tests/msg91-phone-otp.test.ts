@@ -5,12 +5,13 @@ import assert from "node:assert";
 import { Msg91Client } from "../lib/auth/msg91";
 
 import { PhoneAuthService, mockPhoneUsersStore } from "../services/phone-auth-service";
-import { RegisterSchema, LoginSchema, VerifyOTPSchema, SendPhoneOTPSchema, PhoneLoginSchema } from "../schemas/auth-schemas";
+import { RegisterSchema, LoginSchema, VerifyOTPSchema, SendPhoneOTPSchema, PhoneLoginSchema, VerifyPhoneOTPSchema } from "../schemas/auth-schemas";
 import { encodeSession, decodeSession } from "../lib/auth/session-token";
 import { hashPassword, verifyPassword } from "../lib/auth/password";
 import { generateOTP, hashToken, verifyTokenHash, maskEmail } from "../lib/auth/tokens";
 import { isEducatorRole, isLearnerRole } from "../lib/auth/roles";
 import { generateCaptchaChallenge, verifyCaptchaSolution } from "../lib/auth/captcha";
+import { extractOtpDigits, extractPhoneOtpDigits } from "../lib/auth/otp-utils";
 
 async function runMsg91PhoneOtpTests() {
   console.log("\n================================================================================");
@@ -98,21 +99,34 @@ async function runMsg91PhoneOtpTests() {
   assert.ok(sendRes.reqId, "Must return a request ID");
   console.log(`  ✅ [PASS] 3.1: Msg91Client.sendOtp dispatched successfully (reqId: ${sendRes.reqId})`);
 
-  // 3.2 Verify OTP with valid code
-  const verifyRes = await Msg91Client.verifyOtp(sendRes.reqId!, "123456");
+  // 3.2 Verify OTP with valid 4-digit code
+  const verifyRes = await Msg91Client.verifyOtp(sendRes.reqId!, "1234");
   assert.strictEqual(verifyRes.success, true);
   assert.ok(verifyRes.accessToken, "Must return an access-token on successful verification");
-  console.log(`  ✅ [PASS] 3.2: Msg91Client.verifyOtp validated and issued accessToken`);
+  console.log(`  ✅ [PASS] 3.2: Msg91Client.verifyOtp validated 4-digit code and issued accessToken`);
 
   // 3.3 Verify Access Token on server
   const tokenRes = await Msg91Client.verifyAccessToken(verifyRes.accessToken!);
   assert.strictEqual(tokenRes.success, true);
   console.log("  ✅ [PASS] 3.3: Msg91Client.verifyAccessToken securely verified token on server");
 
-  // 3.4 Reject invalid OTP format
-  const badOtpRes = await Msg91Client.verifyOtp(sendRes.reqId!, "abc");
+  // 3.4 Strict 4-digit OTP enforcement (reject 3, 5, 6 digits & non-digits)
+  const shortOtp = await Msg91Client.verifyOtp(sendRes.reqId!, "123");
+  assert.strictEqual(shortOtp.success, false);
+  assert.strictEqual(shortOtp.error, "OTP must be exactly 4 digits.");
+
+  const longOtp = await Msg91Client.verifyOtp(sendRes.reqId!, "12345");
+  assert.strictEqual(longOtp.success, false);
+  assert.strictEqual(longOtp.error, "OTP must be exactly 4 digits.");
+
+  const sixDigitOtp = await Msg91Client.verifyOtp(sendRes.reqId!, "123456");
+  assert.strictEqual(sixDigitOtp.success, false);
+  assert.strictEqual(sixDigitOtp.error, "OTP must be exactly 4 digits.");
+
+  const badOtpRes = await Msg91Client.verifyOtp(sendRes.reqId!, "abcd");
   assert.strictEqual(badOtpRes.success, false);
-  console.log("  ✅ [PASS] 3.4: Invalid OTP format rejected");
+  assert.strictEqual(badOtpRes.error, "OTP must be exactly 4 digits.");
+  console.log("  ✅ [PASS] 3.4: Strict 4-digit enforcement rejects 3, 5, 6 digits, and non-numeric OTPs");
 
   // ---------------------------------------------------------------------------
   // GROUP 4: Rate Limiting & Cooldown Protection
@@ -155,7 +169,7 @@ async function runMsg91PhoneOtpTests() {
   try {
     await PhoneAuthService.verifyPhoneOtpForLogin({
       phone: unknownPhone,
-      otp: "123456",
+      otp: "1234",
       reqId: "sim_msg91_test_unknown",
     });
     assert.fail("Should have rejected unknown phone verification without creating account");
@@ -238,7 +252,7 @@ async function runMsg91PhoneOtpTests() {
   // 8.1 Student login with phone OTP
   const studentLoginRes = await PhoneAuthService.verifyPhoneOtpForLogin({
     phone: "9876543210",
-    otp: "123456",
+    otp: "1234",
     reqId: "sim_msg91_test_student",
     roleContext: "STUDENT",
   });
@@ -252,7 +266,7 @@ async function runMsg91PhoneOtpTests() {
   // 8.2 Educator login with phone OTP
   const educatorLoginRes = await PhoneAuthService.verifyPhoneOtpForLogin({
     phone: "9888777666",
-    otp: "123456",
+    otp: "1234",
     reqId: "sim_msg91_test_teacher",
     roleContext: "TEACHER",
   });
@@ -265,7 +279,7 @@ async function runMsg91PhoneOtpTests() {
   // 8.3 Safe custom redirect preservation
   const customReturnRes = await PhoneAuthService.verifyPhoneOtpForLogin({
     phone: "9876543210",
-    otp: "123456",
+    otp: "1234",
     reqId: "sim_msg91_test_student",
     returnTo: "/classroom/session-123",
   });
@@ -328,7 +342,7 @@ async function runMsg91PhoneOtpTests() {
   assert.strictEqual(emailMasked, "ed***@gmail.com");
   console.log("  ✅ [PASS] 9.5: Email OTP generation and email privacy masking unaffected");
 
-  // 9.6 Phone schemas validation
+  // 9.6 Phone schemas validation: strictly enforces 4 digits for phone OTP
   const phoneSendParsed = SendPhoneOTPSchema.parse({
     phone: "9876543210",
     purpose: "LOGIN",
@@ -339,12 +353,36 @@ async function runMsg91PhoneOtpTests() {
   assert.strictEqual(phoneSendParsed.checkOnly, true);
   assert.strictEqual(phoneSendParsed.captchaToken, "test_captcha_token");
 
+  // PhoneLoginSchema accepts 4-digit OTP
   const phoneLoginParsed = PhoneLoginSchema.parse({
     phone: "9876543210",
-    otp: "123456",
+    otp: "1234",
   });
   assert.strictEqual(phoneLoginParsed.phone, "9876543210");
-  console.log("  ✅ [PASS] 9.6: SendPhoneOTPSchema (with checkOnly & captchaToken) and PhoneLoginSchema verified");
+  assert.strictEqual(phoneLoginParsed.otp, "1234");
+
+  // PhoneLoginSchema rejects 3-digit and 6-digit OTPs
+  assert.strictEqual(PhoneLoginSchema.safeParse({ phone: "9876543210", otp: "123" }).success, false);
+  assert.strictEqual(PhoneLoginSchema.safeParse({ phone: "9876543210", otp: "123456" }).success, false);
+
+  // VerifyPhoneOTPSchema accepts 4-digit OTP and rejects 6-digit OTP
+  const verifyPhoneParsed = VerifyPhoneOTPSchema.parse({
+    phone: "9876543210",
+    otp: "1234",
+  });
+  assert.strictEqual(verifyPhoneParsed.otp, "1234");
+  assert.strictEqual(VerifyPhoneOTPSchema.safeParse({ phone: "9876543210", otp: "123456" }).success, false);
+
+  // Email VerifyOTPSchema strictly preserves 6 digits and rejects 4 digits
+  assert.strictEqual(VerifyOTPSchema.safeParse({ email: "learner@gmail.com", otp: "1234" }).success, false);
+  assert.strictEqual(VerifyOTPSchema.safeParse({ email: "learner@gmail.com", otp: "123456" }).success, true);
+
+  // 9.7 extractPhoneOtpDigits helper accuracy
+  assert.strictEqual(extractPhoneOtpDigits("12-34"), "1234");
+  assert.strictEqual(extractPhoneOtpDigits("12 34"), "1234");
+  assert.strictEqual(extractPhoneOtpDigits("Your code is 5678."), "5678");
+  assert.strictEqual(extractPhoneOtpDigits("987654"), "9876");
+  console.log("  ✅ [PASS] 9.6: PhoneLoginSchema & VerifyPhoneOTPSchema strictly require 4 digits, email OTP preserves 6 digits");
 
   // ---------------------------------------------------------------------------
   // GROUP 10: CAPTCHA Isolation, Pre-Flight Validation & Error Handling
@@ -476,7 +514,7 @@ async function runMsg91PhoneOtpTests() {
   const loginWithOtpResult = await PhoneAuthService.verifyPhoneOtpLogin({
     phone: "9876543210",
     reqId: "sim_msg91_mock_req",
-    otp: "123456",
+    otp: "1234",
     roleContext: "STUDENT",
   });
   assert.strictEqual(loginWithOtpResult.success, true);
@@ -487,15 +525,15 @@ async function runMsg91PhoneOtpTests() {
   // 11.5 Invalid OTP rejection test
   const invalidOtpRes = await Msg91Client.verifyOtp("sim_msg91_mock_req", "abc");
   assert.strictEqual(invalidOtpRes.success, false);
-  assert.strictEqual(invalidOtpRes.error, "Invalid OTP format.");
-  console.log("  ✅ [PASS] 11.5: Invalid OTP format explicitly rejected");
+  assert.strictEqual(invalidOtpRes.error, "OTP must be exactly 4 digits.");
+  console.log("  ✅ [PASS] 11.5: Non-4-digit OTP explicitly rejected with 'OTP must be exactly 4 digits.'");
 
   // 11.6 Unregistered phone rejection test on login
   try {
     await PhoneAuthService.verifyPhoneOtpForLogin({
       phone: "919999988888",
       reqId: "sim_msg91_mock_req",
-      otp: "123456",
+      otp: "1234",
       roleContext: "STUDENT",
     });
     assert.fail("Should have thrown error for unregistered phone");

@@ -22,7 +22,7 @@ import { encodeSession, decodeSession } from "../lib/auth/session-token";
 import { hashPassword, verifyPassword } from "../lib/auth/password";
 import { generateOTP, hashToken, verifyTokenHash } from "../lib/auth/tokens";
 import { isEducatorRole, isLearnerRole } from "../lib/auth/roles";
-import { extractOtpDigits } from "../lib/auth/otp-utils";
+import { extractOtpDigits, extractPhoneOtpDigits } from "../lib/auth/otp-utils";
 
 async function runPhoneVerificationUpdateTests() {
   console.log("\n================================================================================");
@@ -90,7 +90,7 @@ async function runPhoneVerificationUpdateTests() {
   assert.strictEqual(sendPhoneRes.success, true);
   assert.ok(sendPhoneRes.reqId);
 
-  const verifyPhoneRes = await Msg91Client.verifyOtp(sendPhoneRes.reqId!, "123456");
+  const verifyPhoneRes = await Msg91Client.verifyOtp(sendPhoneRes.reqId!, "1234");
   assert.strictEqual(verifyPhoneRes.success, true);
 
   await PhoneAuthService.markPhoneVerified(undefined, testPhone, testEmail);
@@ -167,11 +167,19 @@ async function runPhoneVerificationUpdateTests() {
   assert.ok(c2.error?.includes("cooldown") || c2.error?.includes("seconds"));
   console.log("  ✅ [PASS] 3.2: 60-second cooldown enforced on repeated OTP dispatch");
 
-  // 3.3 Invalid OTP digits rejected
+  // 3.3 4-digit phone OTP extraction vs 6-digit email OTP extraction
   const invalidDigits = extractOtpDigits("12a");
   assert.strictEqual(invalidDigits, "12");
   assert.strictEqual(invalidDigits.length < 6, true);
-  console.log("  ✅ [PASS] 3.3: Invalid OTP digits strictly rejected");
+
+  const phoneDigits = extractPhoneOtpDigits("12-34");
+  assert.strictEqual(phoneDigits, "1234");
+  assert.strictEqual(phoneDigits.length, 4);
+
+  const emailDigits = extractOtpDigits("123-456", 6);
+  assert.strictEqual(emailDigits, "123456");
+  assert.strictEqual(emailDigits.length, 6);
+  console.log("  ✅ [PASS] 3.3: 4-digit phone OTP and 6-digit email OTP parsing strictly separated");
 
   // ---------------------------------------------------------------------------
   // GROUP 4: Existing Account Dashboard Verification Reminders
@@ -203,7 +211,7 @@ async function runPhoneVerificationUpdateTests() {
   try {
     await PhoneAuthService.verifyPhoneOtpSignup({
       phone: "9876543210", // Owned by learner_101
-      otp: "123456",
+      otp: "1234",
       reqId: "sim_req_id",
       userId: "usr_educator_202", // Educator trying to take learner's phone
     });
