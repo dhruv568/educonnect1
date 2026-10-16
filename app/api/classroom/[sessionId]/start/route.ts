@@ -49,6 +49,10 @@ export async function POST(
       return apiError(`Cannot start class with status ${liveSession.status}.`, 400);
     }
 
+    if (new Date(liveSession.scheduledEndAt).getTime() <= Date.now()) {
+      return apiError("Cannot start a live class whose scheduled end time has passed.", 400);
+    }
+
     const now = new Date();
     const updated = await prisma.liveClassSession.update({
       where: { id: sessionId },

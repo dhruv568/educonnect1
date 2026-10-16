@@ -29,8 +29,9 @@ export async function GET(
             authorized: false,
             reason: accessCheck.reason,
             requiresBooking: Boolean(
-              accessCheck.reason?.includes("booking") ||
-              accessCheck.reason?.includes("book")
+              (accessCheck.reason?.includes("booking") ||
+              accessCheck.reason?.includes("book")) &&
+              !accessCheck.reason?.toLowerCase().includes("ended")
             ),
             sessionDetails: {
               id: liveSession.id,

@@ -80,7 +80,10 @@ export default function StudentDashboardPage() {
     fetch("/api/student/dashboard", { cache: "no-store", headers: { Pragma: "no-cache" } })
       .then((res) => {
         if (res.status === 401) {
-          window.location.replace("/student/login");
+          if (typeof window !== "undefined" && !window.navigator.onLine) {
+            return null;
+          }
+          window.location.replace("/student/login?expired=true&redirectTo=/student/dashboard");
           return null;
         }
         if (!res.ok) {

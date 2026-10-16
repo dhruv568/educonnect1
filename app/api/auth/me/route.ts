@@ -1,23 +1,40 @@
 import { NextRequest } from "next/server";
-import { getSession, applyLogoutCookies } from "@/lib/auth/session";
+import {
+  getSession,
+  applyLogoutCookies,
+  shouldRenewSession,
+  renewSession,
+  getSessionCookieOptions,
+  SESSION_COOKIE_NAME,
+} from "@/lib/auth/session";
 import { apiSuccess, apiUnauthorized } from "@/lib/api-response";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  const session = await getSession();
+  const session = await getSession(request);
   const rawHost =
     request.headers.get("x-forwarded-host") ||
     request.headers.get("x-original-host") ||
     request.headers.get("host") ||
     undefined;
 
+  const rawCookie =
+    request.cookies.get(SESSION_COOKIE_NAME)?.value ||
+    (request.headers.get("cookie")?.includes(SESSION_COOKIE_NAME) ? true : false);
+  const hasSessionCookie = Boolean(rawCookie);
+
   if (!session) {
     const res = apiUnauthorized("No active session.");
     res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
     res.headers.set("Pragma", "no-cache");
-    return applyLogoutCookies(res, rawHost);
+    // Only emit multi-domain cookie purge if the client actually provided an invalid or expired cookie
+    // Guests or anonymous callers without cookies must never have credentials purged across subdomains
+    if (hasSessionCookie) {
+      return applyLogoutCookies(res, rawHost);
+    }
+    return res;
   }
 
   try {
@@ -73,6 +90,16 @@ export async function GET(request: NextRequest) {
         navigation,
       },
     });
+
+    // Sliding Expiration: Automatically renew active sessions before expiry (within max lifetime)
+    if (shouldRenewSession(session)) {
+      const renewed = renewSession(session);
+      if (renewed) {
+        const cookieOptions = getSessionCookieOptions(rawHost);
+        response.cookies.set(SESSION_COOKIE_NAME, renewed, cookieOptions);
+      }
+    }
+
     response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
     response.headers.set("Pragma", "no-cache");
     return response;

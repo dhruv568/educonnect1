@@ -1,5 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { getLearnerClassroomUrl } from "@/lib/app-url";
+import {
+  isClassEnded,
+  isClassCancelled,
+  canJoinClass,
+  expireEndedLiveClasses,
+} from "@/lib/classroom/class-lifecycle";
 
 export interface CreateLiveClassInput {
   title: string;
@@ -90,12 +96,16 @@ export class LiveClassService {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
 
+    // Synchronize expired classes in the database
+    await expireEndedLiveClasses({ teacherId, now }).catch(() => {});
+
     const [total, upcoming, today, completed, cancelled] = await Promise.all([
       prisma.liveClassSlot.count({ where: { teacherId } }),
       prisma.liveClassSlot.count({
         where: {
           teacherId,
           startTime: { gte: now },
+          endTime: { gt: now },
           status: { in: ["SCHEDULED", "OPEN", "FULL"] },
         },
       }),
@@ -103,11 +113,18 @@ export class LiveClassService {
         where: {
           teacherId,
           startTime: { gte: startOfToday, lt: endOfToday },
-          status: { not: "CANCELLED" },
+          endTime: { gt: now },
+          status: { notIn: ["CANCELLED", "COMPLETED"] },
         },
       }),
       prisma.liveClassSlot.count({
-        where: { teacherId, status: "COMPLETED" },
+        where: {
+          teacherId,
+          OR: [
+            { status: "COMPLETED" },
+            { endTime: { lte: now }, status: { not: "CANCELLED" } },
+          ],
+        },
       }),
       prisma.liveClassSlot.count({
         where: { teacherId, status: "CANCELLED" },
@@ -128,14 +145,13 @@ export class LiveClassService {
    */
   static async getTeacherLiveClasses(userId: string, filterStatus?: string) {
     const teacherId = await this.getTeacherProfileId(userId);
+    const now = new Date();
 
-    const where: any = { teacherId };
-    if (filterStatus && filterStatus !== "ALL") {
-      where.status = filterStatus;
-    }
+    // Synchronize expired classes in the database
+    await expireEndedLiveClasses({ teacherId, now }).catch(() => {});
 
     const slots = await prisma.liveClassSlot.findMany({
-      where,
+      where: { teacherId },
       orderBy: { startTime: "asc" },
       include: {
         bookings: {
@@ -153,11 +169,24 @@ export class LiveClassService {
       },
     });
 
-    return slots.map((s) => ({
-      ...s,
-      studentCount: s.bookings.filter((b) => b.status !== "CANCELLED").length,
-      shareableUrl: getLearnerClassroomUrl(s.id),
-    }));
+    const mapped = slots.map((s) => {
+      const isEnded = isClassEnded(s, now);
+      const isCancelled = isClassCancelled(s);
+      const effectiveStatus = isCancelled ? "CANCELLED" : isEnded ? "COMPLETED" : s.status;
+
+      return {
+        ...s,
+        status: effectiveStatus,
+        studentCount: s.bookings.filter((b) => b.status !== "CANCELLED").length,
+        shareableUrl: getLearnerClassroomUrl(s.id),
+      };
+    });
+
+    if (filterStatus && filterStatus !== "ALL") {
+      return mapped.filter((s) => s.status === filterStatus);
+    }
+
+    return mapped;
   }
 
   /**
@@ -454,7 +483,18 @@ export class LiveClassService {
 
     if (!slot) throw new Error("Live class slot not found.");
 
+    if (isClassCancelled(slot)) {
+      throw new Error("Cannot enter or start a cancelled live class.");
+    }
+
+    if (isClassEnded(slot)) {
+      throw new Error("Cannot enter or start a live class that has already ended.");
+    }
+
     if (slot.session) {
+      if (isClassEnded(slot.session)) {
+        throw new Error("Cannot enter or start a classroom session that has already ended.");
+      }
       return slot.session;
     }
 
@@ -862,6 +902,9 @@ export class LiveClassService {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
+    // Synchronize expired classes in the database
+    await expireEndedLiveClasses({ now }).catch(() => {});
+
     const bookings = await prisma.booking.findMany({
       where: {
         studentId: studentUserId,
@@ -892,9 +935,11 @@ export class LiveClassService {
       const joinBeforeMinutes = slot.joinBeforeMinutes ?? 15;
       const joinWindowStart = new Date(startTime.getTime() - joinBeforeMinutes * 60 * 1000);
 
-      const isLiveNow = slot.status === "LIVE" || slot.session?.status === "LIVE" || slot.session?.status === "OPEN";
-      const isWithinWindow = now >= joinWindowStart && now <= endTime;
-      const canJoin = (isLiveNow || isWithinWindow) && slot.status !== "CANCELLED" && b.status !== "CANCELLED";
+      const isEnded = isClassEnded(slot, now);
+      const isCancelled = isClassCancelled(slot) || b.status === "CANCELLED";
+      const effectiveSlotStatus = isCancelled ? "CANCELLED" : isEnded ? "COMPLETED" : slot.status;
+      const canJoin = canJoinClass(slot, now) && !isCancelled;
+      const isLiveNow = !isEnded && !isCancelled && (slot.status === "LIVE" || slot.session?.status === "LIVE" || slot.session?.status === "OPEN") && now <= endTime;
 
       const teacherProfile = slot.teacher?.user?.profile;
       const teacherName = teacherProfile
@@ -921,7 +966,7 @@ export class LiveClassService {
         classType: slot.classType,
         price: slot.price,
         maxCapacity: slot.maxCapacity,
-        slotStatus: slot.status,
+        slotStatus: effectiveSlotStatus,
         startTime: slot.startTime.toISOString(),
         endTime: slot.endTime.toISOString(),
         durationMinutes: slot.durationMinutes,
@@ -942,21 +987,29 @@ export class LiveClassService {
 
     const formattedBookings = bookings.map(formatClass);
 
-    // Grouping
+    // Grouping: strictly exclude ended or completed classes from upcoming and today
     const upcoming = formattedBookings.filter((c) => {
       const end = new Date(c.endTime);
-      return end >= now && c.bookingStatus !== "CANCELLED" && c.slotStatus !== "CANCELLED" && c.slotStatus !== "COMPLETED";
+      return end > now && c.bookingStatus !== "CANCELLED" && c.slotStatus !== "CANCELLED" && c.slotStatus !== "COMPLETED";
     });
 
     const today = formattedBookings.filter((c) => {
       const start = new Date(c.startTime);
-      return start >= startOfToday && start <= endOfToday && c.bookingStatus !== "CANCELLED" && c.slotStatus !== "CANCELLED";
+      const end = new Date(c.endTime);
+      return (
+        start >= startOfToday &&
+        start <= endOfToday &&
+        end > now &&
+        c.bookingStatus !== "CANCELLED" &&
+        c.slotStatus !== "CANCELLED" &&
+        c.slotStatus !== "COMPLETED"
+      );
     });
 
     const completed = formattedBookings.filter((c) => {
       const end = new Date(c.endTime);
       return (
-        end < now ||
+        end <= now ||
         c.bookingStatus === "ATTENDED" ||
         c.slotStatus === "COMPLETED" ||
         c.bookingStatus === "CANCELLED" ||

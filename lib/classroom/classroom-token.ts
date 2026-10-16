@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { UserSession } from "@/types/auth";
 import { ClassroomTokenPayload } from "@/types/classroom";
 import { isLearnerRole, isEducatorRole } from "@/lib/auth/roles";
+import { isClassEnded, isClassCancelled, expireEndedLiveClasses } from "@/lib/classroom/class-lifecycle";
 import crypto from "crypto";
 
 const TOKEN_SECRET = process.env.CLASSROOM_TOKEN_SECRET || "educonnects_classroom_secret_key_2026";
@@ -71,6 +72,13 @@ export async function verifyRoomAccess(
     });
 
     if (slot && slot.status !== "CANCELLED") {
+      if (isClassEnded(slot)) {
+        return {
+          authorized: false,
+          reason: "This live class has already ended.",
+        };
+      }
+
       if (slot.teacher?.isSeededProfile) {
         return {
           authorized: false,
@@ -118,12 +126,13 @@ export async function verifyRoomAccess(
     return { authorized: false, reason: "Classroom session not found." };
   }
 
-  if (liveSession.status === "ENDED") {
-    return { authorized: false, reason: "This classroom session has already ended.", liveSession };
+  if (isClassCancelled(liveSession)) {
+    return { authorized: false, reason: "This classroom session has been cancelled.", liveSession };
   }
 
-  if (liveSession.status === "CANCELLED") {
-    return { authorized: false, reason: "This classroom session has been cancelled.", liveSession };
+  if (isClassEnded(liveSession)) {
+    expireEndedLiveClasses({ slotId: liveSession.liveClassSlotId }).catch(() => {});
+    return { authorized: false, reason: "This classroom session has already ended.", liveSession };
   }
 
   // 2. Check Teacher Ownership
@@ -131,6 +140,14 @@ export async function verifyRoomAccess(
     liveSession.teacher.userId === currentUserId ||
     liveSession.teacher.userId === session.id;
   if (isTeacher) {
+    if (isClassEnded(liveSession)) {
+      return {
+        authorized: false,
+        reason: "This classroom session has already ended.",
+        liveSession,
+      };
+    }
+
     if (liveSession.teacher?.isSeededProfile) {
       return {
         authorized: false,
@@ -234,16 +251,25 @@ export async function verifyRoomAccess(
       }
     }
 
-    // Check Join Window: allow join if class is already active (LIVE or OPEN) or within joinBeforeMinutes window
+    // Check Join Window: allow join if class is within joinBeforeMinutes window and has not ended
     const joinBeforeMinutes = liveSession.liveClassSlot?.joinBeforeMinutes ?? 15;
     const startTime = new Date(liveSession.scheduledStartAt || liveSession.liveClassSlot?.startTime).getTime();
+    const endTime = new Date(liveSession.scheduledEndAt || liveSession.liveClassSlot?.endTime).getTime();
     const joinWindowStart = startTime - joinBeforeMinutes * 60 * 1000;
     const now = Date.now();
 
+    if (now > endTime || isClassEnded(liveSession)) {
+      return {
+        authorized: false,
+        reason: "This classroom session has already ended.",
+        liveSession,
+      };
+    }
+
     const isClassLiveOrOpen =
-      liveSession.status === "LIVE" ||
+      (liveSession.status === "LIVE" ||
       liveSession.status === "OPEN" ||
-      liveSession.liveClassSlot?.status === "LIVE";
+      liveSession.liveClassSlot?.status === "LIVE") && now <= endTime;
 
     if (!isClassLiveOrOpen && now < joinWindowStart) {
       const minutesLeft = Math.ceil((joinWindowStart - now) / (60 * 1000));

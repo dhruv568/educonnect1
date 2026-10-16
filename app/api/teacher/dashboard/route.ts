@@ -11,6 +11,11 @@ export async function GET(req: NextRequest) {
     req.headers.get("host") ||
     undefined;
 
+  const rawCookie =
+    req.cookies.get("educonnects_session")?.value ||
+    (req.headers.get("cookie")?.includes("educonnects_session") ? true : false);
+  const hasSessionCookie = Boolean(rawCookie);
+
   try {
     const session = await requireRole(["EDUCATOR", "TEACHER"]);
     const dashboardData = await AnalyticsService.getTeacherDashboardData(session.userId);
@@ -19,7 +24,10 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     if (error.message?.startsWith("UNAUTHORIZED")) {
       const res = apiError(error.message, 401);
-      return applyLogoutCookies(res, rawHost);
+      if (hasSessionCookie) {
+        return applyLogoutCookies(res, rawHost);
+      }
+      return res;
     }
     if (error.message?.startsWith("UNVERIFIED") || error.message?.startsWith("FORBIDDEN")) {
       return apiError(error.message, 403);

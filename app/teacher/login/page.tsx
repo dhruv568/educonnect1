@@ -22,12 +22,14 @@ import {
   Video,
   ShieldCheck,
   IndianRupee,
+  AlertCircle,
 } from "lucide-react";
 
 export default function TeacherLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const router = useRouter();
   const { showToast } = useToast();
@@ -58,6 +60,9 @@ export default function TeacherLoginPage() {
 
     try {
       const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("expired") === "true" || searchParams.get("reason") === "expired") {
+        setSessionExpired(true);
+      }
       if (searchParams.get("restart") === "true") {
         document.cookie = "educonnects_pending_otp=; path=/; max-age=0;";
       }
@@ -197,6 +202,13 @@ export default function TeacherLoginPage() {
               glowColor="rgba(15, 118, 110, 0.15)"
               className="p-7 sm:p-8 border border-white/90 shadow-xl space-y-6 bg-white/95"
             >
+              {sessionExpired && (
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Your session has expired. Please sign in again to continue.</span>
+                </div>
+              )}
+
               <form onSubmit={handleLogin} className="space-y-4">
                 <Input
                   label="Educator Email Address"

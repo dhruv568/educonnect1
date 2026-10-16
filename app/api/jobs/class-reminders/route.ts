@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { EventService } from "@/services/event-service";
+import { expireEndedLiveClasses } from "@/lib/classroom/class-lifecycle";
 
 export async function GET(req: NextRequest) {
   return handleReminders(req);
@@ -23,6 +24,11 @@ async function handleReminders(req: NextRequest) {
     }
 
     const now = new Date();
+
+    // Expire any ended classes and finalize their rooms/attendance
+    await expireEndedLiveClasses({ now }).catch((err) => {
+      console.warn("[class-reminders] Background class expiration check error:", err);
+    });
     const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const in1Hour = new Date(now.getTime() + 60 * 60 * 1000);
     const in10Mins = new Date(now.getTime() + 10 * 60 * 1000);

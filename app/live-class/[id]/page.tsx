@@ -57,10 +57,17 @@ export default function LiveClassEntryPage() {
         setErrorReason(reason);
 
         // Check if student just needs to book or claim free seat
+        const isEnded = Boolean(
+          data.data?.sessionDetails?.status === "ENDED" ||
+          data.data?.sessionDetails?.status === "COMPLETED" ||
+          reason.toLowerCase().includes("ended")
+        );
         if (
-          reason.includes("booking") ||
-          reason.includes("book") ||
-          reason.includes("not have a confirmed booking")
+          !isEnded &&
+          (data.data?.requiresBooking ||
+            reason.includes("booking") ||
+            reason.includes("book") ||
+            reason.includes("not have a confirmed booking"))
         ) {
           setRequiresBooking(true);
         }

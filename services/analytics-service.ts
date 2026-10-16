@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { formatPaise, formatCurrency } from "@/lib/currency";
 import { isLearnerRole } from "@/lib/auth/roles";
+import {
+  isClassEnded,
+  isClassCancelled,
+  canJoinClass,
+  expireEndedLiveClasses,
+} from "@/lib/classroom/class-lifecycle";
 
 export class AnalyticsService {
   /**
@@ -122,13 +128,15 @@ export class AnalyticsService {
 
     // 2. Fetch upcoming live class bookings
     const now = new Date();
+    await expireEndedLiveClasses({ now }).catch(() => {});
+
     const bookings = await prisma.booking.findMany({
       where: {
         studentId: userId,
         status: { in: ["CONFIRMED", "ATTENDED"] },
         liveClassSlot: {
-          endTime: { gte: now },
-          status: { notIn: ["CANCELLED"] },
+          endTime: { gt: now },
+          status: { notIn: ["CANCELLED", "COMPLETED"] },
         },
       },
       include: {
@@ -143,39 +151,42 @@ export class AnalyticsService {
       take: 5,
     });
 
-    const upcomingClasses = bookings.map((b) => {
-      const slot = b.liveClassSlot;
-      const teacherName = slot.teacher.user.profile
-        ? `${slot.teacher.user.profile.firstName} ${slot.teacher.user.profile.lastName}`
-        : "Educator";
+    const upcomingClasses = bookings
+      .filter((b) => !isClassEnded(b.liveClassSlot, now) && !isClassCancelled(b.liveClassSlot))
+      .map((b) => {
+        const slot = b.liveClassSlot;
+        const teacherName = slot.teacher.user.profile
+          ? `${slot.teacher.user.profile.firstName} ${slot.teacher.user.profile.lastName}`
+          : "Educator";
 
-      const startTime = new Date(slot.startTime);
-      const endTime = new Date(slot.endTime);
-      const joinWindowStart = new Date(startTime.getTime() - 15 * 60 * 1000);
+        const canJoin = canJoinClass(slot, now);
 
-      const isLiveNow = slot.status === "LIVE" || slot.session?.status === "LIVE" || slot.session?.status === "OPEN";
-      const isWithinWindow = now >= joinWindowStart && now <= endTime;
-      const canJoin = (isLiveNow || isWithinWindow) && slot.status !== "CANCELLED";
-
-      return {
-        bookingId: b.id,
-        slotId: slot.id,
-        title: slot.title,
-        subject: slot.subject,
-        teacherName,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        status: slot.status,
-        canJoin,
-        sessionId: slot.session?.id || null,
-      };
-    });
+        return {
+          bookingId: b.id,
+          slotId: slot.id,
+          title: slot.title,
+          subject: slot.subject,
+          teacherName,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          status: slot.status,
+          canJoin,
+          sessionId: slot.session?.id || null,
+        };
+      });
 
     // 3. Aggregate Student Stats
     const enrolledCount = await prisma.enrollment.count({ where: { studentId: userId, status: "ACTIVE" } });
     const completedCoursesCount = await prisma.enrollment.count({ where: { studentId: userId, status: "COMPLETED" } });
     const upcomingClassesCount = await prisma.booking.count({
-      where: { studentId: userId, status: "CONFIRMED", liveClassSlot: { startTime: { gte: now } } },
+      where: {
+        studentId: userId,
+        status: "CONFIRMED",
+        liveClassSlot: {
+          endTime: { gt: now },
+          status: { notIn: ["CANCELLED", "COMPLETED"] },
+        },
+      },
     });
     const completedClassesCount = await prisma.classAttendance.count({
       where: { studentId: userId, status: { in: ["PRESENT", "PARTIAL"] } },
@@ -484,12 +495,24 @@ export class AnalyticsService {
     const todayEnd = new Date(now);
     todayEnd.setHours(23, 59, 59, 999);
 
+    // Synchronize expired classes in the database
+    await expireEndedLiveClasses({ teacherId, now }).catch(() => {});
+
     // 1. Overview metrics
     const todayClassesCount = await prisma.liveClassSlot.count({
-      where: { teacherId, startTime: { gte: todayStart, lte: todayEnd }, status: { notIn: ["CANCELLED"] } },
+      where: {
+        teacherId,
+        startTime: { gte: todayStart, lte: todayEnd },
+        endTime: { gt: now },
+        status: { notIn: ["CANCELLED", "COMPLETED"] },
+      },
     });
     const upcomingClassesCount = await prisma.liveClassSlot.count({
-      where: { teacherId, startTime: { gte: now }, status: { notIn: ["CANCELLED"] } },
+      where: {
+        teacherId,
+        endTime: { gt: now },
+        status: { notIn: ["CANCELLED", "COMPLETED"] },
+      },
     });
     const activeStudentsCount = await prisma.enrollment.count({
       where: { course: { teacherId }, status: { in: ["ACTIVE", "COMPLETED"] } },
@@ -521,62 +544,67 @@ export class AnalyticsService {
     const totalEarningsRupees = (earningsAgg._sum.amountPaise || 0) / 100;
     const monthlyEarningsRupees = (monthlyEarningsAgg._sum.amountPaise || 0) / 100;
 
-    // 3. Today's schedule
+    // 3. Today's active schedule (strictly ongoing or upcoming today)
     const todaySlots = await prisma.liveClassSlot.findMany({
-      where: { teacherId, startTime: { gte: todayStart, lte: todayEnd }, status: { notIn: ["CANCELLED"] } },
+      where: {
+        teacherId,
+        startTime: { gte: todayStart, lte: todayEnd },
+        endTime: { gt: now },
+        status: { notIn: ["CANCELLED", "COMPLETED"] },
+      },
       orderBy: { startTime: "asc" },
       include: { bookings: { where: { status: { notIn: ["CANCELLED"] } } }, session: true },
     });
 
-    const todaySchedule = todaySlots.map((slot) => {
-      const startTime = new Date(slot.startTime);
-      const endTime = new Date(slot.endTime);
-      const isLiveNow = slot.status === "LIVE" || slot.session?.status === "LIVE" || slot.session?.status === "OPEN";
-      const isWithinWindow = now >= new Date(startTime.getTime() - 15 * 60 * 1000) && now <= endTime;
-      const canEnter = (isLiveNow || isWithinWindow) && slot.status !== "CANCELLED";
+    const todaySchedule = todaySlots
+      .filter((slot) => !isClassEnded(slot, now) && !isClassCancelled(slot))
+      .map((slot) => {
+        const canEnter = canJoinClass(slot, now);
 
-      return {
-        slotId: slot.id,
-        title: slot.title,
-        subject: slot.subject,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        bookedCount: slot.bookings.length,
-        maxCapacity: slot.maxCapacity,
-        status: slot.status,
-        canEnter,
-        sessionId: slot.session?.id || null,
-      };
-    });
+        return {
+          slotId: slot.id,
+          title: slot.title,
+          subject: slot.subject,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          bookedCount: slot.bookings.length,
+          maxCapacity: slot.maxCapacity,
+          status: slot.status,
+          canEnter,
+          sessionId: slot.session?.id || null,
+        };
+      });
 
-    // 4. Next 5 Upcoming Classes
+    // 4. Next 5 Upcoming Classes (scheduled end time in future)
     const upcomingSlots = await prisma.liveClassSlot.findMany({
-      where: { teacherId, startTime: { gte: now }, status: { notIn: ["CANCELLED"] } },
+      where: {
+        teacherId,
+        endTime: { gt: now },
+        status: { notIn: ["CANCELLED", "COMPLETED"] },
+      },
       orderBy: { startTime: "asc" },
       take: 5,
       include: { bookings: { where: { status: { notIn: ["CANCELLED"] } } }, session: true },
     });
 
-    const upcomingClasses = upcomingSlots.map((slot) => {
-      const startTime = new Date(slot.startTime);
-      const endTime = new Date(slot.endTime);
-      const isLiveNow = slot.status === "LIVE" || slot.session?.status === "LIVE" || slot.session?.status === "OPEN";
-      const isWithinWindow = now >= new Date(startTime.getTime() - 15 * 60 * 1000) && now <= endTime;
-      const canEnter = (isLiveNow || isWithinWindow) && slot.status !== "CANCELLED";
+    const upcomingClasses = upcomingSlots
+      .filter((slot) => !isClassEnded(slot, now) && !isClassCancelled(slot))
+      .map((slot) => {
+        const canEnter = canJoinClass(slot, now);
 
-      return {
-        slotId: slot.id,
-        title: slot.title,
-        subject: slot.subject,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        bookedCount: slot.bookings.length,
-        maxCapacity: slot.maxCapacity,
-        status: slot.status,
-        canEnter,
-        sessionId: slot.session?.id || null,
-      };
-    });
+        return {
+          slotId: slot.id,
+          title: slot.title,
+          subject: slot.subject,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          bookedCount: slot.bookings.length,
+          maxCapacity: slot.maxCapacity,
+          status: slot.status,
+          canEnter,
+          sessionId: slot.session?.id || null,
+        };
+      });
 
     const unreadNotificationsCount = await prisma.notification.count({
       where: { userId, isRead: false },

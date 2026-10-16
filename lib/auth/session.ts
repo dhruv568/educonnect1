@@ -1,15 +1,33 @@
 import { cookies, headers } from "next/headers";
 import { UserSession } from "@/types/auth";
-import { encodeSession, decodeSession } from "./session-token";
+import {
+  encodeSession,
+  decodeSession,
+  shouldRenewSession,
+  renewSession,
+  SESSION_DURATION_SECONDS,
+} from "./session-token";
 
-export { encodeSession, decodeSession };
+export { encodeSession, decodeSession, shouldRenewSession, renewSession, SESSION_DURATION_SECONDS };
 
 export const SESSION_COOKIE_NAME = "educonnects_session";
 const SESSION_DURATION_DAYS = 7;
 
 export function getCookieDomain(host?: string): string | undefined {
-  if (host) {
-    const clean = host.split(",")[0].split(":")[0].toLowerCase().trim();
+  let targetHost = host;
+  if (!targetHost) {
+    const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN || process.env.APP_URL || "";
+    try {
+      if (mainDomain.startsWith("http")) {
+        targetHost = new URL(mainDomain).hostname;
+      } else {
+        targetHost = mainDomain;
+      }
+    } catch {}
+  }
+
+  if (targetHost) {
+    const clean = targetHost.split(",")[0].split(":")[0].toLowerCase().trim();
     if (clean.endsWith("educonnects.co.in")) {
       return ".educonnects.co.in";
     }
@@ -71,10 +89,31 @@ export async function setSessionCookie(session: UserSession, host?: string, resp
 }
 
 /**
- * Gets current user session from request cookies.
+ * Gets current user session from request cookies or Next.js cookie store.
+ * Supports optional NextRequest / Request context for direct, unbuffered inspection.
  */
-export async function getSession(): Promise<UserSession | null> {
+export async function getSession(req?: any): Promise<UserSession | null> {
   try {
+    // 1. Direct NextRequest cookie store
+    if (req && req.cookies && typeof req.cookies.get === "function") {
+      const cookie = req.cookies.get(SESSION_COOKIE_NAME);
+      if (cookie?.value) {
+        return decodeSession(cookie.value);
+      }
+    }
+
+    // 2. Standard Request headers inspection
+    if (req && req.headers && typeof req.headers.get === "function") {
+      const cookieHeader = req.headers.get("cookie");
+      if (cookieHeader) {
+        const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]+)`));
+        if (match && match[1]) {
+          return decodeSession(decodeURIComponent(match[1]));
+        }
+      }
+    }
+
+    // 3. Fallback to Next.js cookies() store
     const cookieStore = await cookies();
     const cookie = cookieStore.get(SESSION_COOKIE_NAME);
     if (!cookie?.value) return null;

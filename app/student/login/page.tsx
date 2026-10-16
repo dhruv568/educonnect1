@@ -22,12 +22,14 @@ import {
   Sparkles,
   Video,
   Award,
+  AlertCircle,
 } from "lucide-react";
 
 export default function StudentLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [classroomReturnTarget, setClassroomReturnTarget] = useState<string | null>(null);
 
   const router = useRouter();
@@ -36,6 +38,9 @@ export default function StudentLoginPage() {
   // Authentication & Back-Button (bfcache) Protection
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("expired") === "true" || searchParams.get("reason") === "expired") {
+      setSessionExpired(true);
+    }
     const returnParam = searchParams.get("returnTo") || searchParams.get("redirectTo");
     if (returnParam && isSafeRedirectPath(returnParam)) {
       setClassroomReturnTarget(sanitizeRedirectUrl(returnParam));
@@ -207,6 +212,13 @@ export default function StudentLoginPage() {
               glowColor="rgba(37, 99, 235, 0.15)"
               className="p-7 sm:p-8 border border-white/90 shadow-xl space-y-6"
             >
+              {sessionExpired && (
+                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2.5 shadow-2xs">
+                  <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+                  <span>Your session has expired. Please sign in again to continue.</span>
+                </div>
+              )}
+
               {classroomReturnTarget && (
                 <div className="p-3.5 rounded-2xl bg-blue-50/90 border border-blue-200 text-blue-900 text-xs flex items-center gap-2.5 shadow-2xs">
                   <Video className="h-4 w-4 text-blue-600 shrink-0" />

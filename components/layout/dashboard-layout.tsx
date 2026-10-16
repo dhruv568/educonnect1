@@ -115,14 +115,19 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
 
         if (!res.ok) {
           if (res.status === 401) {
+            if (typeof window !== "undefined" && !window.navigator.onLine) {
+              return;
+            }
             const isEduSubdomain = typeof window !== "undefined" && (window.location.hostname.startsWith("educator") || window.location.hostname.startsWith("teacher"));
             const isStudSubdomain = typeof window !== "undefined" && (window.location.hostname.startsWith("learner") || window.location.hostname.startsWith("student"));
+            const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+            const redirectParam = currentPath ? `&redirectTo=${encodeURIComponent(currentPath)}` : "";
             const loginTarget =
               isEducatorRole(role)
-                ? (isEduSubdomain ? "/login" : "/teacher/login")
+                ? (isEduSubdomain ? `/login?expired=true${redirectParam}` : `/teacher/login?expired=true${redirectParam}`)
                 : isAdminRole(role)
-                ? "/admin/login"
-                : (isStudSubdomain ? "/login" : "/student/login");
+                ? `/admin/login?expired=true${redirectParam}`
+                : (isStudSubdomain ? `/login?expired=true${redirectParam}` : `/student/login?expired=true${redirectParam}`);
             window.location.replace(loginTarget);
           }
           return;

@@ -594,9 +594,10 @@ export default function TeacherLiveClassesPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {slots.map((slot) => {
-                const isLive = slot.status === "LIVE";
-                const isCompleted = slot.status === "COMPLETED";
                 const isCancelled = slot.status === "CANCELLED";
+                const isCompleted = !isCancelled && (slot.status === "COMPLETED" || new Date(slot.endTime).getTime() <= Date.now());
+                const isLive = !isCancelled && !isCompleted && (slot.status === "LIVE" || (new Date(slot.startTime).getTime() - 15 * 60 * 1000 <= Date.now() && new Date(slot.endTime).getTime() > Date.now()));
+                const displayStatus = isCancelled ? "CANCELLED" : isCompleted ? "COMPLETED" : isLive ? "LIVE" : slot.status;
 
                 return (
                   <Card
@@ -622,7 +623,7 @@ export default function TeacherLiveClassesPage() {
                               : "bg-teal-50 text-[#0F766E] border border-teal-200"
                           }`}
                         >
-                          ● {slot.status}
+                          ● {displayStatus}
                         </span>
                       </div>
 
@@ -821,7 +822,11 @@ export default function TeacherLiveClassesPage() {
                       {daySlots
                         .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
                         .map((slot) => {
-                          const isLive = slot.status === "LIVE";
+                          const isCancelled = slot.status === "CANCELLED";
+                          const isCompleted = !isCancelled && (slot.status === "COMPLETED" || new Date(slot.endTime).getTime() <= Date.now());
+                          const isLive = !isCancelled && !isCompleted && (slot.status === "LIVE" || (new Date(slot.startTime).getTime() - 15 * 60 * 1000 <= Date.now() && new Date(slot.endTime).getTime() > Date.now()));
+                          const displayStatus = isCancelled ? "CANCELLED" : isCompleted ? "COMPLETED" : isLive ? "LIVE" : slot.status;
+
                           return (
                             <div
                               key={slot.id}
@@ -836,10 +841,16 @@ export default function TeacherLiveClassesPage() {
                                   </span>
                                   <span
                                     className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                                      isLive ? "bg-rose-500 text-white animate-pulse" : "bg-slate-100 text-slate-700"
+                                      isLive
+                                        ? "bg-rose-500 text-white animate-pulse"
+                                        : isCompleted
+                                        ? "bg-slate-100 text-slate-700"
+                                        : isCancelled
+                                        ? "bg-rose-100 text-rose-700"
+                                        : "bg-teal-50 text-[#0F766E] border border-teal-200"
                                     }`}
                                   >
-                                    ● {slot.status}
+                                    ● {displayStatus}
                                   </span>
                                 </div>
                                 <h4 className="text-sm font-extrabold text-slate-900">{slot.title}</h4>
@@ -878,24 +889,26 @@ export default function TeacherLiveClassesPage() {
                                     View Details
                                   </Button>
                                 </Link>
-                                {verificationStatus === "VERIFIED" ? (
-                                  <Button
-                                    variant="teacher"
-                                    size="sm"
-                                    onClick={() => handleStartClassroom(slot.id)}
-                                    leftIcon={<Play className="h-3.5 w-3.5" />}
-                                  >
-                                    Enter Classroom
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled
-                                    className="bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed font-bold"
-                                  >
-                                    <Lock className="h-3.5 w-3.5 mr-1 text-slate-400" /> Locked
-                                  </Button>
+                                {!isCompleted && !isCancelled && (
+                                  verificationStatus === "VERIFIED" ? (
+                                    <Button
+                                      variant="teacher"
+                                      size="sm"
+                                      onClick={() => handleStartClassroom(slot.id)}
+                                      leftIcon={<Play className="h-3.5 w-3.5" />}
+                                    >
+                                      Enter Classroom
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      disabled
+                                      className="bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed font-bold"
+                                    >
+                                      <Lock className="h-3.5 w-3.5 mr-1 text-slate-400" /> Locked
+                                    </Button>
+                                  )
                                 )}
                               </div>
                             </div>

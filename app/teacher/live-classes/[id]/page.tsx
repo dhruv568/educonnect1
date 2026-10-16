@@ -153,8 +153,18 @@ export default function TeacherLiveClassDetailsPage() {
                 <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md bg-teal-100 text-[#0F766E]">
                   {slot?.subject || "Subject"}
                 </span>
-                <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-full bg-emerald-100 text-emerald-800">
-                  ● {slot?.status || "SCHEDULED"}
+                <span
+                  className={`px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-full ${
+                    slot?.status === "CANCELLED"
+                      ? "bg-rose-100 text-rose-700"
+                      : slot?.status === "COMPLETED" || (slot?.endTime && new Date(slot.endTime).getTime() <= Date.now())
+                      ? "bg-slate-100 text-slate-600"
+                      : slot?.status === "LIVE"
+                      ? "bg-rose-500 text-white animate-pulse"
+                      : "bg-emerald-100 text-emerald-800"
+                  }`}
+                >
+                  ● {slot?.status === "CANCELLED" ? "CANCELLED" : slot?.status === "COMPLETED" || (slot?.endTime && new Date(slot.endTime).getTime() <= Date.now()) ? "COMPLETED" : slot?.status || "SCHEDULED"}
                 </span>
               </div>
               <h1 className="text-2xl font-black text-slate-900 mt-1">{slot?.title || "Loading Class..."}</h1>
@@ -179,7 +189,25 @@ export default function TeacherLiveClassDetailsPage() {
               )}
             </Button>
 
-            {verificationStatus === "VERIFIED" ? (
+            {slot?.status === "COMPLETED" || (slot?.endTime && new Date(slot.endTime).getTime() <= Date.now()) ? (
+              <Button
+                variant="outline"
+                size="md"
+                disabled
+                className="bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed font-bold"
+              >
+                <CheckCircle2 className="h-4 w-4 mr-1.5 text-emerald-600" /> Class Ended
+              </Button>
+            ) : slot?.status === "CANCELLED" ? (
+              <Button
+                variant="outline"
+                size="md"
+                disabled
+                className="bg-rose-50 text-rose-500 border-rose-200 cursor-not-allowed font-bold"
+              >
+                <XCircle className="h-4 w-4 mr-1.5 text-rose-500" /> Class Cancelled
+              </Button>
+            ) : verificationStatus === "VERIFIED" ? (
               <Button
                 onClick={handleLaunchClassroom}
                 variant="teacher"

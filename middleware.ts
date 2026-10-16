@@ -344,22 +344,30 @@ export function middleware(request: NextRequest) {
       const loginUrl = new URL("/student/login", targetBase);
       loginUrl.searchParams.set("returnTo", fullTarget);
       loginUrl.searchParams.set("redirectTo", fullTarget);
+      loginUrl.searchParams.set("expired", "true");
       redirectRes = NextResponse.redirect(loginUrl);
     } else if (pathname.startsWith("/staff")) {
-      redirectRes = NextResponse.redirect(new URL("/staff/login", request.url));
+      const loginUrl = new URL("/staff/login", request.url);
+      loginUrl.searchParams.set("expired", "true");
+      redirectRes = NextResponse.redirect(loginUrl);
     } else if (pathname.startsWith("/admin")) {
-      redirectRes = NextResponse.redirect(new URL("/admin/login", request.url));
+      const loginUrl = new URL("/admin/login", request.url);
+      loginUrl.searchParams.set("expired", "true");
+      redirectRes = NextResponse.redirect(loginUrl);
     } else if (pathname.startsWith("/student")) {
       const loginUrl = new URL("/student/login", request.url);
       loginUrl.searchParams.set("redirectTo", pathname);
+      loginUrl.searchParams.set("expired", "true");
       redirectRes = NextResponse.redirect(loginUrl);
     } else if (pathname.startsWith("/teacher")) {
       const loginUrl = new URL("/teacher/login", request.url);
       loginUrl.searchParams.set("redirectTo", pathname);
+      loginUrl.searchParams.set("expired", "true");
       redirectRes = NextResponse.redirect(loginUrl);
     } else {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirectTo", pathname);
+      loginUrl.searchParams.set("expired", "true");
       redirectRes = NextResponse.redirect(loginUrl);
     }
 

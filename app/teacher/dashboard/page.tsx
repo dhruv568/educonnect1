@@ -62,8 +62,11 @@ export default function TeacherDashboardPage() {
     fetch("/api/teacher/dashboard", { cache: "no-store", headers: { Pragma: "no-cache" } })
       .then((res) => {
         if (res.status === 401) {
+          if (typeof window !== "undefined" && !window.navigator.onLine) {
+            return null;
+          }
           const isSubdomain = typeof window !== "undefined" && (window.location.hostname.startsWith("educator") || window.location.hostname.startsWith("teacher"));
-          window.location.replace(isSubdomain ? "/login" : "/teacher/login");
+          window.location.replace(isSubdomain ? "/login?expired=true&redirectTo=/dashboard" : "/teacher/login?expired=true&redirectTo=/teacher/dashboard");
           return null;
         }
         return res.json();
@@ -241,9 +244,12 @@ export default function TeacherDashboardPage() {
 
                     <div className="w-full sm:w-auto shrink-0">
                       {data.verificationStatus === "VERIFIED" ? (
-                        <Link href={`/classroom/${slot.slotId}`} className="w-full sm:w-auto block">
-                          <Button variant="primary" size="sm" className="w-full sm:w-auto">
-                            Enter Classroom
+                        <Link
+                          href={slot.canEnter ? `/classroom/${slot.slotId}` : `/teacher/live-classes/${slot.slotId}`}
+                          className="w-full sm:w-auto block"
+                        >
+                          <Button variant={slot.canEnter ? "primary" : "outline"} size="sm" className="w-full sm:w-auto">
+                            {slot.canEnter ? "Enter Classroom" : "View Slot"}
                           </Button>
                         </Link>
                       ) : (
@@ -317,7 +323,10 @@ export default function TeacherDashboardPage() {
 
                     <div className="w-full sm:w-auto shrink-0">
                       {data.verificationStatus === "VERIFIED" ? (
-                        <Link href={`/classroom/${slot.slotId}`} className="w-full sm:w-auto block">
+                        <Link
+                          href={slot.canEnter ? `/classroom/${slot.slotId}` : `/teacher/live-classes/${slot.slotId}`}
+                          className="w-full sm:w-auto block"
+                        >
                           <Button variant={slot.canEnter ? "primary" : "outline"} size="sm" className="w-full sm:w-auto">
                             {slot.canEnter ? "Enter Classroom" : "View Slot"}
                           </Button>

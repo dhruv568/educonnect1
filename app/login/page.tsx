@@ -13,12 +13,13 @@ import { useToast } from "@/components/ui/toast";
 import { isEducatorRole, isLearnerRole } from "@/lib/auth/roles";
 import { isSafeRedirectPath, sanitizeRedirectUrl } from "@/lib/auth/redirect-validator";
 import { Logo } from "@/components/brand/logo";
-import { LogIn, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
+import { LogIn, Mail, Lock, ArrowRight, Sparkles, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const router = useRouter();
   const { showToast } = useToast();
@@ -94,6 +95,9 @@ export default function LoginPage() {
 
     try {
       const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("expired") === "true" || searchParams.get("reason") === "expired") {
+        setSessionExpired(true);
+      }
       if (searchParams.get("restart") === "true") {
         document.cookie = "educonnects_pending_otp=; path=/; max-age=0;";
         document.cookie = "admin_pending_otp=; path=/; max-age=0;";
@@ -213,6 +217,13 @@ export default function LoginPage() {
             </div>
 
             <GlassCard glowColor="rgba(22, 128, 91, 0.15)" className="p-7 sm:p-8 border border-white/90 shadow-xl space-y-6">
+              {sessionExpired && (
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Your session has expired. Please sign in again to continue.</span>
+                </div>
+              )}
+
               <form onSubmit={handleLogin} className="space-y-4">
                 <Input
                   label="Email Address"
