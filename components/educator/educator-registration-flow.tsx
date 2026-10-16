@@ -12,6 +12,7 @@ import { RegistrationCaptcha } from "@/components/auth/registration-captcha";
 import { extractOtpDigits } from "@/lib/auth/otp-utils";
 import { parseHourlyRate } from "@/lib/currency";
 import { PhoneOtpVerifyInline } from "@/components/auth/phone-otp-verify-inline";
+import { EmailOtpVerifyInline } from "@/components/auth/email-otp-verify-inline";
 import {
 
   GraduationCap,
@@ -45,6 +46,8 @@ interface EducatorFlowState {
   phone: string;
   password: string;
   confirmPassword: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
   captchaToken: string;
   captchaAnswer: string;
   otp: string;
@@ -89,6 +92,8 @@ function EducatorRegistrationFlowContent() {
     phone: "",
     password: "",
     confirmPassword: "",
+    emailVerified: false,
+    phoneVerified: false,
     captchaToken: "",
     captchaAnswer: "",
     otp: "",
@@ -248,11 +253,18 @@ function EducatorRegistrationFlowContent() {
           confirmPassword: state.confirmPassword,
           captchaToken: state.captchaToken,
           captchaAnswer: state.captchaAnswer,
+          emailVerified: state.emailVerified,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to initiate registration.");
+
+      if (data.data?.step === 3 || state.emailVerified) {
+        showToast("Email Verified!", "Please complete your professional educator profile.", "success");
+        setState((prev) => ({ ...prev, step: 3 }));
+        return;
+      }
 
       showToast("Verification Sent! ✉️", "A 6-digit code has been dispatched to your email.", "success");
       setState((prev) => ({ ...prev, step: 2, otpCooldown: 60 }));
@@ -609,34 +621,76 @@ function EducatorRegistrationFlowContent() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Email Address"
-                type="email"
-                placeholder="ananya.sharma@example.com"
-                value={state.email}
-                onChange={(e) => setState((p) => ({ ...p, email: e.target.value }))}
-                leftIcon={<Mail className="h-4 w-4 text-[#0F766E]" />}
-                required
-              />
-              <Input
-                label="Mobile Number"
-                type="tel"
-                placeholder="9876543210"
-                value={state.phone}
-                onChange={(e) => setState((p) => ({ ...p, phone: e.target.value }))}
-                leftIcon={<Phone className="h-4 w-4 text-[#0F766E]" />}
-                required
-                helperText="For session notifications and payout updates"
-              />
+              <div className="space-y-1">
+                <Input
+                  label="Email Address"
+                  type="email"
+                  placeholder="ananya.sharma@example.com"
+                  value={state.email}
+                  onChange={(e) =>
+                    setState((p) => ({
+                      ...p,
+                      email: e.target.value,
+                      emailVerified: false,
+                    }))
+                  }
+                  leftIcon={<Mail className="h-4 w-4 text-[#0F766E]" />}
+                  required
+                />
+                <div className="pt-0.5">
+                  <EmailOtpVerifyInline
+                    email={state.email}
+                    roleContext="teacher"
+                    onVerified={(verifiedEmail) => {
+                      setState((p) => ({
+                        ...p,
+                        email: verifiedEmail,
+                        emailVerified: true,
+                      }));
+                    }}
+                    onStatusChange={(verified) => {
+                      setState((p) => ({ ...p, emailVerified: verified }));
+                    }}
+                  />
+                </div>
+              </div>
 
-              <PhoneOtpVerifyInline
-                phone={state.phone}
-                email={state.email}
-                roleContext="teacher"
-                onVerified={(verified) => {
-                  setState((p) => ({ ...p, phone: verified.slice(-10) }));
-                }}
-              />
+              <div className="space-y-1">
+                <Input
+                  label="Mobile Number"
+                  type="tel"
+                  placeholder="9876543210"
+                  value={state.phone}
+                  onChange={(e) =>
+                    setState((p) => ({
+                      ...p,
+                      phone: e.target.value,
+                      phoneVerified: false,
+                    }))
+                  }
+                  leftIcon={<Phone className="h-4 w-4 text-[#0F766E]" />}
+                  required
+                  maxLength={10}
+                  helperText="For session notifications and payout updates"
+                />
+                <div className="pt-0.5">
+                  <PhoneOtpVerifyInline
+                    phone={state.phone}
+                    email={state.email}
+                    roleContext="teacher"
+                    onVerified={(verified) => {
+                      setState((p) => ({
+                        ...p,
+                        phone: verified.slice(-10),
+                        phoneVerified: true,
+                      }));
+                    }}
+                    onStatusChange={(verified) => {
+                      setState((p) => ({ ...p, phoneVerified: verified }));
+                    }}
+                  />
+                </div>
+              </div>
             </div>
 
 

@@ -11,6 +11,7 @@ import { apiSuccess, apiBadRequest, apiError } from "@/lib/api-response";
 import { encodeSession, getCookieDomain } from "@/lib/auth/session";
 import { parseHourlyRate } from "@/lib/currency";
 import { UserSession } from "@/types/auth";
+import { verifiedEmailsStore } from "@/lib/auth/email-pre-registration";
 import crypto from "crypto";
 
 // GET ?email=...
@@ -157,11 +158,12 @@ export async function POST(request: NextRequest) {
       const codeHash = hashToken(otp);
       const tokenHash = hashToken(rawToken);
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+      const isAlreadyVerified = Boolean(body.emailVerified || verifiedEmailsStore.has(normalizedEmail));
 
       const regData = {
         phone: phone?.trim() || "",
-        step: 2,
-        otpVerified: false,
+        step: isAlreadyVerified ? 3 : 2,
+        otpVerified: isAlreadyVerified,
         paid: false,
       };
 
@@ -191,6 +193,15 @@ export async function POST(request: NextRequest) {
           attempts: 0,
         },
       });
+
+      if (isAlreadyVerified) {
+        return apiSuccess({
+          email: normalizedEmail,
+          step: 3,
+          otpVerified: true,
+          message: "Email verified. Please complete your professional profile.",
+        });
+      }
 
       // Send OTP email
       await EmailService.sendVerificationOTP({

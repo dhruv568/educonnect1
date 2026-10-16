@@ -12,6 +12,7 @@ import { RegistrationCaptcha } from "@/components/auth/registration-captcha";
 import { formatCurrency } from "@/lib/currency";
 import { extractOtpDigits } from "@/lib/auth/otp-utils";
 import { PhoneOtpVerifyInline } from "@/components/auth/phone-otp-verify-inline";
+import { EmailOtpVerifyInline } from "@/components/auth/email-otp-verify-inline";
 import {
 
   User,
@@ -47,6 +48,8 @@ interface FlowState {
   phone: string;
   password: string;
   confirmPassword: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
   academic: AcademicFieldsState;
   captchaToken: string;
   captchaAnswer: string;
@@ -118,6 +121,8 @@ function LearnerRegistrationFlowContent() {
     phone: "",
     password: "",
     confirmPassword: "",
+    emailVerified: false,
+    phoneVerified: false,
     academic: {
       educationType: "SCHOOL",
       gradeLevel: "Grade 10",
@@ -427,6 +432,17 @@ function LearnerRegistrationFlowContent() {
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Registration failed. Please check your information.");
+      }
+
+      if (state.emailVerified) {
+        setIsUserLoggedIn(true);
+        showToast("Profile Created!", "Your registration details have been saved and verified.", "success");
+        const hasProgram = state.selectedCourseId || state.selectedEducatorId;
+        setState((prev) => ({
+          ...prev,
+          step: hasProgram ? 3 : 2,
+        }));
+        return;
       }
 
       showToast("Verification Code Sent!", "Please check your email for the 6-digit OTP code.", "info");
@@ -767,37 +783,77 @@ function LearnerRegistrationFlowContent() {
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Email Address"
-                  type="email"
-                  placeholder="aarav@example.com"
-                  value={state.email}
-                  onChange={(e) => setState((p) => ({ ...p, email: e.target.value }))}
-                  required
-                  leftIcon={<Mail className="h-4 w-4 text-[#2563EB]" />}
-                  helperText="Verification code will be sent here"
-                />
+                <div className="space-y-1">
+                  <Input
+                    label="Email Address"
+                    type="email"
+                    placeholder="aarav@example.com"
+                    value={state.email}
+                    onChange={(e) =>
+                      setState((p) => ({
+                        ...p,
+                        email: e.target.value,
+                        emailVerified: false,
+                      }))
+                    }
+                    required
+                    leftIcon={<Mail className="h-4 w-4 text-[#2563EB]" />}
+                    helperText="Verification code will be sent here"
+                  />
+                  <div className="pt-0.5">
+                    <EmailOtpVerifyInline
+                      email={state.email}
+                      roleContext="student"
+                      onVerified={(verifiedEmail) => {
+                        setState((p) => ({
+                          ...p,
+                          email: verifiedEmail,
+                          emailVerified: true,
+                        }));
+                      }}
+                      onStatusChange={(verified) => {
+                        setState((p) => ({ ...p, emailVerified: verified }));
+                      }}
+                    />
+                  </div>
+                </div>
 
-                <Input
-                  label="Mobile Number"
-                  type="tel"
-                  placeholder="9876543210"
-                  value={state.phone}
-                  onChange={(e) => setState((p) => ({ ...p, phone: e.target.value }))}
-                  required
-                  maxLength={10}
-                  leftIcon={<Phone className="h-4 w-4 text-[#2563EB]" />}
-                  helperText="10-digit Indian mobile number"
-                />
-
-                <PhoneOtpVerifyInline
-                  phone={state.phone}
-                  email={state.email}
-                  roleContext="student"
-                  onVerified={(verified) => {
-                    setState((p) => ({ ...p, phone: verified.slice(-10) }));
-                  }}
-                />
+                <div className="space-y-1">
+                  <Input
+                    label="Mobile Number"
+                    type="tel"
+                    placeholder="9876543210"
+                    value={state.phone}
+                    onChange={(e) =>
+                      setState((p) => ({
+                        ...p,
+                        phone: e.target.value,
+                        phoneVerified: false,
+                      }))
+                    }
+                    required
+                    maxLength={10}
+                    leftIcon={<Phone className="h-4 w-4 text-[#2563EB]" />}
+                    helperText="10-digit Indian mobile number"
+                  />
+                  <div className="pt-0.5">
+                    <PhoneOtpVerifyInline
+                      phone={state.phone}
+                      email={state.email}
+                      roleContext="student"
+                      onVerified={(verified) => {
+                        setState((p) => ({
+                          ...p,
+                          phone: verified.slice(-10),
+                          phoneVerified: true,
+                        }));
+                      }}
+                      onStatusChange={(verified) => {
+                        setState((p) => ({ ...p, phoneVerified: verified }));
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
 
 

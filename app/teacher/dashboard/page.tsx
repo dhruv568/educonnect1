@@ -27,6 +27,7 @@ import {
   Lock,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
+import { DashboardPhoneVerificationBanner } from "@/components/dashboard/dashboard-phone-verification-banner";
 
 export default function TeacherDashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -162,6 +163,9 @@ export default function TeacherDashboardPage() {
             </Link>
           </div>
         )}
+
+        {/* Phone Verification Reminder Banner */}
+        <DashboardPhoneVerificationBanner role="teacher" />
 
         {/* Educator Stats Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

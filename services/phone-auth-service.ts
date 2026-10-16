@@ -51,7 +51,7 @@ interface PhoneVerificationRecord {
   verified: boolean;
   verifiedAt: Date;
 }
-const verifiedPhonesStore = new Map<string, PhoneVerificationRecord>();
+export const verifiedPhonesStore = new Map<string, PhoneVerificationRecord>();
 
 // In-memory fallback users store for test / offline mode
 export const mockPhoneUsersStore = new Map<string, any>();
@@ -92,7 +92,7 @@ export class PhoneAuthService {
   /**
    * Records an OTP dispatch for rate limiting.
    */
-  private static recordPhoneRequest(phone: string): void {
+  static recordPhoneRequest(phone: string): void {
     const now = Date.now();
     const entry = phoneRateLimits.get(phone) || { requests: [], lastRequestTime: 0 };
     entry.requests.push(now);
@@ -357,29 +357,26 @@ export class PhoneAuthService {
     if (accessToken) {
       const tokenVerification = await Msg91Client.verifyAccessToken(accessToken);
       if (!tokenVerification.success) {
-        throw new Error(tokenVerification.error || "Invalid or expired access token.");
+        // If access-token verification failed, but reqId and otp are provided, attempt direct server-side verification
+        if (reqId && otp) {
+          const otpFallback = await Msg91Client.verifyOtp(reqId, otp);
+          if (otpFallback.success) {
+            verifiedIdentifier = normalizedPhone;
+          } else {
+            throw new Error(tokenVerification.error || "Invalid or expired access token.");
+          }
+        } else {
+          throw new Error(tokenVerification.error || "Invalid or expired access token.");
+        }
+      } else {
+        verifiedIdentifier = tokenVerification.phone || normalizedPhone;
       }
-      verifiedIdentifier = tokenVerification.phone || normalizedPhone;
     } else if (reqId && otp) {
       const otpVerification = await Msg91Client.verifyOtp(reqId, otp);
       if (!otpVerification.success) {
         throw new Error(otpVerification.error || "Invalid verification code.");
       }
-      if (otpVerification.accessToken) {
-        try {
-          const tokenVerification = await Msg91Client.verifyAccessToken(otpVerification.accessToken);
-          if (tokenVerification.success && tokenVerification.phone) {
-            verifiedIdentifier = tokenVerification.phone;
-          } else {
-            verifiedIdentifier = normalizedPhone;
-          }
-        } catch {
-          // Non-blocking: OTP was already verified via verifyOtp
-          verifiedIdentifier = normalizedPhone;
-        }
-      } else {
-        verifiedIdentifier = normalizedPhone;
-      }
+      verifiedIdentifier = normalizedPhone;
     } else {
       throw new Error("Verification code or access token is required.");
     }
@@ -494,7 +491,14 @@ export class PhoneAuthService {
     if (accessToken) {
       const tokenVerification = await Msg91Client.verifyAccessToken(accessToken);
       if (!tokenVerification.success) {
-        throw new Error(tokenVerification.error || "Invalid access token.");
+        if (reqId && otp) {
+          const otpFallback = await Msg91Client.verifyOtp(reqId, otp);
+          if (!otpFallback.success) {
+            throw new Error(tokenVerification.error || "Invalid access token.");
+          }
+        } else {
+          throw new Error(tokenVerification.error || "Invalid access token.");
+        }
       }
     } else if (reqId && otp) {
       const otpVerification = await Msg91Client.verifyOtp(reqId, otp);
@@ -506,7 +510,7 @@ export class PhoneAuthService {
     }
 
     // REQUIREMENT 5: Store phone verification status separately
-    await this.markPhoneVerified(userId, normalizedPhone, email);
+    await this.markPhoneVerified(userId, normalizedPhone, email, reqId);
 
     return {
       success: true,
@@ -518,7 +522,12 @@ export class PhoneAuthService {
   /**
    * Marks a phone number as verified separately from email verification.
    */
-  static async markPhoneVerified(userId?: string, normalizedPhone?: string, email?: string): Promise<void> {
+  static async markPhoneVerified(
+    userId?: string,
+    normalizedPhone?: string,
+    email?: string,
+    reqId?: string
+  ): Promise<void> {
     if (!normalizedPhone) return;
 
     // 1. Record in-memory status
@@ -534,7 +543,6 @@ export class PhoneAuthService {
     }
 
     // 2. If email provided, record in pendingRegistration registrationData JSON
-
     if (email) {
       try {
         const pending = await prisma.pendingRegistration.findUnique({
@@ -558,25 +566,154 @@ export class PhoneAuthService {
       }
     }
 
-    // 3. If userId provided, update profile or teacherProfile
+    // 3. If userId provided, update profile and teacherProfile
     if (userId) {
       try {
         await prisma.profile.updateMany({
           where: { userId },
           data: { phone: normalizedPhone },
         });
+        await prisma.teacherProfile.updateMany({
+          where: { userId },
+          data: { contactPhone: normalizedPhone },
+        });
       } catch (err) {
         // Ignored if offline
       }
     }
+
+    // 4. Record persistent verification in Prisma PhoneVerification table
+    try {
+      const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // Active 1 year
+      const existing = await prisma.phoneVerification.findFirst({
+        where: {
+          phone: normalizedPhone,
+          ...(userId ? { userId } : {}),
+        },
+      });
+
+      if (existing) {
+        await prisma.phoneVerification.update({
+          where: { id: existing.id },
+          data: {
+            verified: true,
+            verifiedAt: new Date(),
+            expiresAt,
+            reqId: reqId || existing.reqId,
+            ...(userId && !existing.userId ? { userId } : {}),
+          },
+        });
+      } else {
+        await prisma.phoneVerification.create({
+          data: {
+            phone: normalizedPhone,
+            userId: userId || null,
+            reqId: reqId || null,
+            verified: true,
+            verifiedAt: new Date(),
+            expiresAt,
+          },
+        });
+      }
+    } catch (err) {
+      console.warn("⚠️ [PhoneAuthService] Could not persist PhoneVerification in DB:", (err as any)?.message);
+    }
   }
 
   /**
-   * Checks whether a phone number is currently verified.
+   * Checks whether a phone number is currently verified in the active session/process store.
    */
-  static isPhoneVerified(normalizedPhone: string): boolean {
-    const record = verifiedPhonesStore.get(normalizedPhone);
-    return Boolean(record?.verified);
+  static isPhoneVerified(normalizedPhone: string, userId?: string): boolean {
+    if (!normalizedPhone) return false;
+
+    // Check in-memory store
+    const inMem = verifiedPhonesStore.get(normalizedPhone);
+    if (inMem?.verified) {
+      if (!userId || !inMem.userId || inMem.userId === userId) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Retrieves phone verification status for an authenticated user's dashboard.
+   */
+  static async getUserPhoneStatus(userId: string): Promise<{
+    hasPhone: boolean;
+    phone: string | null;
+    maskedPhone: string | null;
+    isVerified: boolean;
+  }> {
+    if (!userId) {
+      return { hasPhone: false, phone: null, maskedPhone: null, isVerified: false };
+    }
+
+    if (process.env.NODE_ENV === "test") {
+      // In test mode, check in-memory stores
+      for (const [phone, record] of verifiedPhonesStore.entries()) {
+        if (record.userId === userId && record.verified) {
+          return {
+            hasPhone: true,
+            phone,
+            maskedPhone: Msg91Client.maskPhone(phone),
+            isVerified: true,
+          };
+        }
+      }
+      return { hasPhone: false, phone: null, maskedPhone: null, isVerified: false };
+    }
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { profile: true, teacherProfile: true },
+      });
+
+      if (!user) {
+        return { hasPhone: false, phone: null, maskedPhone: null, isVerified: false };
+      }
+
+      const rawPhone = user.profile?.phone || user.teacherProfile?.contactPhone || null;
+      if (!rawPhone) {
+        return { hasPhone: false, phone: null, maskedPhone: null, isVerified: false };
+      }
+
+      const norm = Msg91Client.normalizePhoneNumber(rawPhone);
+      const normalizedPhone = norm.valid ? norm.normalized! : rawPhone.replace(/\D/g, "");
+
+      // Check in-memory first
+      const memRecord = verifiedPhonesStore.get(normalizedPhone);
+      if (memRecord?.verified && (!memRecord.userId || memRecord.userId === userId)) {
+        return {
+          hasPhone: true,
+          phone: normalizedPhone,
+          maskedPhone: Msg91Client.maskPhone(normalizedPhone),
+          isVerified: true,
+        };
+      }
+
+      // Check DB PhoneVerification table
+      const pv = await prisma.phoneVerification.findFirst({
+        where: {
+          phone: normalizedPhone,
+          userId,
+          verified: true,
+        },
+      });
+
+      const isVerified = Boolean(pv && pv.verified);
+
+      return {
+        hasPhone: true,
+        phone: normalizedPhone,
+        maskedPhone: Msg91Client.maskPhone(normalizedPhone),
+        isVerified,
+      };
+    } catch {
+      return { hasPhone: false, phone: null, maskedPhone: null, isVerified: false };
+    }
   }
 
   static verifyPhoneOtpLogin = PhoneAuthService.verifyPhoneOtpForLogin;

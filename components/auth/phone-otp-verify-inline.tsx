@@ -9,6 +9,7 @@ interface PhoneOtpVerifyInlineProps {
   phone: string;
   email?: string;
   onVerified?: (normalizedPhone: string) => void;
+  onStatusChange?: (isVerified: boolean) => void;
   roleContext?: "student" | "teacher";
   className?: string;
 }
@@ -39,6 +40,7 @@ export function PhoneOtpVerifyInline({
   phone,
   email,
   onVerified,
+  onStatusChange,
   roleContext = "student",
   className = "",
 }: PhoneOtpVerifyInlineProps) {
@@ -56,6 +58,21 @@ export function PhoneOtpVerifyInline({
 
   const isEducator = roleContext === "teacher";
   const primaryColor = isEducator ? "#0F766E" : "#2563EB";
+
+  // Reset verification when phone number changes
+  const prevPhoneRef = useRef(phone);
+  useEffect(() => {
+    if (prevPhoneRef.current !== phone) {
+      prevPhoneRef.current = phone;
+      setIsVerified(false);
+      setIsOpen(false);
+      setOtp(Array(6).fill(""));
+      setErrorMsg(null);
+      if (onStatusChange) {
+        onStatusChange(false);
+      }
+    }
+  }, [phone, onStatusChange]);
 
   useEffect(() => {
     if (cooldown > 0) {
@@ -281,9 +298,12 @@ export function PhoneOtpVerifyInline({
 
       setIsVerified(true);
       setIsOpen(false);
-      showToast("Mobile Verified! ✓", "Your phone number has been verified via MSG91.", "success");
+      showToast("Phone Verified! ✓", "Your phone number has been verified via MSG91.", "success");
       if (onVerified) {
         onVerified(data.data?.phone || cleanPhone);
+      }
+      if (onStatusChange) {
+        onStatusChange(true);
       }
     } catch (err: any) {
       const safeMsg = sanitizeInlineErrorMessage(err.message);
@@ -298,7 +318,7 @@ export function PhoneOtpVerifyInline({
     return (
       <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold ${className}`}>
         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-        <span>Mobile Verified</span>
+        <span>Phone Verified</span>
       </div>
     );
   }
@@ -315,7 +335,7 @@ export function PhoneOtpVerifyInline({
             style={{ color: primaryColor }}
           >
             <ShieldCheck className="h-3.5 w-3.5" />
-            <span>{loading ? "Sending OTP..." : "Verify Mobile with OTP (Optional)"}</span>
+            <span>{loading ? "Sending OTP..." : "Verify Phone"}</span>
           </button>
         )
       ) : (

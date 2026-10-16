@@ -24,6 +24,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { formatAcademicProfileSummary } from "@/lib/constants/academic";
+import { DashboardPhoneVerificationBanner } from "@/components/dashboard/dashboard-phone-verification-banner";
 
 export default function StudentDashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -183,6 +184,9 @@ export default function StudentDashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Phone Verification Reminder Banner */}
+        <DashboardPhoneVerificationBanner role="student" />
 
         {/* Statistics Overview Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

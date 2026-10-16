@@ -423,17 +423,33 @@ export class Msg91Client {
     }
 
     try {
-      const response = await fetch(`${this.MSG91_API_BASE}/verifyAccessToken`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          authkey: config.authkey,
-        },
-        body: JSON.stringify({
-          "access-token": accessToken,
-        }),
-      });
+      let response: Response;
+      try {
+        response = await fetch("https://api.msg91.com/api/v5/widget/verifyAccessToken", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            authkey: config.authkey,
+          },
+          body: JSON.stringify({
+            "access-token": accessToken,
+          }),
+        });
+      } catch (primaryErr) {
+        // Fallback to control.msg91.com if api.msg91.com network call fails
+        response = await fetch(`${this.MSG91_API_BASE}/verifyAccessToken`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            authkey: config.authkey,
+          },
+          body: JSON.stringify({
+            "access-token": accessToken,
+          }),
+        });
+      }
 
       const data = await response.json().catch(() => ({}));
 
