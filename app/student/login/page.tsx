@@ -214,7 +214,7 @@ export default function StudentLoginPage() {
 
             <GlassCard
               glowColor="rgba(37, 99, 235, 0.15)"
-              className="p-7 sm:p-8 border border-white/90 shadow-xl space-y-6"
+              className="p-6 sm:p-8 border border-white/90 shadow-xl space-y-6"
             >
               {sessionExpired && (
                 <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2.5 shadow-2xs">

@@ -429,9 +429,10 @@ export function PhoneOtpVerifyInline({
                 inputMode="numeric"
                 maxLength={1}
                 value={digit}
+                aria-label={`Digit ${i + 1} of 4`}
                 onChange={(e) => handleOtpChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
-                className="w-10 h-11 text-center text-base font-black rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2"
+                className="w-10 h-11 shrink-0 text-center text-base font-black rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2"
                 style={{ "--tw-ring-color": primaryColor } as any}
               />
             ))}

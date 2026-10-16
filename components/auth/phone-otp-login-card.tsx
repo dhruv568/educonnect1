@@ -382,8 +382,33 @@ export function PhoneOtpLoginCard({
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace") {
       if (!otp[index] && index > 0) {
+        e.preventDefault();
+        const newOtp = [...otp];
+        newOtp[index - 1] = "";
+        setOtp(newOtp);
         inputRefs.current[index - 1]?.focus();
       }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 3) {
+      e.preventDefault();
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text");
+    const digits = extractPhoneOtpDigits(pasted);
+    if (digits) {
+      const arr = Array(4).fill("");
+      for (let i = 0; i < Math.min(digits.length, 4); i++) {
+        arr[i] = digits[i];
+      }
+      setOtp(arr);
+      const focusIndex = Math.min(digits.length - 1, 3);
+      inputRefs.current[focusIndex]?.focus();
     }
   };
 
@@ -481,9 +506,9 @@ export function PhoneOtpLoginCard({
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`w-full space-y-4 ${className}`}>
       {errorMessage && (
-        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center gap-2">
+        <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center gap-2.5">
           <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
           <span>{errorMessage}</span>
         </div>
@@ -496,7 +521,7 @@ export function PhoneOtpLoginCard({
               Mobile Phone Number
             </label>
             <div className="relative flex items-center">
-              <div className="absolute left-3 flex items-center gap-1.5 pointer-events-none text-slate-500 font-bold text-xs border-r border-slate-200 pr-2">
+              <div className="absolute left-3.5 flex items-center gap-1.5 pointer-events-none text-slate-500 font-bold text-xs border-r border-slate-200 pr-2.5">
                 <Phone className="h-3.5 w-3.5 text-slate-400" />
                 <span>+91</span>
               </div>
@@ -507,17 +532,22 @@ export function PhoneOtpLoginCard({
                 onChange={(e) => setPhone(e.target.value)}
                 maxLength={15}
                 required
-                className="w-full pl-20 pr-4 py-3 rounded-2xl bg-white/80 border border-slate-200 text-slate-900 text-sm font-semibold tracking-wider placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                className="w-full pl-20 pr-4 py-3 rounded-2xl bg-white/80 border border-slate-200 text-slate-900 text-sm font-semibold tracking-wider placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all shadow-2xs"
                 style={{ "--tw-ring-color": primaryColor } as any}
               />
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">
+            <p className="text-[11px] text-slate-500 mt-1.5">
               Enter the registered phone number linked to your account.
             </p>
           </div>
 
-          {/* MSG91 CAPTCHA challenge container */}
-          <div id="msg91-captcha-login" className="flex justify-center my-2" />
+          {/* MSG91 CAPTCHA challenge container row */}
+          <div className="w-full flex justify-center items-center py-1">
+            <div
+              id="msg91-captcha-login"
+              className="flex justify-center items-center min-h-[78px] max-w-full overflow-x-auto"
+            />
+          </div>
 
           <div className="flex items-center justify-between text-xs font-semibold">
             <Link href={registerUrl} className="text-slate-600 hover:text-slate-900 hover:underline">
@@ -528,7 +558,7 @@ export function PhoneOtpLoginCard({
           <GlassButton
             type="submit"
             variant={buttonVariant}
-            className="w-full text-white font-bold"
+            className="w-full text-white font-bold py-3"
             style={{ backgroundColor: primaryColor, borderColor: primaryColor }}
             isLoading={loading}
             rightIcon={<ArrowRight className="h-4 w-4" />}
@@ -538,24 +568,33 @@ export function PhoneOtpLoginCard({
         </form>
       ) : (
         <form onSubmit={handleVerifyOtp} className="space-y-4">
-          <div className="text-center space-y-1">
-            <div className="text-xs font-bold text-slate-700">
-              Enter 4-digit code sent to
+          <div className="text-center space-y-1.5 pb-1">
+            <div className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+              Enter 4-digit verification code
             </div>
-            <div className="text-sm font-black text-slate-900 flex items-center justify-center gap-1.5">
-              <span>{maskedPhone}</span>
+            <div className="text-sm font-black text-slate-900 flex items-center justify-center gap-2">
+              <span className="tracking-wide">{maskedPhone}</span>
               <button
                 type="button"
                 onClick={() => setStep("PHONE")}
-                className="text-xs font-semibold text-blue-600 hover:underline ml-1"
+                className="text-xs font-bold hover:underline cursor-pointer transition-colors"
+                style={{ color: primaryColor }}
               >
                 Change
               </button>
             </div>
           </div>
 
-          {/* 4 OTP Input Boxes */}
-          <div className="flex justify-center gap-3 py-2">
+          {/* Requirement 3: Separate, properly spaced row for hCaptcha widget */}
+          <div className="w-full flex justify-center items-center py-1">
+            <div
+              id="msg91-captcha-login"
+              className="flex justify-center items-center min-h-[78px] max-w-full overflow-x-auto"
+            />
+          </div>
+
+          {/* Requirement 2 & 4: Exactly 4 clearly visible, responsive OTP input boxes */}
+          <div className="w-full flex justify-center items-center gap-2.5 sm:gap-3.5 py-1">
             {otp.map((digit, index) => (
               <input
                 key={index}
@@ -567,20 +606,27 @@ export function PhoneOtpLoginCard({
                 pattern="[0-9]*"
                 maxLength={1}
                 value={digit}
+                autoComplete="one-time-code"
+                aria-label={`Digit ${index + 1} of 4`}
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-14 text-center text-xl font-black rounded-xl border border-slate-200 bg-white/90 text-slate-900 focus:outline-none focus:ring-2 transition-all shadow-sm"
-                style={{ "--tw-ring-color": primaryColor } as any}
+                onPaste={handlePaste}
+                className="w-12 h-14 sm:w-14 sm:h-16 shrink-0 text-center text-xl sm:text-2xl font-black rounded-xl sm:rounded-2xl border-2 border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all shadow-xs"
+                style={{
+                  borderColor: digit ? primaryColor : undefined,
+                  "--tw-ring-color": primaryColor,
+                } as any}
               />
             ))}
           </div>
 
-          <div className="flex items-center justify-between text-xs">
+          {/* Requirement 5: Keep resend countdown and Back to Phone controls aligned and usable */}
+          <div className="flex items-center justify-between text-xs px-1 pt-1">
             <button
               type="button"
               onClick={handleResend}
               disabled={cooldown > 0 || resending}
-              className="text-slate-600 font-semibold hover:text-slate-900 disabled:opacity-50 flex items-center gap-1.5"
+              className="text-slate-600 font-semibold hover:text-slate-900 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${resending ? "animate-spin" : ""}`} />
               <span>{cooldown > 0 ? `Resend in ${cooldown}s` : "Resend Code"}</span>
@@ -588,18 +634,20 @@ export function PhoneOtpLoginCard({
             <button
               type="button"
               onClick={() => setStep("PHONE")}
-              className="text-slate-500 hover:text-slate-700"
+              className="text-slate-500 hover:text-slate-800 font-medium cursor-pointer transition-colors"
             >
               Back to Phone
             </button>
           </div>
 
+          {/* Submit Button */}
           <GlassButton
             type="submit"
             variant={buttonVariant}
-            className="w-full text-white font-bold"
+            className="w-full text-white font-bold py-3 mt-1"
             style={{ backgroundColor: primaryColor, borderColor: primaryColor }}
             isLoading={loading}
+            disabled={loading || otp.join("").length !== 4}
             rightIcon={<ShieldCheck className="h-4 w-4" />}
           >
             Verify & Sign In
