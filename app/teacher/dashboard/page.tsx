@@ -29,6 +29,44 @@ import {
 import { formatCurrency } from "@/lib/currency";
 import { DashboardPhoneVerificationBanner } from "@/components/dashboard/dashboard-phone-verification-banner";
 
+function PayoutStatusBadge({ status }: { status: string }) {
+  const normalized = (status || "").toUpperCase();
+  switch (normalized) {
+    case "PAID":
+    case "COMPLETED":
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-200">
+          {status}
+        </span>
+      );
+    case "PROCESSING":
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-blue-50 text-blue-700 border border-blue-200">
+          {status}
+        </span>
+      );
+    case "PENDING":
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-200">
+          {status}
+        </span>
+      );
+    case "FAILED":
+    case "REJECTED":
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-rose-50 text-rose-700 border border-rose-200">
+          {status}
+        </span>
+      );
+    default:
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-slate-100 text-slate-700 border border-slate-200">
+          {status}
+        </span>
+      );
+  }
+}
+
 export default function TeacherDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{
@@ -217,71 +255,76 @@ export default function TeacherDashboardPage() {
         </div>
 
         {/* Educator Payout Breakdown & Schedule Card (25% Platform Fee & Monthly Schedule) */}
-        <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-xl space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800/80 pb-4">
+        <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
-                <IndianRupee className="w-5 h-5" />
+              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100 shrink-0">
+                <IndianRupee className="w-5 h-5 text-emerald-700" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-white">Monthly Educator Payout Summary</h3>
-                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-teal-950 text-teal-300 border border-teal-800/60">
+                  <h3 className="text-base font-bold text-slate-900">Monthly Educator Payout Summary</h3>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                     Automated
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Payouts scheduled for the 10th of every month. Platform fee: {data.metrics.platformFeePercent ?? 25}%.
                 </p>
               </div>
             </div>
 
             <Link href="/teacher/earnings">
-              <Button variant="secondary" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-white hover:bg-emerald-50/70 text-emerald-700 border border-emerald-200 hover:border-emerald-300 font-bold"
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+              >
                 View Payout History
               </Button>
             </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1">
-              <span className="text-[11px] font-semibold text-slate-400">Total Earnings</span>
-              <p className="text-xl font-black text-white">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 space-y-1">
+              <span className="text-[11px] font-semibold text-slate-500">Total Earnings</span>
+              <p className="text-xl sm:text-2xl font-black text-slate-900">
                 {formatCurrency(data.metrics.totalEarningsRupees)}
               </p>
-              <span className="text-[10px] text-teal-400 font-medium">Cumulative gross (100%)</span>
+              <span className="text-[10px] text-slate-500 font-medium">Cumulative gross (100%)</span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1">
-              <span className="text-[11px] font-semibold text-slate-400">Platform Fee ({data.metrics.platformFeePercent ?? 25}%)</span>
-              <p className="text-xl font-black text-amber-400">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 space-y-1">
+              <span className="text-[11px] font-semibold text-slate-500">Platform Fee ({data.metrics.platformFeePercent ?? 25}%)</span>
+              <p className="text-xl sm:text-2xl font-black text-amber-600">
                 {formatCurrency(data.metrics.platformFeeRupees ?? (data.metrics.totalEarningsRupees * 0.25))}
               </p>
-              <span className="text-[10px] text-slate-400">Deducted before final payout</span>
+              <span className="text-[10px] text-slate-500 font-medium">Deducted before final payout</span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-teal-800/40 space-y-1">
-              <span className="text-[11px] font-semibold text-teal-300">Net Eligible Balance (75%)</span>
-              <p className="text-xl font-black text-emerald-400">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50/40 border border-emerald-200/70 space-y-1">
+              <span className="text-[11px] font-semibold text-emerald-800">Net Eligible Balance (75%)</span>
+              <p className="text-xl sm:text-2xl font-black text-[#16805B]">
                 {formatCurrency(data.metrics.netEligibleBalanceRupees ?? (data.metrics.totalEarningsRupees * 0.75))}
               </p>
-              <span className="text-[10px] text-slate-300">
+              <span className="text-[10px] text-slate-500 font-medium">
                 Min threshold: ₹{data.metrics.minPayoutRequirementRupees ?? 2500}
               </span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-1">
-              <span className="text-[11px] font-semibold text-slate-400">Next Scheduled Payout</span>
-              <p className="text-sm font-bold text-teal-300">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 space-y-1">
+              <span className="text-[11px] font-semibold text-slate-500">Next Scheduled Payout</span>
+              <p className="text-sm sm:text-base font-bold text-slate-900">
                 {data.metrics.nextPayoutDateFormatted || "10th of every month"}
               </p>
               <div className="pt-0.5">
                 {(data.metrics.netEligibleBalanceRupees ?? (data.metrics.totalEarningsRupees * 0.75)) >= (data.metrics.minPayoutRequirementRupees ?? 2500) ? (
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                     ✓ Threshold Met
                   </span>
                 ) : (
-                  <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">
+                  <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                     Carries Forward
                   </span>
                 )}
@@ -290,13 +333,17 @@ export default function TeacherDashboardPage() {
           </div>
 
           {data.metrics.lastPayout && (
-            <div className="pt-2 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-teal-400" />
-                Last payout: <strong className="text-white font-semibold">{formatCurrency(data.metrics.lastPayout.amountRupees)}</strong> (Status: {data.metrics.lastPayout.status})
+            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+              <span className="flex items-center gap-1.5 flex-wrap">
+                <Clock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Last payout:</span>
+                <strong className="text-slate-900 font-semibold">{formatCurrency(data.metrics.lastPayout.amountRupees)}</strong>
+                <span className="text-slate-300">•</span>
+                <span className="text-slate-500">Status:</span>
+                <PayoutStatusBadge status={data.metrics.lastPayout.status} />
               </span>
               {data.metrics.lastPayout.providerReferenceId && (
-                <span className="font-mono text-[11px] text-slate-400">
+                <span className="font-mono text-[11px] text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200/60">
                   Ref: {data.metrics.lastPayout.providerReferenceId}
                 </span>
               )}
