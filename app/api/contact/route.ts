@@ -2,9 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
 import { ContactSchema } from "@/schemas/auth-schemas";
-import { apiSuccess, apiBadRequest, apiError } from "@/lib/api-response";
+import { apiSuccess, apiBadRequest, apiError, handleApiError } from "@/lib/api-response";
 import { trackEvent } from "@/lib/analytics";
 import { verifyCaptchaSolution } from "@/lib/auth/captcha";
+import { ValidationError } from "@/lib/errors/app-error";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +14,18 @@ export async function POST(request: NextRequest) {
     // 1. Verify Security CAPTCHA Solution for Spam Protection
     const captchaCheck = verifyCaptchaSolution(body.captchaToken, body.captchaAnswer);
     if (!captchaCheck.valid) {
-      return apiBadRequest(captchaCheck.error || "Security CAPTCHA verification failed. Please try again.");
+      return handleApiError(
+        new ValidationError({
+          code: "CAPTCHA_FAILED",
+          title: "Security Verification Required",
+          message: captchaCheck.error || "Security CAPTCHA verification failed. Please try again.",
+          why: "The captcha response was incorrect or has expired.",
+          resolution: ["Please solve the mathematical captcha and submit again."],
+        }),
+        undefined,
+        400,
+        { route: "/api/contact", application: "main" }
+      );
     }
 
     // 2. Validate Contact Form Payload
@@ -38,8 +50,25 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     if (error.name === "ZodError") {
-      return apiBadRequest(error.errors[0]?.message || "Invalid contact form submission.");
+      const issue = error.errors?.[0];
+      return handleApiError(
+        new ValidationError({
+          code: "INVALID_FORM_DATA",
+          title: "Invalid Contact Form",
+          message: issue?.message || "Invalid contact form submission.",
+          why: `Field '${issue?.path?.join(".") || "form"}' did not satisfy validation rules.`,
+          resolution: ["Please check the highlighted fields and correct your inputs."],
+          details: { issues: error.errors },
+        }),
+        undefined,
+        400,
+        { route: "/api/contact", application: "main" }
+      );
     }
-    return apiError(error.message || "Failed to process inquiry.", 400);
+    return handleApiError(error, "Failed to process inquiry.", 400, {
+      route: "/api/contact",
+      application: "main",
+    });
   }
 }
+

@@ -3,6 +3,8 @@ import { AuditLogger } from "@/lib/audit-logger";
 import { DEFAULT_CURRENCY } from "@/lib/currency";
 import { OFFICIAL_COMPANY_INFO } from "@/lib/company";
 import { PaymentService } from "@/services/payment-service";
+import { AppErrors } from "@/lib/errors/app-error";
+import { NotificationService } from "@/services/notification-service";
 
 export interface UserFilterOptions {
   search?: string;
@@ -561,32 +563,12 @@ export class AdminService {
 
     switch (action) {
       case "APPROVE":
-        let totalLessons = course.sections.flatMap((s) => s.lessons).length || course.lessonCount || 0;
+        // Count actual saved lessons across all sections. Sections without lessons do not constitute a valid curriculum.
+        const totalLessons = course.sections.flatMap((s) => s.lessons).length;
         if (totalLessons === 0) {
-          throw new Error("VALIDATION_ERROR: Cannot approve/publish a course without any lessons.");
+          throw AppErrors.courseNoLessons(courseId, course.title);
         }
-
-        // If totalLessons > 0 but sections array is empty, auto-create a default section and lesson for UI/curriculum visibility
-        if (course.sections.length === 0) {
-          const defaultSection = await prisma.courseSection.create({
-            data: {
-              courseId,
-              title: "Section 1: Course Overview",
-              order: 1,
-            },
-          });
-          await prisma.courseLesson.create({
-            data: {
-              sectionId: defaultSection.id,
-              title: "Lesson 1: Introduction to Course",
-              durationSeconds: 300,
-              status: "READY",
-              isPreview: true,
-              order: 1,
-            },
-          });
-          updateData.lessonCount = Math.max(1, course.lessonCount);
-        }
+        updateData.lessonCount = totalLessons;
 
         newStatus = "PUBLISHED";
         updateData.status = "PUBLISHED";
@@ -653,6 +635,64 @@ export class AdminService {
     });
 
     return updatedCourse;
+  }
+
+  /**
+   * Phase 4: Notify educator that lessons are required before their course can be approved & published
+   */
+  static async notifyEducatorMissingLessons(adminId: string, courseId: string) {
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        teacher: {
+          include: {
+            user: {
+              include: { profile: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      throw AppErrors.notFound("Course", courseId);
+    }
+
+    const educatorUserId = course.teacher?.userId;
+    if (!educatorUserId) {
+      throw new Error("VALIDATION_ERROR: Educator user account not found for this course.");
+    }
+
+    const teacherName = course.teacher.user.profile
+      ? `${course.teacher.user.profile.firstName} ${course.teacher.user.profile.lastName}`.trim()
+      : course.teacher.user.email;
+
+    const notification = await NotificationService.create({
+      userId: educatorUserId,
+      type: "COURSE_UPDATED",
+      title: `Action Required: Add Lessons to "${course.title}"`,
+      message: `Your course "${course.title}" was reviewed by EduConnects administrators. Before it can be approved and published to the public catalog, you must add and save at least one lesson to your course sections in the curriculum editor.`,
+      actionUrl: `/teacher/courses/${course.id}`,
+      idempotencyKey: `course_missing_lessons_${course.id}_${Date.now()}`,
+    });
+
+    await AuditLogger.log({
+      userId: adminId,
+      event: "COURSE_MODERATION_NOTIFY_EDUCATOR",
+      metadata: {
+        courseId,
+        courseTitle: course.title,
+        educatorUserId,
+        educatorEmail: course.teacher.user.email,
+        notificationId: notification.id,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Notification sent to educator ${teacherName} (${course.teacher.user.email}).`,
+      notificationId: notification.id,
+    };
   }
 
   // =========================================================================

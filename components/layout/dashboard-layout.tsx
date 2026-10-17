@@ -390,6 +390,7 @@ export function DashboardLayout({ role, userName, userEmail, children }: Dashboa
       id: "security_ops",
       title: "SECURITY & OPERATIONS",
       items: [
+        { label: "Error Center", icon: ShieldAlert, href: "/admin/errors" },
         { label: "WhatsApp Notifications", icon: MessageSquare, href: "/admin/whatsapp" },
         { label: "Audit & Security Logs", icon: Activity, href: "/admin/activity" },
         { label: "System Health", icon: Server, href: "/admin/system-health" },

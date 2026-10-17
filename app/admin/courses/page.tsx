@@ -15,6 +15,9 @@ import {
   ArrowRight,
   Loader2,
   Sparkles,
+  Send,
+  Bell,
+  RefreshCw,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { AdminBreadcrumb } from "@/components/ui/admin-breadcrumb";
@@ -22,6 +25,9 @@ import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCurrency } from "@/lib/currency";
 import { PermissionGuard } from "@/components/shared/permission-guard";
+import { ErrorBanner } from "@/components/ui/error/error-banner";
+import { AppErrors } from "@/lib/errors/app-error";
+import { StructuredErrorMetadata } from "@/lib/errors/types";
 
 export default function AdminCoursesModerationPage() {
   const [courses, setCourses] = useState<any[]>([]);
@@ -29,8 +35,10 @@ export default function AdminCoursesModerationPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
+  const [notifyLoading, setNotifyLoading] = useState<Record<string, boolean>>({});
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [courseErrors, setCourseErrors] = useState<Record<string, StructuredErrorMetadata | null>>({});
 
   const fetchAdminCourses = async () => {
     setLoading(true);
@@ -51,10 +59,52 @@ export default function AdminCoursesModerationPage() {
     fetchAdminCourses();
   }, []);
 
-  const handleStatusChange = async (courseId: string, newStatus: string, actionName?: string, reason?: string) => {
+  const handleNotifyEducator = async (courseId: string, courseTitle: string) => {
+    setNotifyLoading((prev) => ({ ...prev, [courseId]: true }));
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    try {
+      const res = await fetch(`/api/admin/courses/${courseId}/notify-educator`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSuccessMsg(data.data?.message || `Notification sent to educator for "${courseTitle}".`);
+      } else {
+        const msg = data.error || data.message || "Failed to notify educator.";
+        setErrorMsg(msg);
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "Network error while notifying educator.");
+    } finally {
+      setNotifyLoading((prev) => ({ ...prev, [courseId]: false }));
+    }
+  };
+
+  const handleStatusChange = async (
+    courseId: string,
+    newStatus: string,
+    actionName?: string,
+    reason?: string,
+    skipPreValidation = false
+  ) => {
+    const course = courses.find((c) => c.id === courseId);
+
+    // Phase 4: Pre-validate course before administrator clicks Approve & Publish
+    // while retaining authoritative server-side validation.
+    if (!skipPreValidation && actionName === "APPROVE" && course && (course.totalLessons ?? 0) === 0) {
+      const structuredMeta = AppErrors.courseNoLessons(courseId, course.title).toMetadata();
+      setCourseErrors((prev) => ({
+        ...prev,
+        [courseId]: structuredMeta,
+      }));
+      return;
+    }
+
     setActionLoading((prev) => ({ ...prev, [courseId]: true }));
     setErrorMsg(null);
     setSuccessMsg(null);
+
     try {
       const res = await fetch(`/api/admin/courses/${courseId}/status`, {
         method: "PATCH",
@@ -62,16 +112,29 @@ export default function AdminCoursesModerationPage() {
         body: JSON.stringify({ status: newStatus, action: actionName, reason }),
       });
       const data = await res.json();
+
       if (!res.ok || !data.success) {
-        const message = data.error || data.message || "Failed to update course status.";
-        setErrorMsg(`Course Moderation Failed: ${message}`);
+        const errorDetails: StructuredErrorMetadata =
+          data.errorDetails ||
+          AppErrors.fromAny(data.error || data.message || "Failed to update course status.").toMetadata();
+
+        setCourseErrors((prev) => ({
+          ...prev,
+          [courseId]: errorDetails,
+        }));
       } else {
+        // Success: clear any existing error for this course
+        setCourseErrors((prev) => ({ ...prev, [courseId]: null }));
         setSuccessMsg(`Course status updated to '${newStatus}' successfully.`);
         await fetchAdminCourses();
       }
     } catch (err: any) {
       console.error("Failed to update status:", err);
-      setErrorMsg(err.message || "Network error while updating status.");
+      const fallbackMeta = AppErrors.fromAny(err).toMetadata();
+      setCourseErrors((prev) => ({
+        ...prev,
+        [courseId]: fallbackMeta,
+      }));
     } finally {
       setActionLoading((prev) => ({ ...prev, [courseId]: false }));
     }
@@ -134,8 +197,12 @@ export default function AdminCoursesModerationPage() {
               </p>
             </div>
 
-            {/* Quick Status Tabs Summary */}
             <div className="flex items-center gap-2">
+              <Link href="/admin/errors">
+                <button className="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-bold transition-colors border border-purple-200">
+                  Open Error Center
+                </button>
+              </Link>
               <Link href="/admin/reports">
                 <button className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors">
                   View Content Reports
@@ -207,14 +274,14 @@ export default function AdminCoursesModerationPage() {
           </button>
         </div>
 
-        {/* Feedback Banners */}
+        {/* Global Feedback Banners */}
         {errorMsg && (
           <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
-            <button onClick={() => setErrorMsg(null)} className="text-xs font-bold underline hover:text-rose-900">
+            <button onClick={() => setErrorMsg(null)} className="text-xs font-bold underline hover:text-rose-900 cursor-pointer">
               Dismiss
             </button>
           </div>
@@ -226,7 +293,7 @@ export default function AdminCoursesModerationPage() {
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{successMsg}</span>
             </div>
-            <button onClick={() => setSuccessMsg(null)} className="text-xs font-bold underline hover:text-emerald-900">
+            <button onClick={() => setSuccessMsg(null)} className="text-xs font-bold underline hover:text-emerald-900 cursor-pointer">
               Dismiss
             </button>
           </div>
@@ -269,7 +336,7 @@ export default function AdminCoursesModerationPage() {
                   <th className="p-4">Course</th>
                   <th className="p-4">Educator</th>
                   <th className="p-4">Subject & Price</th>
-                  <th className="p-4">Curriculum</th>
+                  <th className="p-4">Curriculum Info</th>
                   <th className="p-4">Status</th>
                   <th className="p-4 text-right">Moderation Actions</th>
                 </tr>
@@ -289,110 +356,177 @@ export default function AdminCoursesModerationPage() {
                     </td>
                   </tr>
                 ) : (
-                  filtered.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-4">
-                        <div className="font-bold text-slate-900">{c.title}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">/courses/{c.slug}</div>
-                      </td>
-                      <td className="p-4">
-                        <div className="font-semibold text-slate-800">{c.teacherName || "Educator"}</div>
-                        <div className="text-[11px] text-slate-400">{c.teacherEmail || ""}</div>
-                      </td>
-                      <td className="p-4">
-                        <div className="font-medium text-slate-700">{c.subject}</div>
-                        <div className="font-bold text-slate-900 mt-0.5">
-                          {c.price === 0 ? "FREE" : formatCurrency(c.price)}
-                        </div>
-                      </td>
-                      <td className="p-4 text-slate-500">
-                        <div>{c.sectionsCount ?? 0} Sections ({c.totalLessons ?? 0} Lessons)</div>
-                        <div className="text-[11px] text-slate-400">{c.enrollmentCount ?? c.enrollmentsCount ?? 0} Enrollments</div>
-                      </td>
-                      <td className="p-4">
-                        <StatusBadge
-                          status={c.status === "PUBLISHED" ? "PUBLISHED" : c.status === "DRAFT" ? "PENDING" : "REJECTED"}
-                          size="sm"
-                        />
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Link
-                            href={`/courses/${c.slug}/preview`}
-                            target="_blank"
-                            className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors"
-                            title="Preview Course"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Link>
+                  filtered.map((c) => {
+                    const currentError = courseErrors[c.id];
+                    const hasNoLessons = (c.totalLessons ?? 0) === 0;
 
-                          {c.status !== "PUBLISHED" && (
-                            <>
-                              <PermissionGuard permission="courses.approve">
-                                <button
-                                  onClick={() => handleStatusChange(c.id, "PUBLISHED", "APPROVE")}
-                                  disabled={actionLoading[c.id]}
-                                  className="px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white transition-colors cursor-pointer shadow-2xs"
-                                >
-                                  {actionLoading[c.id] ? "Updating..." : "Approve & Publish"}
-                                </button>
-                              </PermissionGuard>
-                              {c.status !== "UNPUBLISHED" && (
+                    return (
+                      <React.Fragment key={c.id}>
+                        <tr className="hover:bg-slate-50/80 transition-colors">
+                          <td className="p-4">
+                            <div className="font-bold text-slate-900">{c.title}</div>
+                            <div className="text-[11px] text-slate-400 font-mono">/courses/{c.slug}</div>
+                          </td>
+                          <td className="p-4">
+                            <div className="font-semibold text-slate-800">{c.teacherName || "Educator"}</div>
+                            <div className="text-[11px] text-slate-400">{c.teacherEmail || ""}</div>
+                          </td>
+                          <td className="p-4">
+                            <div className="font-medium text-slate-700">{c.subject}</div>
+                            <div className="font-bold text-slate-900 mt-0.5">
+                              {c.price === 0 ? "FREE" : formatCurrency(c.price)}
+                            </div>
+                          </td>
+                          <td className="p-4 text-slate-500">
+                            {/* Display accurate curriculum information: sections and lessons */}
+                            <div className="font-semibold text-slate-800">
+                              {c.sectionsCount ?? 0} Sections ({c.totalLessons ?? 0} Lessons)
+                            </div>
+                            {c.sectionsCount > 0 && hasNoLessons ? (
+                              <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200 mt-0.5">
+                                ⚠️ Empty Sections (0 Lessons)
+                              </span>
+                            ) : hasNoLessons ? (
+                              <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-200 mt-0.5">
+                                0 Lessons
+                              </span>
+                            ) : (
+                              <div className="text-[11px] text-slate-400">
+                                {c.enrollmentCount ?? c.enrollmentsCount ?? 0} Enrollments
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            <div className="space-y-1">
+                              <StatusBadge
+                                status={c.status === "PUBLISHED" ? "PUBLISHED" : c.status === "DRAFT" ? "PENDING" : "REJECTED"}
+                                size="sm"
+                              />
+                              {currentError && (
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-200">
+                                  Action Required
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Link
+                                href={`/courses/${c.slug}/preview`}
+                                target="_blank"
+                                className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors"
+                                title="Preview Course Curriculum"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Link>
+
+                              {c.status !== "PUBLISHED" && (
+                                <>
+                                  <PermissionGuard permission="courses.approve">
+                                    <button
+                                      onClick={() => handleStatusChange(c.id, "PUBLISHED", "APPROVE")}
+                                      disabled={actionLoading[c.id]}
+                                      className="px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white transition-colors cursor-pointer shadow-2xs"
+                                    >
+                                      {actionLoading[c.id] ? "Updating..." : "Approve & Publish"}
+                                    </button>
+                                  </PermissionGuard>
+                                  {c.status !== "UNPUBLISHED" && (
+                                    <PermissionGuard permission="courses.reject">
+                                      <button
+                                        onClick={() => {
+                                          const reason = prompt("Reason for rejection (optional):") || "Course rejected by admin moderation.";
+                                          handleStatusChange(c.id, "UNPUBLISHED", "REJECT", reason);
+                                        }}
+                                        disabled={actionLoading[c.id]}
+                                        className="px-3 py-1.5 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white transition-colors cursor-pointer shadow-2xs"
+                                      >
+                                        {actionLoading[c.id] ? "Updating..." : "Reject"}
+                                      </button>
+                                    </PermissionGuard>
+                                  )}
+                                </>
+                              )}
+
+                              {c.status === "PUBLISHED" && (
                                 <PermissionGuard permission="courses.reject">
                                   <button
-                                    onClick={() => {
-                                      const reason = prompt("Reason for rejection (optional):") || "Course rejected by admin moderation.";
-                                      handleStatusChange(c.id, "UNPUBLISHED", "REJECT", reason);
-                                    }}
+                                    onClick={() => handleStatusChange(c.id, "UNPUBLISHED")}
                                     disabled={actionLoading[c.id]}
-                                    className="px-3 py-1.5 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white transition-colors cursor-pointer shadow-2xs"
+                                    className="px-3 py-1.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white transition-colors cursor-pointer shadow-2xs"
                                   >
-                                    {actionLoading[c.id] ? "Updating..." : "Reject"}
+                                    {actionLoading[c.id] ? "Updating..." : "Unpublish"}
                                   </button>
                                 </PermissionGuard>
                               )}
-                            </>
-                          )}
 
-                          {c.status === "PUBLISHED" && (
-                            <PermissionGuard permission="courses.reject">
-                              <button
-                                onClick={() => handleStatusChange(c.id, "UNPUBLISHED")}
-                                disabled={actionLoading[c.id]}
-                                className="px-3 py-1.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white transition-colors cursor-pointer shadow-2xs"
-                              >
-                                {actionLoading[c.id] ? "Updating..." : "Unpublish"}
-                              </button>
-                            </PermissionGuard>
-                          )}
+                              {c.status !== "ARCHIVED" && (
+                                <PermissionGuard permission="courses.reject">
+                                  <button
+                                    onClick={() => handleStatusChange(c.id, "ARCHIVED")}
+                                    disabled={actionLoading[c.id]}
+                                    className="p-2 rounded-xl bg-slate-100 text-slate-500 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 transition-colors cursor-pointer"
+                                    title="Archive Course"
+                                  >
+                                    <Archive className="w-4 h-4" />
+                                  </button>
+                                </PermissionGuard>
+                              )}
 
-                          {c.status !== "ARCHIVED" && (
-                            <PermissionGuard permission="courses.reject">
-                              <button
-                                onClick={() => handleStatusChange(c.id, "ARCHIVED")}
-                                disabled={actionLoading[c.id]}
-                                className="p-2 rounded-xl bg-slate-100 text-slate-500 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50 transition-colors cursor-pointer"
-                                title="Archive Course"
-                              >
-                                <Archive className="w-4 h-4" />
-                              </button>
-                            </PermissionGuard>
-                          )}
+                              <PermissionGuard permission="courses.delete">
+                                <button
+                                  onClick={() => handleDeleteCourse(c.id, c.title)}
+                                  disabled={actionLoading[c.id]}
+                                  className="p-2 rounded-xl bg-slate-100 text-rose-500 hover:text-rose-700 hover:bg-rose-50 disabled:opacity-50 transition-colors cursor-pointer"
+                                  title="Delete Course Permanently"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </PermissionGuard>
+                            </div>
+                          </td>
+                        </tr>
 
-                          <PermissionGuard permission="courses.delete">
-                            <button
-                              onClick={() => handleDeleteCourse(c.id, c.title)}
-                              disabled={actionLoading[c.id]}
-                              className="p-2 rounded-xl bg-slate-100 text-rose-500 hover:text-rose-700 hover:bg-rose-50 disabled:opacity-50 transition-colors cursor-pointer"
-                              title="Delete Course Permanently"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </PermissionGuard>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        {/* Phase 4: Show the error near the course's moderation status with full guidance */}
+                        {currentError && (
+                          <tr className="bg-amber-50/40 border-b border-amber-200">
+                            <td colSpan={6} className="p-4 sm:p-5">
+                              <ErrorBanner
+                                error={currentError}
+                                showAdminGuidance={true}
+                                onDismiss={() => {
+                                  // Allows admin to dismiss notification without altering course status
+                                  setCourseErrors((prev) => ({ ...prev, [c.id]: null }));
+                                }}
+                                onRetry={() => {
+                                  // Re-runs authoritative check against server
+                                  handleStatusChange(c.id, "PUBLISHED", "APPROVE", undefined, true);
+                                }}
+                                retryLoading={actionLoading[c.id]}
+                                actions={[
+                                  {
+                                    label: "View Curriculum",
+                                    icon: <Eye className="w-3.5 h-3.5" />,
+                                    variant: "outline",
+                                    onClick: () => {
+                                      window.open(`/courses/${c.slug}/preview`, "_blank");
+                                    },
+                                  },
+                                  {
+                                    label: notifyLoading[c.id] ? "Sending..." : "Notify Educator",
+                                    icon: <Bell className="w-3.5 h-3.5" />,
+                                    variant: "primary",
+                                    disabled: notifyLoading[c.id],
+                                    onClick: () => handleNotifyEducator(c.id, c.title),
+                                  },
+                                ]}
+                              />
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })
                 )}
               </tbody>
             </table>
