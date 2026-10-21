@@ -1,5 +1,8 @@
 import { getPublicAppUrl } from "../../app-url";
 import { generateEmailFooterHtml } from "./email-footer";
+import { resolveEmailTheme, EmailThemeType } from "../email-theme";
+
+export type NotificationBadgeVariant = "pending" | "success" | "danger" | "warning" | "info" | "theme";
 
 export interface NotificationEmailParams {
   email: string;
@@ -8,11 +11,15 @@ export interface NotificationEmailParams {
   headline: string;
   bodyText: string;
   statusBadgeText: string;
-  statusBadgeVariant: "pending" | "success" | "danger" | "warning" | "info";
+  statusBadgeVariant?: NotificationBadgeVariant;
   reasonText?: string;
   actionUrl?: string;
   actionText?: string;
   roleName?: string;
+  role?: string;
+  theme?: EmailThemeType;
+  appUrl?: string;
+  originHost?: string;
 }
 
 /**
@@ -20,17 +27,31 @@ export interface NotificationEmailParams {
  * for EduConnects System Notifications, Staff Invitations, Welcome Emails, and Educator Status Updates.
  */
 export function generateNotificationEmailHtml(params: NotificationEmailParams): string {
-  const badgeColors: Record<string, { bg: string; text: string; border: string; dot: string }> = {
+  const theme = resolveEmailTheme({
+    theme: params.theme,
+    role: params.role || params.roleName,
+    host: params.originHost || params.appUrl,
+    originUrl: params.appUrl,
+  });
+
+  const badgeColors: Record<NotificationBadgeVariant, { bg: string; text: string; border: string; dot: string }> = {
     pending: { bg: "#fef3c7", text: "#92400e", border: "#fde68a", dot: "#d97706" },
     success: { bg: "#ecfdf5", text: "#065f46", border: "#a7f3d0", dot: "#10b981" },
     danger: { bg: "#fef2f2", text: "#991b1b", border: "#fecaca", dot: "#ef4444" },
     warning: { bg: "#fff7ed", text: "#9a3412", border: "#fed7aa", dot: "#f97316" },
     info: { bg: "#eff6ff", text: "#1e40af", border: "#bfdbfe", dot: "#3b82f6" },
+    theme: { bg: theme.softBg, text: theme.dark, border: theme.noticeBorder, dot: theme.primary },
   };
 
-  const badgeStyle = badgeColors[params.statusBadgeVariant] || badgeColors.info;
+  const effectiveVariant = params.statusBadgeVariant === "theme" ||
+    (!params.statusBadgeVariant && params.statusBadgeText === "WELCOME") ||
+    (params.statusBadgeText === "WELCOME" && params.statusBadgeVariant === "success")
+      ? "theme"
+      : (params.statusBadgeVariant || "info");
+
+  const badgeStyle = badgeColors[effectiveVariant] || badgeColors.theme;
   const recipient = params.recipientName && params.recipientName.trim() ? params.recipientName.trim() : "Colleague";
-  const baseUrl = getPublicAppUrl();
+  const baseUrl = params.appUrl || getPublicAppUrl();
 
   // Clean and parse body text into formatted HTML blocks
   let rawBody = params.bodyText || "";
@@ -57,7 +78,7 @@ export function generateNotificationEmailHtml(params: NotificationEmailParams): 
           stepsHtml += `
             <tr>
               <td valign="top" style="width: 28px; padding-bottom: 10px;">
-                <span style="display: inline-block; width: 22px; height: 22px; background-color: #0f5c5a; color: #ffffff; font-size: 11px; font-weight: 800; line-height: 22px; text-align: center; border-radius: 50%;">
+                <span style="display: inline-block; width: 22px; height: 22px; background-color: ${theme.primary}; color: #ffffff; font-size: 11px; font-weight: 800; line-height: 22px; text-align: center; border-radius: 50%;">
                   ${num}
                 </span>
               </td>
@@ -84,10 +105,10 @@ export function generateNotificationEmailHtml(params: NotificationEmailParams): 
       const roleName = lines.length > 1 ? lines[lines.length - 1] : trimmed.replace(/.*role:\s*/i, "");
 
       formattedContentHtml += `
-        <div style="margin: 18px 0; background: linear-gradient(135deg, #f0fdf4 0%, #e6f0ef 100%); border: 1px solid #a7f3d0; border-radius: 14px; padding: 16px 20px;">
+        <div style="margin: 18px 0; background: linear-gradient(135deg, ${theme.softBg} 0%, #ffffff 100%); border: 1px solid ${theme.noticeBorder}; border-radius: 14px; padding: 16px 20px;">
           <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
             <tr>
-              <td style="font-size: 12px; font-weight: 700; color: #0f5c5a; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 4px;">
+              <td style="font-size: 12px; font-weight: 700; color: ${theme.primary}; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 4px;">
                 Assigned Custom Role
               </td>
             </tr>
@@ -103,7 +124,7 @@ export function generateNotificationEmailHtml(params: NotificationEmailParams): 
     // Check if paragraph is a closing note or disclaimer
     else if (/if\s+you\s+were\s+not\s+expecting/i.test(trimmed) || /security|administrator/i.test(trimmed)) {
       formattedContentHtml += `
-        <div style="margin: 16px 0; background-color: #f1f5f9; border-left: 4px solid #0f5c5a; border-radius: 6px; padding: 12px 16px; font-size: 13px; line-height: 1.5; color: #475569;">
+        <div style="margin: 16px 0; background-color: #f1f5f9; border-left: 4px solid ${theme.primary}; border-radius: 6px; padding: 12px 16px; font-size: 13px; line-height: 1.5; color: #475569;">
           ${trimmed.replace(/\n/g, "<br>")}
         </div>
       `;
@@ -171,7 +192,7 @@ export function generateNotificationEmailHtml(params: NotificationEmailParams): 
           
           <!-- Header Banner -->
           <tr>
-            <td class="header-padding" align="center" style="background: linear-gradient(135deg, #083F3D 0%, #0F5C5A 50%, #2A8C84 100%); padding: 36px 32px; text-align: center;">
+            <td class="header-padding" align="center" style="background: ${theme.headerGradient}; padding: 36px 32px; text-align: center;">
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                   <td align="center">
@@ -186,10 +207,10 @@ export function generateNotificationEmailHtml(params: NotificationEmailParams): 
 
                     <!-- Brand Name & Tagline -->
                     <h1 style="margin: 0; font-size: 26px; font-weight: 900; color: #ffffff; letter-spacing: -0.2px; text-transform: none;">
-                      EduConnects
+                      ${theme.portalLabel}
                     </h1>
-                    <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: 600; color: #A7F3D0; letter-spacing: 0.5px;">
-                      Learn • Grow • Belong
+                    <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: 600; color: ${theme.light}; letter-spacing: 0.5px;">
+                      ${theme.portalSubtitle}
                     </p>
                   </td>
                 </tr>
@@ -235,10 +256,10 @@ export function generateNotificationEmailHtml(params: NotificationEmailParams): 
                   : ""
               }
 
-              <!-- Verification Note Callout (User Requirement) -->
-              <div style="margin: 24px 0; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; border-radius: 12px; padding: 14px 18px; text-align: left;">
-                <p style="margin: 0; font-size: 13px; line-height: 1.55; color: #166534; font-weight: 500;">
-                  Someone visited our official website <a href="https://www.educonnects.co.in" style="color: #15803d; font-weight: 700; text-decoration: underline;" target="_blank">www.educonnects.co.in</a> and requested this verification email. If you did not request it, please ignore this email. Thank you!
+              <!-- Verification Note Callout (Theme Consistent) -->
+              <div style="margin: 24px 0; background-color: ${theme.noticeBg}; border: 1px solid ${theme.noticeBorder}; border-left: 4px solid ${theme.noticeAccentBar}; border-radius: 12px; padding: 14px 18px; text-align: left;">
+                <p style="margin: 0; font-size: 13px; line-height: 1.55; color: ${theme.noticeText}; font-weight: 500;">
+                  Someone visited our official portal <a href="${theme.domainUrl}" style="color: ${theme.noticeLink}; font-weight: 700; text-decoration: underline;" target="_blank">${theme.displayDomain}</a> and requested this email. If you did not request it, please ignore this email. Thank you!
                 </p>
               </div>
 
@@ -247,7 +268,7 @@ export function generateNotificationEmailHtml(params: NotificationEmailParams): 
                 params.actionUrl
                   ? `
                 <div style="margin: 28px 0 12px 0; text-align: center;">
-                  <a href="${params.actionUrl}" class="cta-button" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #0f5c5a 0%, #083f3d 100%); color: #ffffff !important; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 14px; box-shadow: 0 10px 20px rgba(15, 92, 90, 0.25); text-align: center;">
+                  <a href="${params.actionUrl}" class="cta-button" target="_blank" style="display: inline-block; background: ${theme.ctaGradient}; color: #ffffff !important; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 14px; box-shadow: 0 10px 20px ${theme.ctaShadow}; text-align: center;">
                     ${params.actionText || "Continue to EduConnects"} &rarr;
                   </a>
                 </div>
@@ -259,7 +280,7 @@ export function generateNotificationEmailHtml(params: NotificationEmailParams): 
           </tr>
 
           <!-- Standardized EduConnects Redesigned Footer -->
-          ${generateEmailFooterHtml({ baseUrl })}
+          ${generateEmailFooterHtml({ baseUrl, theme: theme.name })}
 
         </table>
 

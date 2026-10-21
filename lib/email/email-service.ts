@@ -87,11 +87,17 @@ export class ConsoleEmailProvider implements IEmailProvider {
   }
 
   async sendNotificationEmail(params: NotificationEmailParams): Promise<boolean> {
+    const resolvedTheme = resolveEmailTheme({
+      theme: params.theme,
+      role: params.role || params.roleName,
+      host: params.originHost || params.appUrl,
+    });
     console.log("\n==================================================");
     console.log("✉️ [EMAIL NOTIFICATION: CONSOLE LOG]");
     console.log(`To: ${params.email}`);
     console.log(`Subject: ${params.subject}`);
     console.log(`Recipient: ${params.recipientName}`);
+    console.log(`🎨 Theme:      ${resolvedTheme.name.toUpperCase()} (${resolvedTheme.portalLabel})`);
     console.log(`Status Badge: [${params.statusBadgeText}]`);
     console.log(`Headline: ${params.headline}`);
     if (params.reasonText) console.log(`Reason: ${params.reasonText}`);
@@ -298,7 +304,7 @@ export function getEmailProvider(): IEmailProvider {
   const providerType = process.env.EMAIL_PROVIDER?.toLowerCase() || "";
   const hasResendKey = !!(process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim() !== "");
 
-  if (providerType === "console") {
+  if (providerType === "console" || process.env.NODE_ENV === "test") {
     return new ConsoleEmailProvider();
   }
 
@@ -311,8 +317,11 @@ export function getEmailProvider(): IEmailProvider {
     return new ResendEmailProvider();
   }
 
-  const { ResendEmailProvider } = require("./resend-provider");
-  return new ResendEmailProvider();
+  if (process.env.SMTP_USER && process.env.SMTP_PASSWORD) {
+    return new SMTPEmailProvider();
+  }
+
+  return new ConsoleEmailProvider();
 }
 
 /**
@@ -393,16 +402,61 @@ export class EmailService {
   static async sendWelcomeEmail(params: {
     email: string;
     userName?: string;
+    role?: string;
+    theme?: EmailThemeType;
+    originHost?: string;
+    actionUrl?: string;
+    actionText?: string;
+    subject?: string;
+    headline?: string;
+    bodyText?: string;
   }): Promise<boolean> {
     const provider = getEmailProvider();
+    const resolvedTheme = resolveEmailTheme({
+      theme: params.theme,
+      role: params.role,
+      host: params.originHost,
+    });
+
+    const isEducator = resolvedTheme.name === "educator";
+    const defaultRecipient = isEducator ? "Educator" : "Learner";
+    const recipientName = params.userName && params.userName.trim()
+      ? params.userName.trim()
+      : defaultRecipient;
+
+    const defaultSubject = isEducator
+      ? `Welcome to ${resolvedTheme.portalLabel}! 🎓`
+      : `Welcome to ${resolvedTheme.portalLabel}! 🎓`;
+
+    const defaultHeadline = isEducator
+      ? "Welcome to the EduConnects Educator Community!"
+      : "Your EduConnects journey starts here!";
+
+    const defaultBodyText = isEducator
+      ? "Welcome to EduConnects! We are thrilled to have you join our educator community. Host interactive live classes, publish courses, manage your earnings, and inspire learners across the nation."
+      : "Explore top teachers, host live classes, and master new skills on EduConnects.";
+
+    const defaultActionUrl = isEducator
+      ? `${resolvedTheme.domainUrl}/dashboard`
+      : `${resolvedTheme.domainUrl}/courses`;
+
+    const defaultActionText = isEducator
+      ? "Go to Educator Dashboard"
+      : "Explore Courses Now";
+
     return provider.sendNotificationEmail({
       email: params.email,
-      recipientName: params.userName || "Learner",
-      subject: "Welcome to EduConnects! 🎓",
+      recipientName,
+      subject: params.subject || defaultSubject,
       statusBadgeText: "WELCOME",
-      statusBadgeVariant: "success",
-      headline: "Your EduConnects journey starts here!",
-      bodyText: "Explore top teachers, host live classes, and master new skills on EduConnects.",
+      statusBadgeVariant: "theme",
+      headline: params.headline || defaultHeadline,
+      bodyText: params.bodyText || defaultBodyText,
+      actionUrl: params.actionUrl || defaultActionUrl,
+      actionText: params.actionText || defaultActionText,
+      role: params.role,
+      theme: resolvedTheme.name,
+      originHost: params.originHost,
     });
   }
 

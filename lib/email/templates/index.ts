@@ -3,14 +3,8 @@ export * from "./password-reset-email";
 export * from "./verification-templates";
 export * from "./certificate-email";
 export * from "./email-footer";
+export * from "./welcome-email";
 
-/**
- * Placeholder signatures for future EduConnects module email templates.
- */
-export interface WelcomeEmailParams {
-  email: string;
-  userName: string;
-}
 
 export interface TeacherVerificationStatusEmailParams {
   email: string;

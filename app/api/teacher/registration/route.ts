@@ -790,6 +790,7 @@ export async function POST(request: NextRequest) {
       await EmailService.sendWelcomeEmail({
         email: createdUser.email,
         userName: createdUser.profile?.firstName || "Educator",
+        role: createdUser.role || "TEACHER",
       });
 
       // Build session payload

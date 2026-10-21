@@ -573,6 +573,7 @@ export class AuthService {
       await EmailService.sendWelcomeEmail({
         email: createdUser.email,
         userName: createdUser.profile?.firstName,
+        role: createdUser.role,
       });
 
       // Dispatch auth.welcome event to trigger in-app notification & WhatsApp registration confirmation
@@ -956,6 +957,7 @@ export class AuthService {
       await EmailService.sendWelcomeEmail({
         email: createdUser.email,
         userName: createdUser.profile?.firstName,
+        role: createdUser.role,
       });
 
       const userSession: UserSession = {

@@ -118,7 +118,7 @@ export function generateEmailFooterHtml(options: EmailFooterOptions = {}): strin
 
               <!-- 4. Support / Contact Information -->
               <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.5; color: #64748b; text-align: center;">
-                Need assistance? Contact our support team at <a href="mailto:support@educonnects.co.in" style="color: #0f5c5a; font-weight: 700; text-decoration: underline;">support@educonnects.co.in</a> &nbsp;|&nbsp; WhatsApp: <a href="https://wa.me/919109019090" target="_blank" rel="noopener noreferrer" style="color: #0f5c5a; font-weight: 700; text-decoration: underline;">+91 9109019090</a>
+                Need assistance? Contact our support team at <a href="mailto:support@educonnects.co.in" style="color: ${themePalette.primary}; font-weight: 700; text-decoration: underline;">support@educonnects.co.in</a> &nbsp;|&nbsp; WhatsApp: <a href="https://wa.me/919109019090" target="_blank" rel="noopener noreferrer" style="color: ${themePalette.primary}; font-weight: 700; text-decoration: underline;">+91 9109019090</a>
               </p>
 
               <!-- 5. Official Registered Office Address & Corporate Entity -->
@@ -136,7 +136,7 @@ export function generateEmailFooterHtml(options: EmailFooterOptions = {}): strin
 
               <!-- 7. Powered by MyProFunnels Ventures -->
               <p style="margin: 0; font-size: 11px; line-height: 1.4; color: #94a3b8; text-align: center;">
-                <a href="https://myprofunnels.com" target="_blank" rel="noopener noreferrer" style="color: #0f5c5a; font-weight: 700; text-decoration: underline;">Powered by MyProFunnels Ventures</a>
+                <a href="https://myprofunnels.com" target="_blank" rel="noopener noreferrer" style="color: ${themePalette.primary}; font-weight: 700; text-decoration: underline;">Powered by MyProFunnels Ventures</a>
               </p>
 
             </td>
