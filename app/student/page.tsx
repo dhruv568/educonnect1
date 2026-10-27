@@ -14,6 +14,7 @@ import { GlassCard } from "@/components/glass/glass-card";
 import { GlassBadge } from "@/components/glass/glass-badge";
 import { GlassButton } from "@/components/glass/glass-button";
 import { CourseCard } from "@/components/courses/course-card";
+import { EducatorCard } from "@/components/educator/educator-card";
 import { AuthModal } from "@/components/shared/auth-modal";
 import {
   GraduationCap,
@@ -726,71 +727,11 @@ export default function StudentLandingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {(featuredTeachers.length > 0 ? featuredTeachers : fallbackTeachers).map((teacher) => (
-                <GlassCard
+                <EducatorCard
                   key={teacher.id}
-                  className="p-6 rounded-3xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-blue-300 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group min-w-0 overflow-hidden"
-                >
-                  <div className="space-y-4 min-w-0">
-                    {/* Educator Avatar & Verification */}
-                    <div className="relative w-fit">
-                      <img
-                        src={teacher.avatarUrl}
-                        alt={teacher.name}
-                        className="w-16 h-16 rounded-2xl object-cover ring-2 ring-blue-500/20 group-hover:ring-[#2563EB] transition-all shadow-sm aspect-square shrink-0"
-                      />
-                      <div className="absolute -bottom-1.5 -right-1.5 p-1 bg-blue-600 text-white rounded-full shadow-xs" title="Identity & Degree Verified">
-                        <ShieldCheck className="h-3.5 w-3.5" />
-                      </div>
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex items-center justify-between min-w-0">
-                        <h3 className="text-base font-black text-slate-900 group-hover:text-[#2563EB] transition-colors truncate min-w-0" title={teacher.name}>
-                          {teacher.name}
-                        </h3>
-                      </div>
-                      <p className="text-xs text-slate-500 font-medium truncate mt-0.5" title={teacher.headline}>
-                        {teacher.headline}
-                      </p>
-                    </div>
-
-                    {/* Subject Badges */}
-                    <div className="flex flex-wrap gap-1 min-w-0">
-                      {(teacher.subjects || []).slice(0, 3).map((sub: string, sIdx: number) => (
-                        <span
-                          key={sIdx}
-                          className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-[#2563EB] border border-blue-100"
-                        >
-                          {sub}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Stats & Hourly Rate */}
-                    <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1 font-extrabold text-amber-600">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 stroke-amber-500" />
-                        <span>{teacher.rating ? Number(teacher.rating).toFixed(1) : "4.9"}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">
-                          ({teacher.experienceYears ? `${teacher.experienceYears}y exp` : "Expert"})
-                        </span>
-                      </div>
-                      <div className="font-black text-slate-900">
-                        {formatCurrency(teacher.hourlyRate || 300)}
-                        <span className="text-[10px] text-slate-500 font-normal">/hr</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-5 mt-4 border-t border-slate-100">
-                    <Link href={`/student/register?educatorId=${teacher.id}&trial=true`} className="w-full block">
-                      <button className="w-full py-2.5 px-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1 shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed">
-                        <span>Book Trial Lesson</span>
-                        <ArrowRight className="h-3.5 w-3.5 text-white" />
-                      </button>
-                    </Link>
-                  </div>
-                </GlassCard>
+                  educator={teacher}
+                  theme="learner"
+                />
               ))}
             </div>
           </div>

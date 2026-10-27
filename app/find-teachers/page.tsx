@@ -105,7 +105,7 @@ function FindTeachersContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div data-theme="main" className="min-h-screen flex flex-col bg-slate-50">
       <FloatingNavbar />
 
       <main className="flex-1 pt-32 pb-20">

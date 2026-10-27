@@ -88,6 +88,7 @@
     --color-primary-soft: #F0FAF5;
     --color-border-brand: #A7F3D0;
     --color-ring: rgba(22, 128, 91, 0.35);
+    --color-card-glow: rgba(22, 128, 91, 0.15);
   }
 
   [data-theme="home"],
@@ -104,9 +105,11 @@
     --color-primary-soft: #F0FAF5;
     --color-border-brand: #A7F3D0;
     --color-ring: rgba(22, 128, 91, 0.35);
+    --color-card-glow: rgba(22, 128, 91, 0.15);
   }
 
-  [data-theme="learner"] {
+  [data-theme="learner"],
+  .theme-learner {
     --theme-primary: #2563EB;
     --theme-primary-dark: #1E40AF;
     --theme-accent: #60A5FA;
@@ -119,9 +122,11 @@
     --color-primary-soft: #EFF6FF;
     --color-border-brand: #BFDBFE;
     --color-ring: rgba(37, 99, 235, 0.35);
+    --color-card-glow: rgba(37, 99, 235, 0.15);
   }
 
-  [data-theme="educator"] {
+  [data-theme="educator"],
+  .theme-educator {
     --theme-primary: #0F766E;
     --theme-primary-dark: #115E59;
     --theme-accent: #2DD4BF;
@@ -134,6 +139,7 @@
     --color-primary-soft: #F0FDFA;
     --color-border-brand: #99F6E4;
     --color-ring: rgba(15, 118, 110, 0.35);
+    --color-card-glow: rgba(15, 118, 110, 0.15);
   }
 
   body {

@@ -49,11 +49,11 @@ async function runEducatorCardOverflowTests() {
     "TeacherCardGrid text container must include 'min-w-0 flex-1'"
   );
   assert.ok(
-    teacherCardGridContent.includes("group-hover:text-emerald-700 transition-colors truncate min-w-0"),
+    teacherCardGridContent.includes("truncate min-w-0"),
     "TeacherCardGrid name must include 'truncate min-w-0'"
   );
   assert.ok(
-    teacherCardGridContent.includes("text-emerald-700 truncate mt-0.5"),
+    teacherCardGridContent.includes("truncate mt-0.5"),
     "TeacherCardGrid headline must include 'truncate mt-0.5'"
   );
   console.log("✅ Passed: TeacherCardGrid has all required overflow constraints.");

@@ -7,7 +7,7 @@ function cn(...inputs: any[]) {
 }
 
 export interface GlassBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: "primary" | "emerald" | "blue" | "indigo" | "amber" | "rose" | "dark" | "outline" | "learner" | "educator" | "teal";
+  variant?: "primary" | "emerald" | "blue" | "indigo" | "amber" | "rose" | "dark" | "outline" | "learner" | "educator" | "teal" | "theme";
   size?: "sm" | "md";
 }
 
@@ -27,6 +27,7 @@ export function GlassBadge({ className, variant = "primary", size = "md", childr
     learner: "bg-[#EFF6FF] text-[#1E40AF] border-[#BFDBFE] font-bold",
     educator: "bg-[#F0FDFA] text-[#115E59] border-[#99F6E4] font-bold",
     teal: "bg-[#F0FDFA] text-[#115E59] border-[#99F6E4] font-bold",
+    theme: "bg-[var(--color-primary-soft)] text-[var(--color-primary)] border-[var(--color-border-brand)] font-bold",
   };
 
   const sizes = {

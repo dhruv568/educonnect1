@@ -11,7 +11,7 @@ function cn(...inputs: any[]) {
 }
 
 export interface GlassButtonProps extends HTMLMotionProps<"button"> {
-  variant?: "primary" | "secondary" | "ghost" | "glow" | "learner" | "educator" | "student" | "teacher";
+  variant?: "primary" | "secondary" | "ghost" | "glow" | "learner" | "educator" | "student" | "teacher" | "theme";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
@@ -54,6 +54,8 @@ export const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>
         "bg-[#0F766E] text-white shadow-md shadow-teal-700/25 border border-white/25 hover:bg-[#115E59] hover:shadow-lg hover:shadow-teal-700/35 focus-visible:ring-[#0F766E] font-bold",
       teacher:
         "bg-[#0F766E] text-white shadow-md shadow-teal-700/25 border border-white/25 hover:bg-[#115E59] hover:shadow-lg hover:shadow-teal-700/35 focus-visible:ring-[#0F766E] font-bold",
+      theme:
+        "bg-[var(--color-primary)] text-white shadow-md shadow-[var(--color-ring)] border border-white/25 hover:bg-[var(--color-primary-dark)] active:opacity-95 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 disabled:bg-slate-300 disabled:text-slate-500 font-bold",
     };
 
     const sizes = {
