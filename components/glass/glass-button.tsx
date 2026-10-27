@@ -47,9 +47,9 @@ export const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>
       glow:
         "bg-[#16805B] text-white shadow-[0_0_20px_rgba(22,128,91,0.35)] border border-emerald-400/40 hover:bg-[#0D5C41] hover:shadow-[0_0_30px_rgba(22,128,91,0.5)] focus-visible:ring-[#16805B]",
       learner:
-        "bg-[#2563EB] text-white shadow-md shadow-blue-500/25 border border-white/25 hover:bg-[#1E40AF] hover:shadow-lg hover:shadow-blue-500/35 focus-visible:ring-[#2563EB] font-bold",
+        "bg-[#2563EB] text-white shadow-md shadow-blue-500/25 border border-white/25 hover:bg-[#1D4ED8] hover:shadow-lg hover:shadow-blue-500/35 focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 disabled:bg-slate-300 disabled:text-slate-500 font-bold",
       student:
-        "bg-[#2563EB] text-white shadow-md shadow-blue-500/25 border border-white/25 hover:bg-[#1E40AF] hover:shadow-lg hover:shadow-blue-500/35 focus-visible:ring-[#2563EB] font-bold",
+        "bg-[#2563EB] text-white shadow-md shadow-blue-500/25 border border-white/25 hover:bg-[#1D4ED8] hover:shadow-lg hover:shadow-blue-500/35 focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 disabled:bg-slate-300 disabled:text-slate-500 font-bold",
       educator:
         "bg-[#0F766E] text-white shadow-md shadow-teal-700/25 border border-white/25 hover:bg-[#115E59] hover:shadow-lg hover:shadow-teal-700/35 focus-visible:ring-[#0F766E] font-bold",
       teacher:

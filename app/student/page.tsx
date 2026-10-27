@@ -784,9 +784,9 @@ export default function StudentLandingPage() {
 
                   <div className="pt-5 mt-4 border-t border-slate-100">
                     <Link href={`/student/register?educatorId=${teacher.id}&trial=true`} className="w-full block">
-                      <button className="w-full py-2.5 px-3 rounded-xl bg-[#2563EB] hover:bg-[#1E40AF] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1 shadow-sm cursor-pointer">
+                      <button className="w-full py-2.5 px-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1 shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed">
                         <span>Book Trial Lesson</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
+                        <ArrowRight className="h-3.5 w-3.5 text-white" />
                       </button>
                     </Link>
                   </div>

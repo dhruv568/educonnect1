@@ -106,9 +106,9 @@ export function TeacherPreviewModal({ teacher, isOpen, onClose, onOpenAuth }: Te
                 className="w-full sm:w-auto"
               >
                 <GlassButton
-                  variant="primary"
-                  className="w-full bg-[#16805B] hover:bg-[#0D5C41] text-white shadow-md shadow-emerald-700/20"
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
+                  variant="learner"
+                  className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-md shadow-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed font-bold"
+                  rightIcon={<ArrowRight className="h-4 w-4 text-white" />}
                 >
                   Book Trial Lesson
                 </GlassButton>

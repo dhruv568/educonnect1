@@ -96,7 +96,12 @@ export function TeacherCardGrid({ teachers, loading = false, onOpenAuth }: Teach
 
             <div className="pt-4 border-t border-slate-100 mt-4 flex items-center gap-2">
               <Link href={`/student/register?educatorId=${t.id}&trial=true`} className="w-full">
-                <GlassButton variant="primary" size="sm" className="w-full bg-[#16805B] hover:bg-[#0D5C41] text-white font-bold shadow-md shadow-emerald-700/20" rightIcon={<ArrowRight className="h-3.5 w-3.5" />}>
+                <GlassButton
+                  variant="learner"
+                  size="sm"
+                  className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold shadow-md shadow-blue-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed"
+                  rightIcon={<ArrowRight className="h-3.5 w-3.5 text-white" />}
+                >
                   Book Trial Lesson
                 </GlassButton>
               </Link>
