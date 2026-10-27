@@ -16,10 +16,11 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   showPasswordToggle?: boolean;
+  containerClassName?: string;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, helperText, leftIcon, rightIcon, showPasswordToggle = true, id, ...props }, ref) => {
+  ({ className, containerClassName, type, label, error, helperText, leftIcon, rightIcon, showPasswordToggle = true, id, ...props }, ref) => {
     const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -28,7 +29,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const hasPasswordToggle = isPasswordType && showPasswordToggle;
 
     return (
-      <div className="w-full space-y-1.5 scroll-mt-24">
+      <div className={cn("w-full space-y-2 scroll-mt-24", containerClassName)}>
         {label && (
           <label htmlFor={inputId} className="block text-xs font-semibold text-[#0F172A] uppercase tracking-wider">
             {label}
@@ -82,9 +83,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </div>
 
         {error ? (
-          <p className="text-xs text-red-500 font-medium">{error}</p>
+          <p className="text-xs text-red-500 font-medium pt-0.5">{error}</p>
         ) : helperText ? (
-          <p className="text-xs text-[#5D7373]">{helperText}</p>
+          <p className="text-xs text-[#5D7373] pt-0.5">{helperText}</p>
         ) : null}
       </div>
     );

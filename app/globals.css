@@ -147,6 +147,12 @@
     color: #1E40AF;
   }
 
+  [data-theme="educator"] ::selection,
+  .theme-educator ::selection {
+    background-color: rgba(15, 118, 110, 0.2);
+    color: #115E59;
+  }
+
   select {
     @apply glass-select;
   }
@@ -280,6 +286,44 @@ select.text-slate-700 option {
 .theme-learner input:focus,
 .theme-learner textarea:focus {
   border-color: #2563EB !important;
+}
+
+/* Educator Theme Selects & Dropdowns */
+[data-theme="educator"] .glass-select,
+[data-theme="educator"] select.bg-white,
+[data-theme="educator"] select.bg-slate-50,
+.theme-educator .glass-select,
+.theme-educator select.bg-white,
+.theme-educator select.bg-slate-50 {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='%230F766E'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E") !important;
+}
+
+[data-theme="educator"] .glass-select:hover,
+[data-theme="educator"] select.bg-white:hover,
+[data-theme="educator"] select.bg-slate-50:hover,
+.theme-educator .glass-select:hover,
+.theme-educator select.bg-white:hover,
+.theme-educator select.bg-slate-50:hover {
+  border-color: #0F766E !important;
+}
+
+[data-theme="educator"] .glass-select:focus,
+[data-theme="educator"] select.bg-white:focus,
+[data-theme="educator"] select.bg-slate-50:focus,
+.theme-educator .glass-select:focus,
+.theme-educator select.bg-white:focus,
+.theme-educator select.bg-slate-50:focus {
+  outline: none !important;
+  border-color: #0F766E !important;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2) !important;
+}
+
+/* Educator Theme Inputs & Form Controls Focus */
+[data-theme="educator"] input:focus,
+[data-theme="educator"] textarea:focus,
+.theme-educator input:focus,
+.theme-educator textarea:focus {
+  border-color: #0F766E !important;
 }
 
 /* Dark Theme Selects (Dark Forms, Dark Modals & Dark Dashboards) */
@@ -441,6 +485,12 @@ input[class*="bg-slate-900"]:-webkit-autofill:focus,
 .theme-learner .glass-dropdown-item:hover {
   background-color: rgba(37, 99, 235, 0.08);
   color: #1E40AF;
+}
+
+[data-theme="educator"] .glass-dropdown-item:hover,
+.theme-educator .glass-dropdown-item:hover {
+  background-color: rgba(15, 118, 110, 0.08);
+  color: #115E59;
 }
 
 /* Perspective container for 3D tilts */

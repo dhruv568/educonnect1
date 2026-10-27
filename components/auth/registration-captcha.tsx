@@ -43,17 +43,19 @@ export function RegistrationCaptcha({ onVerifyChange, error }: RegistrationCaptc
   };
 
   return (
-    <div className="p-4 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-2.5 scroll-mt-24 scroll-mb-36">
-      <div className="flex items-center justify-between">
+    <div className="w-full p-4.5 sm:p-5 rounded-2xl bg-gradient-to-b from-blue-50/50 via-slate-50/70 to-slate-50/90 border border-blue-100/90 shadow-2xs space-y-3.5 scroll-mt-24 scroll-mb-36">
+      <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
         <div className="flex items-center gap-2 text-slate-800 text-xs font-bold uppercase tracking-wider">
-          <ShieldCheck className="h-4 w-4 text-blue-600" />
+          <div className="w-6 h-6 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-600 shrink-0">
+            <ShieldCheck className="h-4 w-4" />
+          </div>
           <span>Security Verification</span>
         </div>
         <button
           type="button"
           onClick={fetchCaptcha}
           disabled={loading}
-          className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 font-semibold transition-colors disabled:opacity-50"
+          className="min-h-[36px] px-3 py-1.5 rounded-lg bg-white border border-blue-200/80 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50/80 active:bg-blue-100 flex items-center gap-1.5 transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
           title="Get a new verification challenge"
         >
           <RotateCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -62,11 +64,11 @@ export function RegistrationCaptcha({ onVerifyChange, error }: RegistrationCaptc
       </div>
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <div className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-center select-none font-black text-sm text-slate-900 tracking-wider shadow-2xs shrink-0">
+        <div className="min-h-[48px] px-5 py-3 bg-white border-2 border-blue-200/90 rounded-xl text-center select-none font-black text-base text-slate-900 tracking-wider shadow-2xs shrink-0 flex items-center justify-center">
           {loading ? (
             <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span>Loading...</span>
+              <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+              <span>Loading challenge...</span>
             </div>
           ) : (
             question || "Security Check"
@@ -83,7 +85,7 @@ export function RegistrationCaptcha({ onVerifyChange, error }: RegistrationCaptc
           spellCheck={false}
           required
           aria-label="Security CAPTCHA answer"
-          placeholder="Enter number"
+          placeholder="Enter answer"
           value={userAnswer}
           onChange={(e) => handleAnswerChange(e.target.value)}
           onFocus={(e) => {
@@ -91,14 +93,14 @@ export function RegistrationCaptcha({ onVerifyChange, error }: RegistrationCaptc
               e.currentTarget.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
             }, 150);
           }}
-          className="flex-1 h-11 px-3.5 text-base sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+          className="w-full flex-1 min-h-[48px] h-12 px-4 text-base bg-white border border-slate-300 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 font-semibold shadow-2xs placeholder:text-slate-400 placeholder:font-normal"
         />
       </div>
 
       {error && (
-        <p className="text-[11px] text-rose-600 font-medium pt-0.5">{error}</p>
+        <p className="text-xs text-rose-600 font-semibold pt-0.5">{error}</p>
       )}
-      <p className="text-[10px] text-slate-400">
+      <p className="text-xs text-slate-500 leading-relaxed pt-0.5">
         Anti-bot protection to ensure genuine learner registration.
       </p>
     </div>

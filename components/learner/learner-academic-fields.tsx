@@ -67,64 +67,74 @@ export function LearnerAcademicFields({
   };
 
   return (
-    <div className={`space-y-4 ${compact ? "text-xs" : "text-sm"}`}>
+    <div className={`space-y-4 sm:space-y-5 ${compact ? "text-xs" : "text-sm"}`}>
       {/* 1. Education Type Selection */}
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
           Education Type <span className="text-rose-500">*</span>
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <button
             type="button"
             disabled={disabled}
             onClick={() => handleEducationTypeChange("SCHOOL")}
-            className={`p-3 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+            className={`p-3.5 sm:p-4 rounded-2xl border text-left flex items-center justify-between gap-3 transition-all cursor-pointer min-h-[58px] ${
               isSchool
-                ? "bg-blue-50/90 border-blue-600 text-blue-900 shadow-xs ring-1 ring-blue-600"
-                : "bg-white border-slate-200 hover:border-slate-300 text-slate-700"
+                ? "bg-blue-50/95 border-2 border-blue-600 text-blue-900 shadow-xs ring-2 ring-blue-600/15"
+                : "bg-white border border-slate-200 hover:border-slate-300 text-slate-700"
             }`}
           >
-            <div
-              className={`p-2 rounded-xl shrink-0 ${
-                isSchool ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"
-              }`}
-            >
-              <GraduationCap className="h-4 w-4" />
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={`p-2.5 rounded-xl shrink-0 transition-colors ${
+                  isSchool ? "bg-blue-600 text-white shadow-xs" : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                <GraduationCap className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="font-extrabold text-xs sm:text-sm text-slate-900 truncate">School Education</div>
+                <div className="text-[11px] text-slate-500 font-medium">Grades 1 to 12</div>
+              </div>
             </div>
-            <div>
-              <div className="font-extrabold text-xs">School Education</div>
-              <div className="text-[10px] text-slate-500 font-medium">Grades 1 to 12</div>
-            </div>
+            {isSchool && (
+              <CheckCircle2 className="h-5 w-5 text-blue-600 shrink-0 ml-1.5" />
+            )}
           </button>
 
           <button
             type="button"
             disabled={disabled}
             onClick={() => handleEducationTypeChange("DIPLOMA")}
-            className={`p-3 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+            className={`p-3.5 sm:p-4 rounded-2xl border text-left flex items-center justify-between gap-3 transition-all cursor-pointer min-h-[58px] ${
               isDiploma
-                ? "bg-blue-50/90 border-blue-600 text-blue-900 shadow-xs ring-1 ring-blue-600"
-                : "bg-white border-slate-200 hover:border-slate-300 text-slate-700"
+                ? "bg-blue-50/95 border-2 border-blue-600 text-blue-900 shadow-xs ring-2 ring-blue-600/15"
+                : "bg-white border border-slate-200 hover:border-slate-300 text-slate-700"
             }`}
           >
-            <div
-              className={`p-2 rounded-xl shrink-0 ${
-                isDiploma ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"
-              }`}
-            >
-              <Layers className="h-4 w-4" />
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={`p-2.5 rounded-xl shrink-0 transition-colors ${
+                  isDiploma ? "bg-blue-600 text-white shadow-xs" : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                <Layers className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="font-extrabold text-xs sm:text-sm text-slate-900 truncate">Diploma / Polytechnic</div>
+                <div className="text-[11px] text-slate-500 font-medium">Engineering & Tech Branches</div>
+              </div>
             </div>
-            <div>
-              <div className="font-extrabold text-xs">Diploma / Polytechnic</div>
-              <div className="text-[10px] text-slate-500 font-medium">Engineering & Tech Branches</div>
-            </div>
+            {isDiploma && (
+              <CheckCircle2 className="h-5 w-5 text-blue-600 shrink-0 ml-1.5" />
+            )}
           </button>
         </div>
       </div>
 
       {/* 2. School: Grade Selection (Conditional on SCHOOL) */}
       {isSchool && (
-        <div className="space-y-1.5 animate-fadeIn">
+        <div className="space-y-2 animate-fadeIn">
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
             Grade / Class <span className="text-rose-500">*</span>
           </label>
@@ -132,7 +142,7 @@ export function LearnerAcademicFields({
             disabled={disabled}
             value={value.gradeLevel}
             onChange={(e) => handleGradeChange(e.target.value)}
-            className="w-full h-10 px-3 text-base sm:text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+            className="w-full h-11 px-3.5 text-base sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 font-medium shadow-2xs"
           >
             <option value="" disabled>
               Select your Grade
@@ -157,12 +167,12 @@ export function LearnerAcademicFields({
 
       {/* 3. School: Stream Selection (Conditional strictly on Grades 11–12) */}
       {isSeniorSec && (
-        <div className="space-y-1.5 animate-fadeIn p-3.5 rounded-2xl bg-blue-50/50 border border-blue-100">
+        <div className="space-y-2.5 animate-fadeIn p-4 rounded-2xl bg-blue-50/60 border border-blue-100">
           <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
             <BookOpen className="h-3.5 w-3.5 text-blue-600" />
             Academic Stream <span className="text-rose-500">*</span>
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {SENIOR_SECONDARY_STREAMS.map((streamOption) => {
               const isSelected = value.stream === streamOption;
               return (
@@ -171,7 +181,7 @@ export function LearnerAcademicFields({
                   type="button"
                   disabled={disabled}
                   onClick={() => onChange({ ...value, stream: streamOption })}
-                  className={`py-2 px-2.5 rounded-xl border text-xs font-bold text-center transition-all cursor-pointer ${
+                  className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-bold text-center transition-all cursor-pointer ${
                     isSelected
                       ? "bg-blue-600 text-white border-blue-600 shadow-xs"
                       : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
@@ -184,7 +194,7 @@ export function LearnerAcademicFields({
           </div>
 
           {/* 4. Competitive Exam Preference (Conditional on Grades 11–12, OPTIONAL) */}
-          <div className="space-y-1.5 pt-3 mt-3 border-t border-blue-100">
+          <div className="space-y-2 pt-3.5 mt-3.5 border-t border-blue-100">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
                 <Award className="h-3.5 w-3.5 text-blue-600" />
@@ -198,7 +208,7 @@ export function LearnerAcademicFields({
               disabled={disabled}
               value={value.competitiveExam || ""}
               onChange={(e) => onChange({ ...value, competitiveExam: e.target.value })}
-              className="w-full h-10 px-3 text-base sm:text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+              className="w-full h-11 px-3.5 text-base sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 font-medium shadow-2xs"
             >
               <option value="">None / Not Preparing for Competitive Exams</option>
               {COMPETITIVE_EXAMS.map((exam) => (
@@ -216,7 +226,7 @@ export function LearnerAcademicFields({
 
       {/* 5. Diploma: Branch / Field Selection (Conditional on DIPLOMA) */}
       {isDiploma && (
-        <div className="space-y-1.5 animate-fadeIn p-3.5 rounded-2xl bg-indigo-50/50 border border-indigo-100">
+        <div className="space-y-2.5 animate-fadeIn p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100">
           <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
             <Layers className="h-3.5 w-3.5 text-indigo-600" />
             Diploma Branch / Engineering Field <span className="text-rose-500">*</span>
@@ -225,7 +235,7 @@ export function LearnerAcademicFields({
             disabled={disabled}
             value={value.diplomaBranch || ""}
             onChange={(e) => onChange({ ...value, diplomaBranch: e.target.value })}
-            className="w-full h-10 px-3 text-base sm:text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+            className="w-full h-11 px-3.5 text-base sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-medium shadow-2xs"
           >
             <option value="" disabled>
               Select your Diploma Branch

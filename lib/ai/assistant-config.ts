@@ -61,7 +61,12 @@ export function getSectionTheme(pathname: string, role: AssistantRole): "home" |
   const p = pathname.toLowerCase();
   if (p.startsWith("/admin") || role === "ADMIN") return "admin";
   if (p.startsWith("/teacher") || role === "EDUCATOR") return "educator";
-  if (p.startsWith("/student") || role === "LEARNER") return "learner";
+  if (p.startsWith("/student") || p.startsWith("/courses") || role === "LEARNER") return "learner";
+  if (typeof window !== "undefined") {
+    const h = window.location.hostname.toLowerCase();
+    if (h.startsWith("learners.") || h.startsWith("students.") || h.startsWith("learner.") || h.startsWith("student.")) return "learner";
+    if (h.startsWith("educators.") || h.startsWith("teachers.") || h.startsWith("educator.") || h.startsWith("teacher.")) return "educator";
+  }
   return "home";
 }
 
@@ -90,42 +95,6 @@ export interface ThemeConfig {
 export const THEMES: Record<"home" | "learner" | "educator" | "admin", ThemeConfig> = {
   home: {
     name: "EduConnects Primary",
-    headerBg: "bg-gradient-to-r from-[#083F3D] to-[#0F5C5A]",
-    headerText: "text-white",
-    accentBg: "bg-[#0F5C5A]",
-    accentHover: "hover:bg-[#083F3D]",
-    accentText: "text-white",
-    bubbleAiBg: "bg-white text-slate-800",
-    bubbleAiBorder: "border-[#DCE5E4]",
-    bubbleUserBg: "bg-[#0F5C5A]",
-    bubbleUserText: "text-white",
-    floatingButtonBg: "bg-[#0F5C5A] hover:bg-[#083F3D] text-white shadow-teal-900/30",
-    badgeBg: "bg-[#0F5C5A] text-white",
-    borderColor: "border-[#DCE5E4]",
-    pillBg: "bg-[#E6F0EF] hover:bg-[#DCE5E4]",
-    pillBorder: "border-[#DCE5E4]",
-    pillText: "text-[#0F5C5A]",
-  },
-  learner: {
-    name: "EduConnects Learner",
-    headerBg: "bg-gradient-to-r from-[#1E40AF] to-[#3157D5]",
-    headerText: "text-white",
-    accentBg: "bg-[#3157D5]",
-    accentHover: "hover:bg-[#1E40AF]",
-    accentText: "text-white",
-    bubbleAiBg: "bg-white text-slate-800",
-    bubbleAiBorder: "border-blue-200",
-    bubbleUserBg: "bg-[#3157D5]",
-    bubbleUserText: "text-white",
-    floatingButtonBg: "bg-[#3157D5] hover:bg-[#1E40AF] text-white shadow-blue-900/30",
-    badgeBg: "bg-[#3157D5] text-white",
-    borderColor: "border-blue-200",
-    pillBg: "bg-blue-50 hover:bg-blue-100",
-    pillBorder: "border-blue-200",
-    pillText: "text-[#3157D5]",
-  },
-  educator: {
-    name: "EduConnects Educator",
     headerBg: "bg-gradient-to-r from-[#0D5C41] to-[#16805B]",
     headerText: "text-white",
     accentBg: "bg-[#16805B]",
@@ -141,6 +110,42 @@ export const THEMES: Record<"home" | "learner" | "educator" | "admin", ThemeConf
     pillBg: "bg-[#F0FAF5] hover:bg-[#DCFCE7]",
     pillBorder: "border-[#A7F3D0]",
     pillText: "text-[#0D5C41]",
+  },
+  learner: {
+    name: "EduConnects Learner",
+    headerBg: "bg-gradient-to-r from-[#1D4ED8] to-[#2563EB]",
+    headerText: "text-white",
+    accentBg: "bg-[#2563EB]",
+    accentHover: "hover:bg-[#1D4ED8]",
+    accentText: "text-white",
+    bubbleAiBg: "bg-white text-slate-800",
+    bubbleAiBorder: "border-blue-200",
+    bubbleUserBg: "bg-[#2563EB]",
+    bubbleUserText: "text-white",
+    floatingButtonBg: "bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-blue-600/30",
+    badgeBg: "bg-[#2563EB] text-white",
+    borderColor: "border-blue-200",
+    pillBg: "bg-[#EFF6FF] hover:bg-blue-100",
+    pillBorder: "border-blue-200",
+    pillText: "text-[#2563EB]",
+  },
+  educator: {
+    name: "EduConnects Educator",
+    headerBg: "bg-gradient-to-r from-[#115E59] to-[#0F766E]",
+    headerText: "text-white",
+    accentBg: "bg-[#0F766E]",
+    accentHover: "hover:bg-[#115E59]",
+    accentText: "text-white",
+    bubbleAiBg: "bg-white text-slate-800",
+    bubbleAiBorder: "border-[#99F6E4]",
+    bubbleUserBg: "bg-[#0F766E]",
+    bubbleUserText: "text-white",
+    floatingButtonBg: "bg-[#0F766E] hover:bg-[#115E59] text-white shadow-teal-900/30",
+    badgeBg: "bg-[#0F766E] text-white",
+    borderColor: "border-[#99F6E4]",
+    pillBg: "bg-[#F0FDFA] hover:bg-[#CCFBF1]",
+    pillBorder: "border-[#99F6E4]",
+    pillText: "text-[#0F766E]",
   },
   admin: {
     name: "EduConnects Admin",

@@ -23,13 +23,20 @@ export const AIAssistantButton: React.FC<AIAssistantButtonProps> = ({
     return null; // Hidden when chat panel is open
   }
 
+  const focusRingClass =
+    themeType === "learner"
+      ? "focus:ring-blue-500/40"
+      : themeType === "educator"
+      ? "focus:ring-teal-500/40"
+      : "focus:ring-emerald-500/40";
+
   return (
     <div className="fixed bottom-5 right-5 sm:bottom-24 sm:right-6 md:bottom-24 md:right-6 lg:bottom-5 lg:right-5 z-50 flex items-center select-none">
       {/* Floating Action Button */}
       <button
         onClick={onClick}
         aria-label="Open EduConnects AI Assistant"
-        className={`group relative flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-teal-500/40 ${theme.floatingButtonBg}`}
+        className={`group relative flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-offset-2 ${focusRingClass} ${theme.floatingButtonBg}`}
       >
         {/* Soft pulsing halo */}
         <span className="absolute -inset-1 rounded-full bg-current opacity-20 animate-ping pointer-events-none" />

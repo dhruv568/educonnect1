@@ -819,15 +819,15 @@ function LearnerRegistrationFlowContent() {
       {/* STEP 1: LEARNER INFORMATION & VERIFICATION */}
       {/* ========================================================================= */}
       {state.step === 1 && (
-        <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-5 sm:p-10 border border-white/90 shadow-xl space-y-6">
-          <div className="text-center sm:text-left space-y-1.5 border-b border-slate-100 pb-5">
+        <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-6 sm:p-8 md:p-10 border border-white/90 shadow-xl space-y-6 sm:space-y-8">
+          <div className="text-center sm:text-left space-y-2.5 sm:space-y-3 border-b border-slate-100 pb-5 sm:pb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#2563EB]/10 text-[#2563EB] text-xs font-bold uppercase tracking-wider border border-[#2563EB]/20">
               <Sparkles className="w-3.5 h-3.5" /> Free Learner Registration
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug sm:leading-tight">
               Create Your Free Learner Account
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500">
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-xl">
               Zero upfront fees or payment details required. Join the community to explore courses, free study guides, and verified educators.
             </p>
           </div>
@@ -835,7 +835,7 @@ function LearnerRegistrationFlowContent() {
           {!state.otpSent ? (
             <form
               onSubmit={handleStep1Submit}
-              className="space-y-4"
+              className="space-y-5 sm:space-y-6"
               onFocusCapture={(e) => {
                 const target = e.target as HTMLElement;
                 if (target && (target.tagName === "INPUT" || target.tagName === "SELECT" || target.tagName === "TEXTAREA")) {
@@ -858,8 +858,8 @@ function LearnerRegistrationFlowContent() {
                 spellCheck={false}
               />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
+                <div className="space-y-1.5">
                   <Input
                     label="Email Address"
                     type="email"
@@ -880,7 +880,7 @@ function LearnerRegistrationFlowContent() {
                     autoCapitalize="none"
                     spellCheck={false}
                   />
-                  <div className="pt-0.5">
+                  <div className="pt-1">
                     <EmailOtpVerifyInline
                       email={state.email}
                       roleContext="student"
@@ -898,7 +898,7 @@ function LearnerRegistrationFlowContent() {
                   </div>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Input
                     label="Mobile Number"
                     type="tel"
@@ -919,7 +919,7 @@ function LearnerRegistrationFlowContent() {
                     inputMode="numeric"
                     pattern="[0-9]*"
                   />
-                  <div className="pt-0.5">
+                  <div className="pt-1">
                     <PhoneOtpVerifyInline
                       phone={state.phone}
                       email={state.email}
@@ -939,7 +939,7 @@ function LearnerRegistrationFlowContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
                 <Input
                   label="Password"
                   type="password"
@@ -966,7 +966,7 @@ function LearnerRegistrationFlowContent() {
               </div>
 
               {/* Learner Academic Profile Selection */}
-              <div className="pt-1">
+              <div className="pt-2 sm:pt-2.5">
                 <LearnerAcademicFields
                   value={state.academic}
                   onChange={(academic) => setState((p) => ({ ...p, academic }))}
@@ -981,16 +981,18 @@ function LearnerRegistrationFlowContent() {
                 }}
               />
 
-              <GlassButton
-                type="submit"
-                variant="learner"
-                className="w-full mt-4 bg-[#2563EB] hover:bg-[#1E40AF] border-[#2563EB] shadow-lg shadow-[#2563EB]/20 text-white font-bold py-3.5 scroll-mb-12"
-                isLoading={submittingStep1}
-                disabled={submittingStep1}
-                rightIcon={<ArrowRight className="h-4 w-4" />}
-              >
-                Continue to Email Verification
-              </GlassButton>
+              <div className="pt-2 sm:pt-4">
+                <GlassButton
+                  type="submit"
+                  variant="learner"
+                  className="w-full min-h-[52px] py-3.5 px-6 bg-[#2563EB] hover:bg-[#1E40AF] active:bg-[#1D4ED8] border border-[#2563EB] shadow-lg shadow-[#2563EB]/25 text-white text-sm sm:text-base font-bold rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer scroll-mb-12"
+                  isLoading={submittingStep1}
+                  disabled={submittingStep1}
+                  rightIcon={<ArrowRight className="h-4.5 w-4.5" />}
+                >
+                  Continue to Email Verification
+                </GlassButton>
+              </div>
             </form>
           ) : (
             /* Inline 6-Digit OTP Verification Form */
@@ -1052,9 +1054,9 @@ function LearnerRegistrationFlowContent() {
             </form>
           )}
 
-          <div className="pt-4 border-t border-slate-100 text-center text-xs text-slate-500">
+          <div className="pt-5 sm:pt-6 border-t border-slate-100 text-center text-xs sm:text-sm text-slate-500">
             Already registered?{" "}
-            <Link href="/student/login" className="font-bold text-[#2563EB] hover:underline">
+            <Link href="/student/login" className="font-bold text-[#2563EB] hover:underline ml-1">
               Sign in as Learner
             </Link>
           </div>
@@ -1928,91 +1930,111 @@ function LearnerRegistrationFlowContent() {
       {/* Handles both Free Learner Registration and Confirmed Program Enrollment */}
       {/* ========================================================================= */}
       {state.step === 7 && (
-        <GlassCard glowColor="rgba(37, 99, 235, 0.2)" className="p-8 sm:p-12 border border-white/90 shadow-2xl text-center space-y-6">
-          <div className="w-20 h-20 rounded-3xl bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/30 flex items-center justify-center mx-auto shadow-xl shadow-[#2563EB]/15">
-            <Sparkles className="w-10 h-10 text-[#2563EB]" />
+        <GlassCard glowColor="rgba(37, 99, 235, 0.2)" className="p-6 sm:p-10 lg:p-12 border border-white/90 shadow-2xl text-center max-w-xl mx-auto space-y-7">
+          {/* Circular Welcome Icon with Balanced Vertical Spacing */}
+          <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-[#2563EB]/10 text-[#2563EB] border-2 border-[#2563EB]/25 flex items-center justify-center mx-auto shadow-xl shadow-[#2563EB]/15 mb-2 transition-transform hover:scale-105">
+            <Sparkles className="w-9 h-9 sm:w-10 sm:h-10 text-[#2563EB]" />
           </div>
 
           {/* Differentiate between Confirmed Paid/Free Enrollment vs Free Registration Account */}
           {state.transactionData || state.orderData?.isFree ? (
             <>
-              <div className="space-y-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Registration & Enrollment Complete
-                </span>
-                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              <div className="space-y-3.5 sm:space-y-4 max-w-lg mx-auto">
+                <div>
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider shadow-2xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> Registration & Enrollment Complete
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-snug sm:leading-tight pt-1">
                   Your EduConnects account is ready!
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
                   Welcome to the learner community, <span className="font-bold text-slate-900">{state.fullName || "Learner"}</span>! Your course enrollment is confirmed and your interactive classroom workspace is unlocked.
                 </p>
               </div>
 
               {/* Enrolled Details Card */}
-              <div className="p-5 rounded-2xl bg-blue-50/80 border border-blue-200 text-left max-w-md mx-auto space-y-2 text-xs">
-                <div className="flex justify-between items-center text-slate-500 pb-2 border-b border-blue-100">
+              <div className="p-6 sm:p-7 rounded-2xl bg-blue-50/80 border border-blue-200 text-left max-w-md mx-auto space-y-3 text-xs sm:text-sm shadow-xs">
+                <div className="flex justify-between items-center text-slate-600 pb-3 border-b border-blue-200/80 font-medium">
                   <span>Status</span>
-                  <span className="font-bold text-emerald-600">Active Enrollment ✓</span>
+                  <span className="font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-md text-xs">Active Enrollment ✓</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Enrolled Program:</span>
-                  <span className="font-bold text-slate-900 text-right truncate max-w-[200px]">
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-slate-600 shrink-0 font-medium">Enrolled Program:</span>
+                  <span className="font-bold text-slate-900 text-right truncate">
                     {state.selectedCourse ? state.selectedCourse.title : state.selectedEducator?.name || "EduConnects Curriculum"}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-600">Access Mode:</span>
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-slate-600 shrink-0 font-medium">Access Mode:</span>
                   <span className="font-semibold text-[#1E40AF]">Full Browser Classroom & LMS</span>
                 </div>
               </div>
             </>
           ) : (
             <>
-              <div className="space-y-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Free Learner Account Active
-                </span>
-                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              <div className="space-y-3.5 sm:space-y-4 max-w-lg mx-auto">
+                <div>
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider shadow-2xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> Free Learner Account Active
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-snug sm:leading-tight pt-1">
                   Welcome to EduConnects, {state.fullName || "Learner"}!
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
                   Your account is verified and ready. You now have full free access to explore certified courses, view educator timetables, and access community learning resources.
                 </p>
               </div>
 
-              {/* Free Benefits Card */}
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-left max-w-md mx-auto space-y-2.5 text-xs">
-                <div className="font-bold text-slate-800 pb-1 border-b border-slate-200">
-                  Your Free Learner Privileges:
+              {/* Free Benefits Card with Spacious, Neatly Aligned Rows */}
+              <div className="p-6 sm:p-7 rounded-2xl bg-slate-50/90 border border-slate-200/90 text-left max-w-md mx-auto shadow-xs">
+                <div className="font-bold text-xs sm:text-sm text-slate-900 pb-3 mb-4 border-b border-slate-200/90 flex items-center justify-between">
+                  <span>Your Free Learner Privileges:</span>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700">Included</span>
                 </div>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Personalized learner dashboard and study progress tracking</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Browse 100+ accredited curricula and verified tutor profiles</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>24/7 access to free study guides, sample lessons, and webinars</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-600">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Zero upfront commitment — pay only when you enroll in paid programs</span>
+
+                <div className="space-y-3.5">
+                  <div className="flex items-start gap-3 text-slate-700 text-xs sm:text-sm leading-relaxed">
+                    <div className="p-0.5 rounded-full bg-emerald-100 text-emerald-700 shrink-0 mt-0.5">
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    </div>
+                    <span className="font-medium">Personalized learner dashboard and study progress tracking</span>
+                  </div>
+
+                  <div className="flex items-start gap-3 text-slate-700 text-xs sm:text-sm leading-relaxed">
+                    <div className="p-0.5 rounded-full bg-emerald-100 text-emerald-700 shrink-0 mt-0.5">
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    </div>
+                    <span className="font-medium">Browse 100+ accredited curricula and verified tutor profiles</span>
+                  </div>
+
+                  <div className="flex items-start gap-3 text-slate-700 text-xs sm:text-sm leading-relaxed">
+                    <div className="p-0.5 rounded-full bg-emerald-100 text-emerald-700 shrink-0 mt-0.5">
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    </div>
+                    <span className="font-medium">24/7 access to free study guides, sample lessons, and webinars</span>
+                  </div>
+
+                  <div className="flex items-start gap-3 text-slate-700 text-xs sm:text-sm leading-relaxed">
+                    <div className="p-0.5 rounded-full bg-emerald-100 text-emerald-700 shrink-0 mt-0.5">
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    </div>
+                    <span className="font-medium">Zero upfront commitment — pay only when you enroll in paid programs</span>
+                  </div>
                 </div>
               </div>
             </>
           )}
 
-          {/* Primary Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4 max-w-md mx-auto">
-            <Link href="/student/dashboard" className="w-full">
+          {/* Primary Action Button */}
+          <div className="pt-4 sm:pt-6 max-w-md mx-auto w-full">
+            <Link href="/student/dashboard" className="block w-full">
               <GlassButton
                 variant="primary"
                 size="lg"
-                className="w-full bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold py-4 text-sm shadow-xl shadow-[#2563EB]/25"
-                rightIcon={<ArrowRight className="w-4 h-4" />}
+                className="w-full min-h-[50px] sm:min-h-[52px] bg-[#2563EB] hover:bg-[#1E40AF] active:bg-[#1D4ED8] text-white font-bold py-3.5 px-6 rounded-2xl text-sm sm:text-base shadow-xl shadow-[#2563EB]/25 transition-all inline-flex items-center justify-center gap-2.5"
+                rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}
               >
                 Go to Learner Dashboard
               </GlassButton>

@@ -251,6 +251,8 @@ export function FloatingNavbar({ variant }: FloatingNavbarProps = {}) {
       variant !== "teacher" &&
       (pathname === "/student" ||
         pathname?.startsWith("/student/") ||
+        pathname === "/courses" ||
+        pathname?.startsWith("/courses/") ||
         (typeof window !== "undefined" &&
           (window.location.hostname.startsWith("learners.") ||
             window.location.hostname.startsWith("learner.") ||

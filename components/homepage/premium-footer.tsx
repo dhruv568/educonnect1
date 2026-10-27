@@ -80,16 +80,21 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
             window.location.hostname.startsWith("teacher.")))));
 
   const isLearner =
-    !isEducator &&
-    (pathname === "/student" ||
-      pathname?.startsWith("/student/") ||
-      pathname === "/exam" ||
-      pathname?.startsWith("/exam/") ||
-      (typeof window !== "undefined" &&
-        (window.location.hostname.startsWith("learners.") ||
-          window.location.hostname.startsWith("learner.") ||
-          window.location.hostname.startsWith("students.") ||
-          window.location.hostname.startsWith("student."))));
+    variant === "student" ||
+    (!isEducator &&
+      variant !== "default" &&
+      variant !== "teacher" &&
+      (pathname === "/student" ||
+        pathname?.startsWith("/student/") ||
+        pathname === "/courses" ||
+        pathname?.startsWith("/courses/") ||
+        pathname === "/exam" ||
+        pathname?.startsWith("/exam/") ||
+        (typeof window !== "undefined" &&
+          (window.location.hostname.startsWith("learners.") ||
+            window.location.hostname.startsWith("learner.") ||
+            window.location.hostname.startsWith("students.") ||
+            window.location.hostname.startsWith("student.")))));
 
   useEffect(() => {
     let isMounted = true;

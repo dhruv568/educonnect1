@@ -1,5 +1,5 @@
 process.env.EMAIL_PROVIDER = "console";
-process.env.NODE_ENV = "test";
+(process.env as any).NODE_ENV = "test";
 
 import { resolveEmailTheme, EMAIL_THEMES, EmailThemeType } from "../lib/email/email-theme";
 import { generateVerificationEmailHtml } from "../lib/email/templates/verification-email";

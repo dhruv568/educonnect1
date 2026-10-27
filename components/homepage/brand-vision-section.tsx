@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles, GraduationCap, Users, Globe2, Lightbulb } from "lucide-react";
 import { GlassButton } from "@/components/glass/glass-button";
 import { OFFICIAL_COMPANY_INFO } from "@/lib/company";
-import photo1 from "@/photo1.jpeg";
+import visionPoster from "@/public/images/educonnects-vision-poster-neeraj-shrivastava.jpg";
 
 export function BrandVisionSection() {
   const pillars = [
@@ -117,8 +117,8 @@ export function BrandVisionSection() {
               <div className="p-3 sm:p-4 rounded-3xl bg-white border border-[#E2E8F0] shadow-2xl space-y-3 relative overflow-hidden">
                 <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-[#FBF7EE] border border-[#E2E8F0]">
                   <Image
-                    src={photo1}
-                    alt="EduConnects Vision - Better Learning, Brighter Tomorrows"
+                    src={visionPoster}
+                    alt="EduConnects Vision Poster featuring Founder Neeraj Shrivastava - Better Learning, Brighter Tomorrows"
                     priority
                     className="w-full h-full object-contain"
                   />

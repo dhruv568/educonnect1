@@ -70,7 +70,7 @@ export function CourseCard({
                 {badge}
               </span>
             )}
-            <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-[#16805B] text-white backdrop-blur-md">
+            <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-[#2563EB] text-white backdrop-blur-md">
               {subject}
             </span>
           </div>
@@ -86,7 +86,7 @@ export function CourseCard({
         <div className="p-5 flex flex-col flex-grow">
           {/* Title & Description */}
           <Link href={`/courses/${slug}`}>
-            <h3 className="text-lg font-bold text-[#0F172A] line-clamp-1 group-hover:text-[#16805B] transition-colors">
+            <h3 className="text-lg font-bold text-[#0F172A] line-clamp-1 group-hover:text-[#2563EB] transition-colors">
               {title}
             </h3>
           </Link>
@@ -107,7 +107,7 @@ export function CourseCard({
               <span className="text-xs font-medium text-[#0F172A] flex items-center gap-1">
                 {teacher.name}
                 {teacher.isVerified && (
-                  <span title="Verified Instructor"><CheckCircle2 className="w-3.5 h-3.5 text-[#16805B] fill-[#16805B]/20" /></span>
+                  <span title="Verified Instructor"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600/20" /></span>
                 )}
               </span>
             </div>
@@ -135,13 +135,13 @@ export function CourseCard({
           {/* Progress bar if enrolled */}
           {isEnrolled && userProgress !== undefined && (
             <div className="mt-3">
-              <div className="flex items-center justify-between text-xs font-semibold text-[#16805B] mb-1">
+              <div className="flex items-center justify-between text-xs font-semibold text-[#2563EB] mb-1">
                 <span>Progress</span>
                 <span>{userProgress}%</span>
               </div>
-              <div className="w-full h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-[#EFF6FF] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#16805B] rounded-full transition-all duration-300"
+                  className="h-full bg-[#2563EB] rounded-full transition-all duration-300"
                   style={{ width: `${userProgress}%` }}
                 />
               </div>
@@ -154,7 +154,7 @@ export function CourseCard({
       <div className="p-5 pt-0 mt-auto flex items-center justify-between">
         <div>
           {price === 0 ? (
-            <span className="text-base font-extrabold text-[#16805B] uppercase tracking-wide">
+            <span className="text-base font-extrabold text-[#2563EB] uppercase tracking-wide">
               Free
             </span>
           ) : (
@@ -168,7 +168,7 @@ export function CourseCard({
 
         <Link
           href={isEnrolled ? `/learn/${slug}` : `/courses/${slug}`}
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-[#16805B] hover:bg-[#0D5C41] text-white shadow-md transition-all hover:scale-105"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-md shadow-blue-500/20 transition-all hover:scale-105"
         >
           {isEnrolled ? "Continue" : "View Course"}
           <ArrowRight className="w-3.5 h-3.5" />

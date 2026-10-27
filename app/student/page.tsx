@@ -614,12 +614,15 @@ export default function StudentLandingPage() {
             </div>
 
             {/* Subject Tabs Filter */}
-            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-4">
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-4" role="tablist" aria-label="Course categories by subject">
               {categories.map((cat) => (
                 <button
                   key={cat.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeCategory === cat.value}
                   onClick={() => setActiveCategory(cat.value)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-bold transition-all inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 ${
                     activeCategory === cat.value
                       ? "bg-[#2563EB] text-white shadow-md shadow-blue-600/25"
                       : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100"

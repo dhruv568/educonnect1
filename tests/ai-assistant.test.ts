@@ -151,14 +151,14 @@ async function runTests() {
   console.log("\nTEST 5: Section Themes Mapping");
   {
     assert.strictEqual(getSectionTheme("/", "guest"), "home");
-    assert.strictEqual(getSectionTheme("/courses", "guest"), "home");
+    assert.strictEqual(getSectionTheme("/courses", "guest"), "learner");
     assert.strictEqual(getSectionTheme("/student/dashboard", "LEARNER"), "learner");
     assert.strictEqual(getSectionTheme("/teacher/dashboard", "EDUCATOR"), "educator");
     assert.strictEqual(getSectionTheme("/admin/dashboard", "ADMIN"), "admin");
 
-    assert.ok(THEMES.home.headerBg.includes("#0F5C5A"), "Home theme must use deep teal");
-    assert.ok(THEMES.learner.headerBg.includes("#3157D5"), "Learner theme must use blue/indigo");
-    assert.ok(THEMES.educator.headerBg.includes("#16805B"), "Educator theme must use emerald/green");
+    assert.ok(THEMES.home.headerBg.includes("#16805B") || THEMES.home.headerBg.includes("#0D5C41"), "Home theme must use emerald green");
+    assert.ok(THEMES.learner.headerBg.includes("#2563EB") || THEMES.learner.headerBg.includes("#1D4ED8"), "Learner theme must use blue");
+    assert.ok(THEMES.educator.headerBg.includes("#0F766E") || THEMES.educator.headerBg.includes("#115E59"), "Educator theme must use teal");
     assert.ok(THEMES.admin.headerBg.includes("#073F3C"), "Admin theme must use admin dark teal");
     console.log("  ✔ Section theme mapping passed");
   }

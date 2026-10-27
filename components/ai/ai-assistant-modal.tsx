@@ -289,15 +289,108 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
 
   if (!isOpen) return null;
 
+  const isLearner = themeType === "learner";
+  const isEducator = themeType === "educator";
+
+  const containerClasses = isLearner
+    ? "bg-[#F8FAFC] shadow-blue-950/20 border-blue-200/80 sm:border-blue-600/30"
+    : isEducator
+    ? "bg-[#F0FDFA] shadow-teal-950/20 border-[#99F6E4]/80 sm:border-[#0F766E]/30"
+    : "bg-[#F4FAF7] shadow-emerald-950/20 border-[#A7F3D0]/80 sm:border-[#16805B]/30";
+
+  const headerBorder = isLearner
+    ? "border-b border-blue-100"
+    : isEducator
+    ? "border-b border-[#99F6E4]/80"
+    : "border-b border-[#A7F3D0]/80";
+
+  const brandAccentText = isLearner
+    ? "text-[#2563EB]"
+    : isEducator
+    ? "text-[#0F766E]"
+    : "text-[#16805B]";
+
+  const actionButtonHover = isLearner
+    ? "hover:bg-blue-50 focus:ring-blue-500/30"
+    : isEducator
+    ? "hover:bg-teal-50 focus:ring-teal-600/30"
+    : "hover:bg-emerald-50 focus:ring-emerald-600/30";
+
+  const messagesBg = isLearner
+    ? "bg-gradient-to-b from-[#EFF6FF] via-[#F8FAFC] to-white"
+    : isEducator
+    ? "bg-gradient-to-b from-[#F0FDFA] via-[#E6FFFA] to-white"
+    : "bg-gradient-to-b from-[#F2FAF7] via-[#EAF6F0] to-[#E2F2EA]";
+
+  const starterCardBorder = isLearner
+    ? "border-blue-200/80"
+    : isEducator
+    ? "border-[#99F6E4]/70"
+    : "border-[#A7F3D0]/70";
+
+  const starterIconGradient = isLearner
+    ? "bg-gradient-to-tr from-blue-600 to-sky-400"
+    : isEducator
+    ? "bg-gradient-to-tr from-teal-600 to-teal-400"
+    : "bg-gradient-to-tr from-[#16805B] to-[#35A979]";
+
+  const pillHoverBorder = isLearner
+    ? "hover:border-blue-400/80"
+    : isEducator
+    ? "hover:border-teal-400/80"
+    : "hover:border-emerald-400/80";
+
+  const aiAvatarClass = isLearner
+    ? "bg-white text-[#2563EB] border border-blue-200/80 shadow-xs"
+    : isEducator
+    ? "bg-white text-[#0F766E] border border-teal-200/80 shadow-xs"
+    : "bg-white text-[#16805B] border border-emerald-200/80 shadow-xs";
+
+  const aiBotIconClass = isLearner
+    ? "w-4 h-4 text-[#2563EB]"
+    : isEducator
+    ? "w-4 h-4 text-[#0F766E]"
+    : "w-4 h-4 text-[#16805B]";
+
+  const copyButtonClasses = isLearner
+    ? "hover:bg-blue-50 border-blue-200/70"
+    : isEducator
+    ? "hover:bg-teal-50 border-[#99F6E4]/70"
+    : "hover:bg-emerald-50 border-[#A7F3D0]/60";
+
+  const thinkingBorder = isLearner
+    ? "border-blue-200/70"
+    : isEducator
+    ? "border-[#99F6E4]/60"
+    : "border-[#A7F3D0]/60";
+
+  const thinkingDotClass = isLearner
+    ? "bg-[#2563EB]"
+    : isEducator
+    ? "bg-[#0F766E]"
+    : "bg-[#16805B]";
+
+  const inputBarBorder = isLearner
+    ? "border-t border-blue-100"
+    : isEducator
+    ? "border-t border-[#99F6E4]/60"
+    : "border-t border-[#A7F3D0]/60";
+
+  const inputFocusRing = isLearner
+    ? "focus-within:border-[#2563EB] focus-within:ring-4 focus-within:ring-blue-500/15"
+    : isEducator
+    ? "focus-within:border-[#0F766E] focus-within:ring-4 focus-within:ring-teal-500/15"
+    : "focus-within:border-[#16805B] focus-within:ring-4 focus-within:ring-emerald-500/15";
+
   return (
     <div
       role="dialog"
       aria-label="EduConnects AI Assistant"
       aria-modal="true"
-      className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[430px] h-[92vh] sm:h-[640px] max-h-[100vh] sm:max-h-[660px] flex flex-col bg-[#F4FAF7] sm:rounded-3xl shadow-2xl shadow-emerald-950/20 border border-[#A7F3D0]/80 sm:border-[#16805B]/30 overflow-hidden transition-all duration-300 animate-in fade-in slide-in-from-bottom-6"
+      className={`fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 w-full sm:w-[430px] h-[92vh] sm:h-[640px] max-h-[100vh] sm:max-h-[660px] flex flex-col sm:rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 animate-in fade-in slide-in-from-bottom-6 border ${containerClasses}`}
     >
       {/* 1. Header with branding & section adaptation */}
-      <div className="px-4 py-3.5 select-none bg-white border-b border-[#A7F3D0]/80 shadow-xs">
+      <div className={`px-4 py-3.5 select-none bg-white shadow-xs ${headerBorder}`}>
         {/* Mobile drag handle bar */}
         <div className="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-2 sm:hidden" />
 
@@ -317,7 +410,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 <h2 className="text-[15px] font-black tracking-tight text-slate-900">
-                  EduConnects <span className="text-[#16805B]">AI</span>
+                  EduConnects <span className={brandAccentText}>AI</span>
                 </h2>
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider ${theme.pillBg} ${theme.pillText} border ${theme.pillBorder}`}>
                   {role === "guest" ? "Guide" : role.toLowerCase()}
@@ -335,7 +428,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             <button
               onClick={handleNewConversation}
               title="New Conversation"
-              className="p-2 rounded-xl text-slate-600 hover:text-slate-950 hover:bg-emerald-50 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-600/30 active:scale-95"
+              className={`p-2 rounded-xl text-slate-600 hover:text-slate-950 transition-all focus:outline-none focus:ring-2 active:scale-95 ${actionButtonHover}`}
               aria-label="Start new conversation"
             >
               <PlusCircle className="w-4 h-4" />
@@ -343,7 +436,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             <button
               onClick={handleClearConversation}
               title="Clear Chat"
-              className="p-2 rounded-xl text-slate-600 hover:text-slate-950 hover:bg-emerald-50 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-600/30 active:scale-95"
+              className={`p-2 rounded-xl text-slate-600 hover:text-slate-950 transition-all focus:outline-none focus:ring-2 active:scale-95 ${actionButtonHover}`}
               aria-label="Clear chat history"
             >
               <RotateCcw className="w-4 h-4" />
@@ -351,7 +444,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             <button
               onClick={onClose}
               title="Close Assistant"
-              className="p-2 rounded-xl text-slate-600 hover:text-slate-950 hover:bg-rose-50 hover:text-rose-600 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-600/30 active:scale-95 ml-0.5"
+              className={`p-2 rounded-xl text-slate-600 hover:text-slate-950 hover:bg-rose-50 hover:text-rose-600 transition-all focus:outline-none focus:ring-2 active:scale-95 ml-0.5 ${actionButtonHover}`}
               aria-label="Close Assistant"
             >
               <X className="w-4 h-4" />
@@ -361,12 +454,12 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
       </div>
 
       {/* 2. Messages List Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-[#F2FAF7] via-[#EAF6F0] to-[#E2F2EA]">
+      <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${messagesBg}`}>
         {/* Welcome Starter Card & Suggested Questions when starting */}
         {messages.length <= 1 && (
-          <div className="p-4 rounded-3xl bg-white border border-[#A7F3D0]/70 shadow-xs mb-3 space-y-3">
+          <div className={`p-4 rounded-3xl bg-white shadow-xs mb-3 space-y-3 border ${starterCardBorder}`}>
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-400 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <div className={`w-9 h-9 rounded-2xl text-white flex items-center justify-center shrink-0 shadow-xs ${starterIconGradient}`}>
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
@@ -383,7 +476,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                   key={idx}
                   onClick={() => handleSendMessage(q)}
                   disabled={isLoading}
-                  className={`text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-200 text-left ${theme.pillBg} ${theme.pillBorder} ${theme.pillText} active:scale-95 shadow-2xs hover:shadow-xs hover:border-teal-400/80`}
+                  className={`text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-200 text-left ${theme.pillBg} ${theme.pillBorder} ${theme.pillText} active:scale-95 shadow-2xs hover:shadow-xs ${pillHoverBorder}`}
                 >
                   {q}
                 </button>
@@ -405,10 +498,10 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${
                   isUser
                     ? `${theme.accentBg} text-white shadow-xs`
-                    : "bg-white text-teal-700 border border-teal-200/80 shadow-xs"
+                    : aiAvatarClass
                 }`}
               >
-                {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4 text-teal-700" />}
+                {isUser ? <User className="w-4 h-4" /> : <Bot className={aiBotIconClass} />}
               </div>
 
               {/* Message Bubble */}
@@ -439,7 +532,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                   {!isUser && !msg.isError && msg.content && (
                     <button
                       onClick={() => handleCopyMessage(msg.id, msg.content)}
-                      className="opacity-0 group-hover:opacity-100 hover:text-slate-800 transition-opacity ml-1.5 flex items-center gap-1 font-medium bg-white hover:bg-emerald-50 border border-[#A7F3D0]/60 px-1.5 py-0.5 rounded text-[10px] text-slate-600 shadow-2xs"
+                      className={`opacity-0 group-hover:opacity-100 hover:text-slate-800 transition-opacity ml-1.5 flex items-center gap-1 font-medium bg-white px-1.5 py-0.5 rounded text-[10px] text-slate-600 shadow-2xs border ${copyButtonClasses}`}
                       title="Copy response"
                     >
                       {copiedMessageId === msg.id ? (
@@ -464,15 +557,15 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
         {/* Loading / Typing indicator */}
         {isLoading && (
           <div className="flex items-start gap-2.5">
-            <div className="w-7 h-7 rounded-xl bg-white text-teal-700 border border-teal-200/80 flex items-center justify-center shrink-0 shadow-xs">
-              <Bot className="w-4 h-4 text-teal-600 animate-pulse" />
+            <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${aiAvatarClass}`}>
+              <Bot className={`w-4 h-4 animate-pulse ${brandAccentText}`} />
             </div>
-            <div className="bg-white border border-[#A7F3D0]/60 px-4 py-3 rounded-2xl rounded-tl-xs shadow-xs flex items-center gap-2.5">
+            <div className={`bg-white px-4 py-3 rounded-2xl rounded-tl-xs shadow-xs flex items-center gap-2.5 border ${thinkingBorder}`}>
               <span className="text-xs text-slate-600 font-medium">EduConnects AI is thinking</span>
               <div className="flex items-center space-x-1">
-                <span className="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <span className="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <span className="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce" />
+                <span className={`w-1.5 h-1.5 rounded-full animate-bounce [animation-delay:-0.3s] ${thinkingDotClass}`} />
+                <span className={`w-1.5 h-1.5 rounded-full animate-bounce [animation-delay:-0.15s] ${thinkingDotClass}`} />
+                <span className={`w-1.5 h-1.5 rounded-full animate-bounce ${thinkingDotClass}`} />
               </div>
             </div>
           </div>
@@ -501,7 +594,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
       </div>
 
       {/* 3. Input command bar */}
-      <div className="p-3.5 bg-white border-t border-[#A7F3D0]/60 shadow-md">
+      <div className={`p-3.5 bg-white shadow-md ${inputBarBorder}`}>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -509,7 +602,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
           }}
           className="relative flex items-end gap-2"
         >
-          <div className="relative flex-1 rounded-2xl border border-slate-200 focus-within:border-teal-600 focus-within:ring-4 focus-within:ring-teal-500/15 bg-slate-50/80 focus-within:bg-white transition-all">
+          <div className={`relative flex-1 rounded-2xl border border-slate-200 bg-slate-50/80 focus-within:bg-white transition-all ${inputFocusRing}`}>
             <textarea
               ref={textareaRef}
               value={inputText}
