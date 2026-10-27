@@ -775,45 +775,116 @@ function LearnerRegistrationFlowContent() {
       {/* ========================================================================= */}
       {/* RESPONSIVE PROGRESS INDICATOR */}
       {/* ========================================================================= */}
-      <div className="bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-sm">
-        <div className="flex items-center justify-between overflow-x-auto pb-1 sm:pb-0 gap-2">
-          {PROGRESS_STEPS.map((s, idx) => {
-            const isCompleted = state.step > s.stepNumber || (s.stepNumber === 7 && state.step === 7);
-            const isCurrent = state.step === s.stepNumber;
-            return (
-              <div key={s.id} className="flex items-center gap-2 shrink-0">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${
-                    isCompleted && !isCurrent
-                      ? "bg-emerald-600 text-white shadow-sm"
-                      : isCurrent
-                      ? "bg-[#2563EB] text-white shadow-md shadow-[#2563EB]/25 ring-4 ring-[#2563EB]/15"
-                      : "bg-slate-100 text-slate-400"
-                  }`}
-                >
-                  {isCompleted && !isCurrent ? <Check className="w-4 h-4 stroke-[3]" /> : idx + 1}
-                </div>
-                <div className="text-left">
-                  <div
-                    className={`text-[11px] font-bold uppercase tracking-wider ${
-                      isCurrent ? "text-[#1E40AF]" : isCompleted ? "text-emerald-700" : "text-slate-400"
-                    }`}
-                  >
-                    {s.label}
-                  </div>
-                </div>
-                {idx < PROGRESS_STEPS.length - 1 && (
-                  <div
-                    className={`w-4 lg:w-10 h-0.5 rounded-full hidden sm:block ${
-                      state.step > s.stepNumber ? "bg-emerald-400" : "bg-slate-200"
-                    }`}
-                  />
-                )}
+      {(() => {
+        const currentStepIdx = PROGRESS_STEPS.findIndex((s) => s.stepNumber === state.step);
+        const activeStepNumber = currentStepIdx !== -1 ? currentStepIdx + 1 : 1;
+        const currentStepObj = PROGRESS_STEPS[currentStepIdx] || PROGRESS_STEPS[0];
+        const progressPercent = Math.round((activeStepNumber / PROGRESS_STEPS.length) * 100);
+
+        return (
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xs p-4 sm:p-5 lg:p-6 transition-all">
+            {/* Mobile compact step indicator (< sm) */}
+            <div className="flex sm:hidden items-center justify-between mb-3.5 pb-2.5 border-b border-slate-100 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-[#2563EB] animate-pulse" />
+                <span className="font-bold text-slate-900">
+                  Step {activeStepNumber} of {PROGRESS_STEPS.length}:{" "}
+                  <span className="text-[#2563EB]">{currentStepObj.label.replace(" (Optional)", "")}</span>
+                </span>
               </div>
-            );
-          })}
-        </div>
-      </div>
+              <span className="text-[11px] font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200/60">
+                {progressPercent}% Complete
+              </span>
+            </div>
+
+            {/* Stepper Track */}
+            <nav aria-label="Registration Progress">
+              <ol className="flex items-start w-full">
+                {PROGRESS_STEPS.map((s, idx) => {
+                  const isCompleted = state.step > s.stepNumber || (s.stepNumber === 7 && state.step === 7);
+                  const isCurrent = state.step === s.stepNumber && !(s.stepNumber === 7 && state.step === 7);
+                  const isConnectorCompleted = state.step > s.stepNumber;
+                  const isLast = idx === PROGRESS_STEPS.length - 1;
+
+                  return (
+                    <li
+                      key={s.id}
+                      className="flex-1 relative flex flex-col items-center group"
+                      aria-current={isCurrent ? "step" : undefined}
+                    >
+                      {/* Independent Connector Line to next step */}
+                      {!isLast && (
+                        <div
+                          className="absolute top-4 sm:top-[18px] md:top-5 left-[calc(50%+0.875rem)] sm:left-[calc(50%+1rem)] md:left-[calc(50%+1.125rem)] right-[calc(-50%+0.875rem)] sm:right-[calc(-50%+1rem)] md:right-[calc(-50%+1.125rem)] h-0.5 -translate-y-1/2 -z-0 pointer-events-none"
+                          aria-hidden="true"
+                        >
+                          <div
+                            className={`w-full h-full transition-colors duration-300 rounded-full ${
+                              isConnectorCompleted ? "bg-[#2563EB]" : "bg-slate-200"
+                            }`}
+                          />
+                        </div>
+                      )}
+
+                      {/* Numbered Step Circle */}
+                      <div
+                        className={`relative z-10 w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all duration-300 select-none ${
+                          isCompleted
+                            ? "bg-blue-50 text-[#2563EB] border-2 border-[#2563EB] shadow-2xs"
+                            : isCurrent
+                            ? "bg-[#2563EB] text-white border-2 border-[#2563EB] shadow-md shadow-blue-500/20 ring-4 ring-blue-500/15"
+                            : "bg-slate-50 text-slate-400 border-2 border-slate-200"
+                        }`}
+                      >
+                        {isCompleted ? (
+                          <Check className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[3] text-[#2563EB]" />
+                        ) : (
+                          <span>{idx + 1}</span>
+                        )}
+                      </div>
+
+                      {/* Step Label */}
+                      <div className="mt-2.5 sm:mt-3 text-center px-1 max-w-full">
+                        <span className="sr-only">
+                          {isCompleted ? "Completed: " : isCurrent ? "Current Step: " : "Upcoming: "}
+                        </span>
+                        <div
+                          className={`text-[11px] sm:text-xs md:text-sm leading-tight transition-colors duration-200 ${
+                            isCurrent
+                              ? "font-bold text-[#2563EB]"
+                              : isCompleted
+                              ? "font-semibold text-slate-800"
+                              : "font-medium text-slate-400"
+                          }`}
+                        >
+                          {s.label.includes(" (Optional)") ? (
+                            <>
+                              <span className="block">{s.label.replace(" (Optional)", "")}</span>
+                              <span
+                                className={`block text-[10px] sm:text-[11px] mt-0.5 font-normal ${
+                                  isCurrent
+                                    ? "text-blue-500/90"
+                                    : isCompleted
+                                    ? "text-slate-500"
+                                    : "text-slate-400"
+                                }`}
+                              >
+                                (Optional)
+                              </span>
+                            </>
+                          ) : (
+                            <span>{s.label}</span>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </nav>
+          </div>
+        );
+      })()}
 
       {/* ========================================================================= */}
       {/* STEP 1: LEARNER INFORMATION & VERIFICATION */}
