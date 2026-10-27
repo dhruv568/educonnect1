@@ -15,12 +15,17 @@ export function LearnerMilestonesBanner() {
         <div className="rounded-3xl border border-[#E2E8F0] bg-gradient-to-br from-[#F0FAF5]/80 via-white to-[#F0FAF5]/40 shadow-sm overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
             {/* Visual Column */}
-            <div className="lg:col-span-5 p-4 sm:p-6 lg:p-8 flex items-center justify-center bg-[#F0FAF5]/50 lg:border-r border-[#E2E8F0]">
-              <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] rounded-2xl overflow-hidden border border-[#E2E8F0] bg-white shadow-xs">
+            <div className="lg:col-span-5 p-4 sm:p-6 lg:p-8 flex items-center justify-center bg-[#F0FAF5]/50 lg:border-r border-[#E2E8F0] self-stretch">
+              <div
+                className="relative w-full aspect-[1807/870] rounded-2xl overflow-hidden border border-[#E2E8F0] bg-white shadow-xs flex items-center justify-center"
+                style={{ aspectRatio: "1807 / 870" }}
+              >
                 <img
                   src="/images/learner-hero.jpeg"
                   alt="EduConnects learners celebrating academic milestones and exam achievements"
-                  className="w-full h-full object-cover object-center"
+                  width={1807}
+                  height={870}
+                  className="w-full h-full object-contain object-center"
                 />
               </div>
             </div>
