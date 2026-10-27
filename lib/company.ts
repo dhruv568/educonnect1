@@ -39,12 +39,12 @@ export const OFFICIAL_COMPANY_INFO: CompanyInfo = {
   legalName: "Shrivastava ProFunnels Ventures Pvt Ltd",
   cin: "U85499UP2024PTC212061",
   pan: "ABOCS6783J",
-  founder: "Sameer Shrivastava",
-  authorizedSignatory: "Sameer Shrivastava",
+  founder: "Neeraj Shrivastava",
+  authorizedSignatory: "Neeraj Shrivastava",
   natureOfBusiness:
     "Digital business solutions, digital marketing, automation, online education, training, and technology-enabled business services.",
   registeredAddress:
-    "Bard No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403",
+    "Ward No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403",
   website: "https://educonnects.co.in",
   tagline: "Learn • Grow • Belong",
   governingLaw: "India",

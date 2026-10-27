@@ -239,7 +239,7 @@ export function PremiumFooter({ showCta = false, variant }: PremiumFooterProps =
                 CIN: U85499UP2024PTC212061
               </p>
               <p className={`${t.bodyText} leading-relaxed font-normal text-xs`}>
-                Registered Office: Bard No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403
+                Registered Office: Ward No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403
               </p>
             </div>
 

@@ -1058,7 +1058,7 @@ export class AdminService {
       founder: settings.company_founder || "Neeraj Shrivastava",
       authorizedSignatory: settings.company_authorized_signatory || "Neeraj Shrivastava",
       natureOfBusiness: settings.company_nature_of_business || "Digital business solutions, digital marketing, automation, online education, training, and technology-enabled business services.",
-      registeredAddress: settings.company_registered_address || "Bard No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403",
+      registeredAddress: settings.company_registered_address || "Ward No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403",
       website: settings.company_website || "https://myprofunnels.com",
       tagline: settings.company_tagline || "Automate • Engage • Grow",
       governingLaw: settings.company_governing_law || "India",

@@ -165,23 +165,37 @@ export default function CoursePlatformPage() {
           </div>
 
           {/* Subject Pills Filter */}
-          <div className="mt-6 flex items-center justify-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {SUBJECTS.map((sub) => (
-              <button
-                key={sub}
-                onClick={() => {
-                  setSelectedSubject(sub);
-                  setPage(1);
-                }}
-                className={`px-4 py-2 text-xs font-semibold rounded-xl whitespace-nowrap transition-all duration-200 ${
-                  selectedSubject === sub
-                    ? "bg-gradient-to-r from-[#16805B] to-[#0D5C41] text-white shadow-md shadow-emerald-500/20 scale-105"
-                    : "bg-white/60 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
-              >
-                {sub}
-              </button>
-            ))}
+          <div className="mt-6 w-full max-w-full">
+            <div
+              className="flex items-center gap-2 overflow-x-auto py-1.5 px-4 sm:px-0 -mx-4 sm:mx-0 justify-start lg:justify-center scrollbar-none touch-pan-x overscroll-x-contain scroll-smooth"
+              role="tablist"
+              aria-label="Course categories by subject"
+            >
+              {SUBJECTS.map((sub) => (
+                <button
+                  key={sub}
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedSubject === sub}
+                  onClick={(e) => {
+                    setSelectedSubject(sub);
+                    setPage(1);
+                    e.currentTarget.scrollIntoView({
+                      behavior: "smooth",
+                      block: "nearest",
+                      inline: "nearest",
+                    });
+                  }}
+                  className={`shrink-0 px-4 py-2 text-xs font-semibold rounded-xl whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16805B] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
+                    selectedSubject === sub
+                      ? "bg-gradient-to-r from-[#16805B] to-[#0D5C41] text-white shadow-md shadow-emerald-500/20 scale-105"
+                      : "bg-white/60 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>

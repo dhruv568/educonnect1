@@ -2,21 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GlassCard } from "@/components/glass/glass-card";
-import { GlassBadge } from "@/components/glass/glass-badge";
-import { GlassButton } from "@/components/glass/glass-button";
-import {
-  Star,
-  Quote,
-  CheckCircle2,
-  Trophy,
-  Users,
-  Award,
-  ShieldCheck,
-  Sparkles,
-  ArrowRight,
-  BookOpen,
-} from "lucide-react";
+import { Star, ArrowRight, Quote } from "lucide-react";
 import Link from "next/link";
 
 export interface SocialProofTestimonialsProps {}
@@ -31,10 +17,7 @@ export function SocialProofTestimonials(_props: SocialProofTestimonialsProps = {
       role: "12th Grade CBSE STEM",
       avatar: "/images/educators/male-1.jpg",
       model: "LIVE",
-      modelLabel: "Live Class Slots",
-      badgeVariant: "indigo" as const,
-      achievement: "Scored 98% in CBSE Board Math",
-      achievementIcon: Trophy,
+      modelLabel: "Live Classes",
       rating: 5,
       tutor: "Mr. Rahul Sharma",
       quote:
@@ -46,10 +29,7 @@ export function SocialProofTestimonials(_props: SocialProofTestimonialsProps = {
       role: "NEET Medical Aspirant",
       avatar: "/images/educators/female-1.jpg",
       model: "DEMO",
-      modelLabel: "1-on-1 Demo Session",
-      badgeVariant: "blue" as const,
-      achievement: "170/180 in NEET Physics Section",
-      achievementIcon: Award,
+      modelLabel: "1-on-1 Sessions",
       rating: 5,
       tutor: "Dr. Vikramaditya Sen",
       quote:
@@ -61,10 +41,7 @@ export function SocialProofTestimonials(_props: SocialProofTestimonialsProps = {
       role: "College Freshman & Coder",
       avatar: "/images/educators/male-2.jpg",
       model: "LMS",
-      modelLabel: "Pre-recorded LMS Course",
-      badgeVariant: "emerald" as const,
-      achievement: "Built 4 Full-Stack Projects",
-      achievementIcon: Sparkles,
+      modelLabel: "Recorded Courses",
       rating: 5,
       tutor: "Meenakshi Sundaram",
       quote:
@@ -76,10 +53,7 @@ export function SocialProofTestimonials(_props: SocialProofTestimonialsProps = {
       role: "10th ICSE Board Topper",
       avatar: "/images/educators/female-2.jpg",
       model: "LIVE",
-      modelLabel: "Live Class Slots",
-      badgeVariant: "indigo" as const,
-      achievement: "Rank 1 in Science Olympiad",
-      achievementIcon: Trophy,
+      modelLabel: "Live Classes",
       rating: 5,
       tutor: "Dr. Rahul Sharma",
       quote:
@@ -92,154 +66,147 @@ export function SocialProofTestimonials(_props: SocialProofTestimonialsProps = {
       ? testimonials
       : testimonials.filter((t) => t.model === activeFilter);
 
+  const filterTabs = [
+    { key: "ALL" as const, label: "All Experiences" },
+    { key: "DEMO" as const, label: "1-on-1 Sessions" },
+    { key: "LIVE" as const, label: "Live Classes" },
+    { key: "LMS" as const, label: "Recorded Courses" },
+  ];
+
   return (
-    <section id="success-stories" className="py-20 lg:py-28 bg-[#F0FAF5]/40 border-b border-[#E2E8F0] relative overflow-hidden font-sans scroll-mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-12 sm:space-y-16">
-        {/* Section Header */}
+    <section
+      id="success-stories"
+      aria-labelledby="testimonials-heading"
+      className="py-16 sm:py-20 lg:py-24 bg-[#F8FAFC] border-b border-[#E2E8F0] relative overflow-hidden font-sans scroll-mt-20"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10 sm:space-y-12">
+        {/* Section Header — Focused Exclusively on Student Stories */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F0FAF5] border border-emerald-200 text-[#16805B] text-xs font-black uppercase tracking-wider">
-            <Sparkles className="h-3.5 w-3.5 text-[#16805B]" />
-            <span>PROVEN ACADEMIC RESULTS</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0F172A] tracking-tight">
+          <span className="inline-block px-3.5 py-1.5 rounded-full bg-[#F0FAF5] border border-emerald-200 text-[#16805B] text-xs font-bold uppercase tracking-wider">
+            Learner Experiences
+          </span>
+          <h2
+            id="testimonials-heading"
+            className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0F172A] tracking-tight"
+          >
             Success Stories
           </h2>
-          <p className="text-sm sm:text-base text-[#64748B]">
-            Discover how learners turn difficult concepts into academic strengths through verified educators and personalized learning models on EduConnects.
+          <p className="text-sm sm:text-base text-[#64748B] leading-relaxed">
+            Discover how learners turn difficult concepts into academic strengths through verified educators and personalized learning on EduConnects.
           </p>
         </div>
 
-        {/* Supporting Achievement Image Showcase */}
-        <div className="max-w-4xl mx-auto rounded-3xl overflow-hidden border border-[#E2E8F0] shadow-md bg-white">
-          <div className="grid grid-cols-1 md:grid-cols-12 items-center">
-            <div className="md:col-span-5 self-stretch relative overflow-hidden bg-[#F0FAF5] flex items-center justify-center p-3 sm:p-4 md:p-3.5">
-              <img
-                src="/images/learner-hero.jpeg"
-                alt="Learners celebrating academic success and milestones"
-                className="w-full h-auto max-h-full object-contain object-center rounded-xl sm:rounded-2xl"
-              />
-            </div>
-            <div className="md:col-span-7 p-6 sm:p-8 space-y-2.5 text-left">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F0FAF5] text-[#16805B] text-[11px] font-bold border border-emerald-200">
-                <Trophy className="h-3.5 w-3.5 text-[#16805B]" />
-                <span>Learner Milestone Accomplishments</span>
-              </div>
-              <h3 className="text-lg sm:text-xl font-black text-[#0F172A]">
-                Empowering learners to reach their highest potential
-              </h3>
-              <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
-                From board exam preparation to cutting-edge technical skills, EduConnects provides the 1-on-1 mentorship and structured learning environment that enables learners to thrive.
-              </p>
-            </div>
-          </div>
+        {/* Filter Tabs */}
+        <div
+          role="tablist"
+          aria-label="Filter testimonials by learning model"
+          className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
+        >
+          {filterTabs.map((tab) => {
+            const isSelected = activeFilter === tab.key;
+            return (
+              <button
+                key={tab.key}
+                role="tab"
+                aria-selected={isSelected}
+                onClick={() => setActiveFilter(tab.key)}
+                className={`shrink-0 px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16805B] focus-visible:ring-offset-2 ${
+                  isSelected
+                    ? "bg-[#16805B] text-white shadow-sm"
+                    : "bg-white text-[#0F172A] border border-[#E2E8F0] hover:bg-[#F0FAF5] hover:text-[#0D5C41]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center justify-center gap-2 overflow-x-auto pb-2">
-          {[
-            { key: "ALL", label: "All Experiences" },
-            { key: "DEMO", label: "1-on-1 Sessions" },
-            { key: "LIVE", label: "Live Classes" },
-            { key: "LMS", label: "Recorded LMS" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveFilter(tab.key as any)}
-              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                activeFilter === tab.key
-                  ? "bg-[#16805B] text-white shadow-md"
-                  : "bg-white text-[#0F172A] border border-[#E2E8F0] hover:bg-[#F0FAF5] hover:text-[#0D5C41]"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Testimonials Grid */}
+        {/* Testimonials Grid — Clean, Honest Review Cards Prioritizing Customer Feedback */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
           <AnimatePresence mode="wait">
-            {filteredTestimonials.map((item) => {
-              const AchIcon = item.achievementIcon;
-              return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 15 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <GlassCard
-                    className="p-6 sm:p-7 border border-[#E2E8F0] bg-white shadow-md flex flex-col justify-between h-full space-y-6 rounded-3xl"
-                  >
-                    <div className="space-y-4">
-                      {/* Top Header */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={item.avatar}
-                            alt={item.name}
-                            className="w-12 h-12 rounded-full object-cover ring-2 ring-[#16805B]/20 shrink-0"
-                          />
-                          <div>
-                            <h4 className="text-sm font-black text-[#0F172A]">{item.name}</h4>
-                            <p className="text-[11px] text-[#64748B] font-medium">{item.role}</p>
-                          </div>
+            {filteredTestimonials.map((item) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.25 }}
+                className="h-full"
+              >
+                <figure className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-full space-y-5">
+                  {/* Card Top: Rating & Learning Model Context */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div
+                      className="flex items-center gap-1 text-amber-400"
+                      aria-label={`Rated ${item.rating} out of 5 stars`}
+                    >
+                      {Array.from({ length: item.rating }).map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-amber-400 stroke-amber-400" />
+                      ))}
+                    </div>
+
+                    <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 border border-slate-200/80 px-2.5 py-0.5 rounded-full">
+                      {item.modelLabel}
+                    </span>
+                  </div>
+
+                  {/* Primary Visual Element: Customer Quotation */}
+                  <blockquote className="space-y-2 flex-1">
+                    <p className="text-sm sm:text-base text-slate-800 leading-relaxed font-normal">
+                      &ldquo;{item.quote}&rdquo;
+                    </p>
+                  </blockquote>
+
+                  {/* Card Bottom: Reviewer Identity & Educator Context */}
+                  <figcaption className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img
+                        src={item.avatar}
+                        alt={`Photo of ${item.name}`}
+                        className="w-11 h-11 rounded-full object-cover ring-2 ring-emerald-100 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold text-slate-900 truncate">
+                          {item.name}
                         </div>
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#F0FAF5] text-[#16805B] border border-emerald-200">
-                          {item.modelLabel}
+                        <div className="text-xs text-slate-500 font-medium truncate">
+                          {item.role}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Relevant Educator Context from application data */}
+                    {item.tutor && (
+                      <div className="text-right shrink-0">
+                        <span className="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                          Tutor
+                        </span>
+                        <span className="text-xs font-semibold text-[#16805B] block truncate max-w-[140px]">
+                          {item.tutor}
                         </span>
                       </div>
-
-                      {/* Achievement Ribbon */}
-                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[#FBF7EE] border border-[#F2C14E]/40 text-[#0F172A] text-xs font-bold">
-                        <AchIcon className="h-4 w-4 text-[#16805B] shrink-0" />
-                        <span className="truncate">{item.achievement}</span>
-                      </div>
-
-                      {/* Quote */}
-                      <div className="relative pt-1">
-                        <Quote className="h-6 w-6 text-[#16805B]/20 absolute -top-2 -left-1 pointer-events-none" />
-                        <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed font-normal pl-4 italic">
-                          &ldquo;{item.quote}&rdquo;
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Bottom Metadata */}
-                    <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between text-[11px]">
-                      <div className="flex items-center text-amber-500">
-                        {Array.from({ length: item.rating }).map((_, i) => (
-                          <Star key={i} className="h-3.5 w-3.5 fill-amber-400" />
-                        ))}
-                      </div>
-                      <span className="text-[#64748B] font-medium">Educator: {item.tutor}</span>
-                    </div>
-                  </GlassCard>
-                </motion.div>
-              );
-            })}
+                    )}
+                  </figcaption>
+                </figure>
+              </motion.div>
+            ))}
           </AnimatePresence>
         </div>
 
-        {/* CTA Bar */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#16805B] text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl border border-[#0D5C41]">
-          <div className="space-y-1 text-center sm:text-left">
-            <h3 className="text-lg sm:text-xl font-black">Experience the difference with personalized guidance.</h3>
-            <p className="text-xs sm:text-sm text-emerald-100/90">Connect with a verified educator, discuss your syllabus, and get a tailored learning roadmap.</p>
-          </div>
-          <Link href="/find-teachers" className="shrink-0 w-full sm:w-auto">
-            <GlassButton
-              variant="primary"
-              size="md"
-              rightIcon={<ArrowRight className="h-4 w-4 text-white" />}
-              className="w-full sm:w-auto bg-[#0D5C41] hover:bg-[#09422F] active:bg-[#09422F] text-white border border-emerald-400/40 font-extrabold px-6 py-2.5 rounded-full shadow-md transition-all"
-            >
-              Find an Educator
-            </GlassButton>
+        {/* Restrained, Non-Intrusive Navigation Prompt (Not an Ad Banner) */}
+        <div className="pt-4 text-center">
+          <Link
+            href="/find-teachers"
+            className="inline-flex items-center gap-2 text-sm font-bold text-[#16805B] hover:text-[#0D5C41] hover:underline transition-all group"
+          >
+            <span>Explore verified educators for your syllabus</span>
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       </div>
     </section>
   );
 }
+
+export default SocialProofTestimonials;

@@ -10,6 +10,7 @@ import { WhatYouCanDoSection } from "@/components/homepage/what-you-can-do-secti
 import { HowItWorksSection } from "@/components/homepage/how-it-works-section";
 import { ExploreEducatorsSection } from "@/components/homepage/explore-educators-section";
 import { ExploreCoursesSection } from "@/components/homepage/explore-courses-section";
+import { LearnerMilestonesBanner } from "@/components/homepage/learner-milestones-banner";
 import { SocialProofTestimonials } from "@/components/homepage/social-proof-testimonials";
 import { WhyEduConnectsSection } from "@/components/homepage/why-educonnects-section";
 import { BecomeEducatorSection } from "@/components/homepage/become-educator-section";
@@ -47,7 +48,10 @@ export default function EduConnectsHomePage() {
         {/* 7. Explore Courses */}
         <ExploreCoursesSection />
 
-        {/* 8. Success Stories */}
+        {/* 7.5 Dedicated Promotional Marketing Banner: Learner Milestones */}
+        <LearnerMilestonesBanner />
+
+        {/* 8. Success Stories — Authentic Customer Reviews */}
         <SocialProofTestimonials />
 
         {/* 9. Why EduConnects? */}

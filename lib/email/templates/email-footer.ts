@@ -7,7 +7,7 @@
  * - Clean horizontal row of social media icons (Instagram, Facebook, YouTube, WhatsApp, LinkedIn)
  * - Navigation links: Privacy Policy, Terms & Conditions, Cancellation / Refund Policy
  * - Support contact details (support@educonnects.co.in, +91 9109019090)
- * - Official registered office address: Bard No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403, India
+ * - Official registered office address: Ward No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403, India
  * - Corporate business info: Shrivastava ProFunnels Ventures Pvt Ltd (CIN: U85499UP2024PTC212061)
  * - Copyright text: © 2026 EduConnects. All rights reserved.
  * - Clickable link: Powered by MyProFunnels Ventures (https://myprofunnels.com)
@@ -123,7 +123,7 @@ export function generateEmailFooterHtml(options: EmailFooterOptions = {}): strin
 
               <!-- 5. Official Registered Office Address & Corporate Entity -->
               <p style="margin: 0 0 4px 0; font-size: 11px; line-height: 1.5; color: #94a3b8; text-align: center;">
-                Registered Office: Bard No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403, India
+                Registered Office: Ward No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403, India
               </p>
               <p style="margin: 0 0 14px 0; font-size: 11px; line-height: 1.5; color: #94a3b8; text-align: center;">
                 Operated by Shrivastava ProFunnels Ventures Pvt Ltd &bull; CIN: U85499UP2024PTC212061

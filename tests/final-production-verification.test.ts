@@ -21,8 +21,8 @@ async function runTests() {
   );
   assert.strictEqual(
     OFFICIAL_COMPANY_INFO.founder,
-    "Sameer Shrivastava",
-    "Founder must be 'Sameer Shrivastava'"
+    "Neeraj Shrivastava",
+    "Founder must be 'Neeraj Shrivastava'"
   );
   console.log("✅ Company Info & Legal Name strictly match requirements.\n");
 

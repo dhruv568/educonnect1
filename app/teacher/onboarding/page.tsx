@@ -721,7 +721,7 @@ export default function TeacherOnboardingPage() {
                     First Name <span className="text-rose-500">*</span>
                   </label>
                   <Input
-                    placeholder="e.g. Sameer"
+                    placeholder="e.g. Neeraj"
                     value={personal.firstName}
                     onChange={(e) => setPersonal({ ...personal, firstName: e.target.value })}
                   />
@@ -1167,7 +1167,7 @@ export default function TeacherOnboardingPage() {
                     Account Holder Name <span className="text-rose-500">*</span>
                   </label>
                   <Input
-                    placeholder="e.g. SAMEER SHRIVASTAVA"
+                    placeholder="e.g. NEERAJ SHRIVASTAVA"
                     value={bankDetails.accountHolderName}
                     onChange={(e) => setBankDetails({ ...bankDetails, accountHolderName: e.target.value })}
                   />

@@ -14,7 +14,6 @@ import { extractOtpDigits } from "@/lib/auth/otp-utils";
 import { PhoneOtpVerifyInline } from "@/components/auth/phone-otp-verify-inline";
 import { EmailOtpVerifyInline } from "@/components/auth/email-otp-verify-inline";
 import {
-
   User,
   Mail,
   Phone,
@@ -35,6 +34,8 @@ import {
   Video,
   Check,
   LayoutDashboard,
+  PhoneCall,
+  CheckCheck,
 } from "lucide-react";
 import {
   LearnerAcademicFields,
@@ -87,7 +88,7 @@ function getUpcomingDates() {
   const dates = [];
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  
+
   for (let i = 1; i <= 5; i++) {
     const d = new Date();
     d.setDate(d.getDate() + i);
@@ -98,16 +99,6 @@ function getUpcomingDates() {
   }
   return dates;
 }
-
-const STEPS = [
-  { number: 1, label: "Learner Info" },
-  { number: 2, label: "Choose Program" },
-  { number: 3, label: "Review" },
-  { number: 4, label: "Payment" },
-  { number: 5, label: "Verification" },
-  { number: 6, label: "Account Setup" },
-  { number: 7, label: "Ready" },
-];
 
 function LearnerRegistrationFlowContent() {
   const router = useRouter();
@@ -164,6 +155,16 @@ function LearnerRegistrationFlowContent() {
   const [educatorAvailability, setEducatorAvailability] = useState<any>(null);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
 
+  // Optional Callback Request State
+  const [callbackOpen, setCallbackOpen] = useState(false);
+  const [callbackName, setCallbackName] = useState("");
+  const [callbackPhone, setCallbackPhone] = useState("");
+  const [callbackSlot, setCallbackSlot] = useState("Morning (9 AM - 12 PM)");
+  const [callbackTopic, setCallbackTopic] = useState("Course & Syllabus Guidance");
+  const [callbackConsent, setCallbackConsent] = useState(false);
+  const [submittingCallback, setSubmittingCallback] = useState(false);
+  const [callbackSubmittedRef, setCallbackSubmittedRef] = useState<string | null>(null);
+
   // Restore state from sessionStorage or URL query parameters on mount
   useEffect(() => {
     const courseId = searchParams.get("courseId");
@@ -193,7 +194,6 @@ function LearnerRegistrationFlowContent() {
             fullName: fullName || prev.fullName,
             email: u.email || prev.email,
             phone: u.phone || prev.phone,
-            // If already logged in, they can advance beyond step 1
             step: prev.step === 1 ? 2 : prev.step,
           }));
         }
@@ -207,16 +207,13 @@ function LearnerRegistrationFlowContent() {
         resolvedStep = 5;
       } else if (stepParam) {
         const parsed = parseInt(stepParam, 10);
-        if (parsed >= 1 && parsed <= 4) {
+        if (parsed >= 1 && parsed <= 7) {
           resolvedStep = parsed;
         } else {
-          resolvedStep = savedState.step && savedState.step <= 4 ? savedState.step : (prev.step <= 4 ? prev.step : 3);
+          resolvedStep = savedState.step && savedState.step <= 7 ? savedState.step : (prev.step <= 7 ? prev.step : 2);
         }
       } else if (savedState.step) {
-        resolvedStep = savedState.step <= 5 ? savedState.step : 3;
-      }
-      if (resolvedStep >= 6) {
-        resolvedStep = 3;
+        resolvedStep = savedState.step <= 7 ? savedState.step : 2;
       }
 
       return {
@@ -230,6 +227,12 @@ function LearnerRegistrationFlowContent() {
       };
     });
   }, [searchParams]);
+
+  // Sync callback defaults with learner info
+  useEffect(() => {
+    if (state.fullName && !callbackName) setCallbackName(state.fullName);
+    if (state.phone && !callbackPhone) setCallbackPhone(state.phone);
+  }, [state.fullName, state.phone, callbackName, callbackPhone]);
 
   // Persist state changes in sessionStorage
   useEffect(() => {
@@ -262,14 +265,14 @@ function LearnerRegistrationFlowContent() {
     return () => clearInterval(t);
   }, [state.otpCooldown]);
 
-  // Fetch courses and educators for selection
+  // Fetch courses and educators for catalog selection
   useEffect(() => {
     async function loadCatalog() {
       setLoadingCatalog(true);
       try {
         const [cRes, tRes] = await Promise.all([
-          fetch("/api/courses?limit=20"),
-          fetch("/api/teachers?limit=20&sortBy=rating"),
+          fetch("/api/courses?limit=25"),
+          fetch("/api/teachers?limit=25&sortBy=rating"),
         ]);
         const cJson = await cRes.json();
         const tJson = await tRes.json();
@@ -325,7 +328,7 @@ function LearnerRegistrationFlowContent() {
     }
   }, [state.selectedEducatorId, educatorsList, state.selectedEducator]);
 
-  // Dynamically fetch educator live availability when an educator is selected
+  // Fetch educator live availability when an educator is selected
   useEffect(() => {
     const targetTeacherId = state.selectedEducatorId || state.selectedEducator?.id;
     if (targetTeacherId) {
@@ -367,7 +370,6 @@ function LearnerRegistrationFlowContent() {
     e.preventDefault();
     setSubmittingStep1(true);
 
-    // Form validations
     if (!state.fullName.trim() || state.fullName.trim().length < 2) {
       showToast("Validation Error", "Please enter your full name.", "error");
       setSubmittingStep1(false);
@@ -499,9 +501,9 @@ function LearnerRegistrationFlowContent() {
       }
 
       setIsUserLoggedIn(true);
-      showToast("Email Verified!", "Your learner account credentials are confirmed.", "success");
+      showToast("Email Verified!", "Your free learner account is confirmed. Welcome to EduConnects!", "success");
 
-      // Advance to Step 2 (or Step 3 if program is already selected)
+      // Advance to Step 3 if pre-selected, otherwise to Step 2 (Optional Program Exploration)
       const hasProgram = state.selectedCourseId || state.selectedEducatorId;
       setState((prev) => ({
         ...prev,
@@ -533,7 +535,7 @@ function LearnerRegistrationFlowContent() {
     });
   };
 
-  // Trigger Step 4 Payment
+  // Trigger Payment (Only invoked when user explicitly clicks "Pay" or "Enroll Free")
   const handleInitiatePayment = async () => {
     setState((prev) => ({
       ...prev,
@@ -585,15 +587,14 @@ function LearnerRegistrationFlowContent() {
           setState((prev) => ({
             ...prev,
             paymentLoading: false,
-            activeEnrollmentNotice:
-              "You are already enrolled in this course.",
+            activeEnrollmentNotice: "You are already enrolled in this course.",
           }));
           return;
         }
         throw new Error(errMsg);
       }
 
-      // 1. FREE PRODUCT (price === 0)
+      // 1. FREE PRODUCT (price === 0): No Cashfree checkout needed
       if (data.data?.isFree) {
         setState((prev) => ({
           ...prev,
@@ -607,7 +608,7 @@ function LearnerRegistrationFlowContent() {
         return;
       }
 
-      // 2. PAID PRODUCT -> Launch Cashfree PG
+      // 2. PAID PRODUCT: Launch Cashfree PG only after explicit user checkout
       const order = data.data;
       setState((prev) => ({ ...prev, orderData: order }));
 
@@ -679,17 +680,60 @@ function LearnerRegistrationFlowContent() {
     }
   };
 
-  // Filter courses for step 2
+  // Handle Optional Callback Request Submit
+  const handleCallbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!callbackConsent) {
+      showToast("Consent Required", "Please check the consent box to request a counseling callback.", "error");
+      return;
+    }
+    const clean = callbackPhone.replace(/\D/g, "");
+    if (clean.length !== 10) {
+      showToast("Invalid Phone", "Please enter a valid 10-digit mobile number.", "error");
+      return;
+    }
+    setSubmittingCallback(true);
+    try {
+      const res = await fetch("/api/student/callback-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: callbackName.trim() || state.fullName || "Learner",
+          email: state.email || undefined,
+          phone: clean,
+          preferredSlot: callbackSlot,
+          topic: callbackTopic,
+          consent: true,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to submit callback request.");
+      }
+      setCallbackSubmittedRef(json.data?.referenceId || "CB-SUCCESS");
+      showToast("Callback Requested!", "Our academic advisor will reach out during your preferred time.", "success");
+    } catch (err: any) {
+      showToast("Request Error", err.message, "error");
+    } finally {
+      setSubmittingCallback(false);
+    }
+  };
+
+  // Filter courses for Step 2
   const filteredCourses = coursesList.filter((c) => {
     const matchSearch =
       !courseSearch.trim() ||
       c.title?.toLowerCase().includes(courseSearch.toLowerCase()) ||
       c.subject?.toLowerCase().includes(courseSearch.toLowerCase());
+    
+    if (selectedSubject === "FREE") {
+      return matchSearch && c.price === 0;
+    }
     const matchSubject = selectedSubject === "ALL" || c.subject?.toLowerCase() === selectedSubject.toLowerCase();
     return matchSearch && matchSubject;
   });
 
-  // Filter educators for step 2
+  // Filter educators for Step 2
   const filteredEducators = educatorsList.filter((e) => {
     return (
       !educatorSearch.trim() ||
@@ -699,6 +743,24 @@ function LearnerRegistrationFlowContent() {
   });
 
   const activePrice = state.selectedCourse ? state.selectedCourse.price : state.isTrial ? (state.selectedEducator?.hourlyRate || 499) : 0;
+
+  // Determine whether the user has entered a paid checkout path
+  const isPaidCheckoutFlow = (state.step >= 3 && state.step <= 6) || (state.step === 7 && (state.transactionData || state.orderData?.isFree));
+
+  // Contextual step progress configuration
+  const PROGRESS_STEPS = isPaidCheckoutFlow
+    ? [
+        { id: 1, stepNumber: 1, label: "Learner Profile" },
+        { id: 2, stepNumber: 2, label: "Program Selection" },
+        { id: 3, stepNumber: 3, label: "Review Selection" },
+        { id: 4, stepNumber: 4, label: "Payment & Checkout" },
+        { id: 7, stepNumber: 7, label: "Account Ready" },
+      ]
+    : [
+        { id: 1, stepNumber: 1, label: "Learner Profile" },
+        { id: 2, stepNumber: 2, label: "Explore Programs (Optional)" },
+        { id: 7, stepNumber: 7, label: "Account Ready" },
+      ];
 
   if (loadingInitial) {
     return (
@@ -711,39 +773,39 @@ function LearnerRegistrationFlowContent() {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8 font-sans">
       {/* ========================================================================= */}
-      {/* 7-STEP PROGRESS INDICATOR */}
+      {/* RESPONSIVE PROGRESS INDICATOR */}
       {/* ========================================================================= */}
-      <div className="bg-white/90 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-sm">
-        <div className="flex items-center justify-between overflow-x-auto pb-2 sm:pb-0 gap-2">
-          {STEPS.map((s, idx) => {
-            const isCompleted = state.step > s.number;
-            const isCurrent = state.step === s.number;
+      <div className="bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-sm">
+        <div className="flex items-center justify-between overflow-x-auto pb-1 sm:pb-0 gap-2">
+          {PROGRESS_STEPS.map((s, idx) => {
+            const isCompleted = state.step > s.stepNumber || (s.stepNumber === 7 && state.step === 7);
+            const isCurrent = state.step === s.stepNumber;
             return (
-              <div key={s.number} className="flex items-center gap-2 shrink-0">
+              <div key={s.id} className="flex items-center gap-2 shrink-0">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${
-                    isCompleted
-                      ? "bg-blue-600 text-white shadow-sm"
+                    isCompleted && !isCurrent
+                      ? "bg-emerald-600 text-white shadow-sm"
                       : isCurrent
-                      ? "bg-[#2563EB] text-white shadow-md shadow-[#2563EB]/20 ring-4 ring-[#2563EB]/15"
+                      ? "bg-[#2563EB] text-white shadow-md shadow-[#2563EB]/25 ring-4 ring-[#2563EB]/15"
                       : "bg-slate-100 text-slate-400"
                   }`}
                 >
-                  {isCompleted ? <Check className="w-4 h-4 stroke-[3]" /> : s.number}
+                  {isCompleted && !isCurrent ? <Check className="w-4 h-4 stroke-[3]" /> : idx + 1}
                 </div>
-                <div className="hidden sm:block text-left">
+                <div className="text-left">
                   <div
                     className={`text-[11px] font-bold uppercase tracking-wider ${
-                      isCurrent ? "text-[#1E40AF]" : isCompleted ? "text-blue-700" : "text-slate-400"
+                      isCurrent ? "text-[#1E40AF]" : isCompleted ? "text-emerald-700" : "text-slate-400"
                     }`}
                   >
                     {s.label}
                   </div>
                 </div>
-                {idx < STEPS.length - 1 && (
+                {idx < PROGRESS_STEPS.length - 1 && (
                   <div
-                    className={`w-4 lg:w-8 h-0.5 rounded-full hidden sm:block ${
-                      state.step > s.number ? "bg-blue-400" : "bg-slate-200"
+                    className={`w-4 lg:w-10 h-0.5 rounded-full hidden sm:block ${
+                      state.step > s.stepNumber ? "bg-emerald-400" : "bg-slate-200"
                     }`}
                   />
                 )}
@@ -754,19 +816,19 @@ function LearnerRegistrationFlowContent() {
       </div>
 
       {/* ========================================================================= */}
-      {/* STEP 1: LEARNER INFORMATION */}
+      {/* STEP 1: LEARNER INFORMATION & VERIFICATION */}
       {/* ========================================================================= */}
       {state.step === 1 && (
-        <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-7 sm:p-10 border border-white/90 shadow-xl space-y-6">
+        <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-6 sm:p-10 border border-white/90 shadow-xl space-y-6">
           <div className="text-center sm:text-left space-y-1.5 border-b border-slate-100 pb-5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#2563EB]/10 text-[#2563EB] text-xs font-bold uppercase tracking-wider border border-[#2563EB]/20">
-              <Sparkles className="w-3.5 h-3.5" /> Step 1 of 7: Learner Profile
+              <Sparkles className="w-3.5 h-3.5" /> Free Learner Registration
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Create Your Learner Account
+              Create Your Free Learner Account
             </h1>
             <p className="text-xs sm:text-sm text-slate-500">
-              Enter your details to begin your personalized learning journey with verified educators.
+              Zero upfront fees or payment details required. Join the community to explore courses, free study guides, and verified educators.
             </p>
           </div>
 
@@ -855,7 +917,6 @@ function LearnerRegistrationFlowContent() {
                   </div>
                 </div>
               </div>
-
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
@@ -958,11 +1019,11 @@ function LearnerRegistrationFlowContent() {
               <GlassButton
                 type="submit"
                 variant="learner"
-                className="w-full bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold py-3.5"
+                className="w-full bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold py-3.5 shadow-lg shadow-[#2563EB]/20"
                 isLoading={submittingOtp}
                 rightIcon={<CheckCircle2 className="h-4 w-4" />}
               >
-                Verify Code & Continue
+                Verify Code & Complete Free Registration
               </GlassButton>
             </form>
           )}
@@ -977,20 +1038,21 @@ function LearnerRegistrationFlowContent() {
       )}
 
       {/* ========================================================================= */}
-      {/* STEP 2: CHOOSE WHAT THE LEARNER WANTS (COURSE OR EDUCATOR) */}
+      {/* STEP 2: EXPLORE PROGRAMS (OPTIONAL DISCOVERY — NO PAYMENT REQUIRED) */}
       {/* ========================================================================= */}
       {state.step === 2 && (
-        <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-7 sm:p-10 border border-white/90 shadow-xl space-y-6">
+        <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-6 sm:p-10 border border-white/90 shadow-xl space-y-6">
+          {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-5">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#2563EB]/10 text-[#2563EB] text-xs font-bold uppercase tracking-wider border border-[#2563EB]/20">
-                <BookOpen className="w-3.5 h-3.5" /> Step 2 of 7: Choose Your Program
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider border border-emerald-200">
+                <Check className="w-3.5 h-3.5 text-emerald-600" /> Account Created & Verified
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1.5">
-                Select Your Course or Educator
+                Explore Programs or Jump to Dashboard
               </h2>
               <p className="text-xs sm:text-sm text-slate-500">
-                Pick an accredited curriculum or book a 1-on-1 trial class with a verified mentor.
+                Your free account is ready. Browse courses and top mentors, or start exploring your dashboard immediately with no payment needed.
               </p>
             </div>
 
@@ -1019,6 +1081,30 @@ function LearnerRegistrationFlowContent() {
                 👨‍🏫 Choose Educator
               </button>
             </div>
+          </div>
+
+          {/* Quick Action: Skip Directly to Free Dashboard */}
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50/70 border border-blue-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-black uppercase tracking-wider text-blue-900">
+                  Free Platform Access Unlocked
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 max-w-lg leading-relaxed">
+                Want to explore the platform on your own first? You can skip program selection and jump directly to your free learner dashboard.
+              </p>
+            </div>
+            <GlassButton
+              type="button"
+              variant="primary"
+              onClick={() => setState((p) => ({ ...p, step: 7 }))}
+              className="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-5 py-2.5 text-xs shrink-0 shadow-md shadow-[#2563EB]/20"
+              rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+            >
+              Skip to Free Dashboard
+            </GlassButton>
           </div>
 
           {/* If Course is Pre-selected */}
@@ -1097,7 +1183,6 @@ function LearnerRegistrationFlowContent() {
                   </div>
                 ) : (
                   <>
-                    {/* Available Date Pills */}
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Available Dates:</label>
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -1134,7 +1219,6 @@ function LearnerRegistrationFlowContent() {
                       </div>
                     </div>
 
-                    {/* Available Time Slot Pills */}
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                         Available Time Slots for {state.selectedDate} (IST):
@@ -1213,18 +1297,27 @@ function LearnerRegistrationFlowContent() {
                   />
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {["ALL", "Mathematics", "Physics", "Chemistry", "Computer Science"].map((subj) => (
+                  {[
+                    { label: "All Subjects", value: "ALL" },
+                    { label: "🎁 Free Courses", value: "FREE" },
+                    { label: "Mathematics", value: "Mathematics" },
+                    { label: "Physics", value: "Physics" },
+                    { label: "Chemistry", value: "Chemistry" },
+                    { label: "Computer Science", value: "Computer Science" },
+                  ].map((filterItem) => (
                     <button
-                      key={subj}
+                      key={filterItem.value}
                       type="button"
-                      onClick={() => setSelectedSubject(subj)}
+                      onClick={() => setSelectedSubject(filterItem.value)}
                       className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
-                        selectedSubject === subj
-                          ? "bg-[#2563EB] text-white"
+                        selectedSubject === filterItem.value
+                          ? filterItem.value === "FREE"
+                            ? "bg-emerald-600 text-white shadow-sm"
+                            : "bg-[#2563EB] text-white shadow-sm"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                       }`}
                     >
-                      {subj}
+                      {filterItem.label}
                     </button>
                   ))}
                 </div>
@@ -1241,6 +1334,7 @@ function LearnerRegistrationFlowContent() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-1">
                   {filteredCourses.map((c) => {
                     const isSelected = state.selectedCourseId === c.id;
+                    const isFreeCourse = c.price === 0;
                     return (
                       <div
                         key={c.id}
@@ -1256,9 +1350,15 @@ function LearnerRegistrationFlowContent() {
                             <span className="px-2 py-0.5 rounded-md bg-blue-100 text-[#2563EB] text-[10px] font-bold uppercase">
                               {c.subject}
                             </span>
-                            <span className="text-xs font-black text-slate-900">
-                              {c.price === 0 ? "FREE" : formatCurrency(c.price)}
-                            </span>
+                            {isFreeCourse ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-xs font-black">
+                                <Sparkles className="w-3 h-3 text-emerald-600" /> FREE
+                              </span>
+                            ) : (
+                              <span className="text-xs font-black text-slate-900">
+                                {formatCurrency(c.price)}
+                              </span>
+                            )}
                           </div>
                           <h4 className="text-sm font-bold text-slate-900 line-clamp-1">{c.title}</h4>
                           <p className="text-xs text-slate-500 line-clamp-2">{c.description}</p>
@@ -1267,8 +1367,8 @@ function LearnerRegistrationFlowContent() {
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3 text-slate-400" /> {c.durationHours || 12}h lessons
                           </span>
-                          <span className={`font-bold ${isSelected ? "text-[#2563EB]" : "text-slate-400"}`}>
-                            {isSelected ? "✓ Selected" : "Select Course →"}
+                          <span className={`font-bold ${isSelected ? "text-[#2563EB]" : isFreeCourse ? "text-emerald-700" : "text-slate-400"}`}>
+                            {isSelected ? "✓ Selected" : isFreeCourse ? "Enroll Free →" : "Select Course →"}
                           </span>
                         </div>
                       </div>
@@ -1353,44 +1453,182 @@ function LearnerRegistrationFlowContent() {
             </div>
           )}
 
-          {/* Continue Button */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
+          {/* ========================================================================= */}
+          {/* OPTIONAL ACADEMIC COUNSELING CALLBACK REQUEST CARD */}
+          {/* ========================================================================= */}
+          <div className="border border-slate-200/90 rounded-2xl bg-white/80 overflow-hidden shadow-sm">
+            <button
+              type="button"
+              onClick={() => setCallbackOpen((prev) => !prev)}
+              className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-slate-50/80 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-100/80 text-[#2563EB] flex items-center justify-center shrink-0">
+                  <PhoneCall className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Need Help Deciding? Request a Free Counseling Callback
+                  </h4>
+                  <p className="text-xs text-slate-500">
+                    Get 1-on-1 guidance from an EduConnects advisor. 100% free with zero obligation.
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-[#2563EB] shrink-0 pl-2">
+                {callbackOpen ? "Hide Form ↑" : "Request Call ↓"}
+              </span>
+            </button>
+
+            {callbackOpen && (
+              <div className="p-5 sm:p-6 border-t border-slate-100 bg-slate-50/50 space-y-4">
+                {callbackSubmittedRef ? (
+                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-1.5">
+                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800">
+                      <CheckCheck className="w-4 h-4 text-emerald-600" /> Callback Scheduled Successfully
+                    </div>
+                    <p className="text-xs text-emerald-700">
+                      Reference ID: <span className="font-mono font-bold">{callbackSubmittedRef}</span>. Our academic advisor will contact you during your preferred time window.
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleCallbackSubmit} className="space-y-4">
+                    <div className="p-3 bg-blue-50/70 border border-blue-200/60 rounded-xl text-[11px] text-blue-900 leading-relaxed">
+                      <strong>Privacy Notice:</strong> We collect your contact information solely to provide one-time course and curriculum guidance. Registering an account does NOT opt you into automated marketing communications.
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Input
+                        label="Full Name"
+                        value={callbackName}
+                        onChange={(e) => setCallbackName(e.target.value)}
+                        placeholder="Your full name"
+                        required
+                      />
+                      <Input
+                        label="Mobile Number for Callback"
+                        type="tel"
+                        maxLength={10}
+                        value={callbackPhone}
+                        onChange={(e) => setCallbackPhone(e.target.value)}
+                        placeholder="10-digit mobile number"
+                        required
+                        helperText="Indian mobile number"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 block mb-1">
+                          Preferred Callback Window
+                        </label>
+                        <select
+                          value={callbackSlot}
+                          onChange={(e) => setCallbackSlot(e.target.value)}
+                          className="w-full h-11 px-3 text-xs bg-white border border-slate-200 rounded-xl outline-none focus:border-[#2563EB]"
+                        >
+                          <option>Morning (9 AM - 12 PM)</option>
+                          <option>Afternoon (12 PM - 5 PM)</option>
+                          <option>Evening (5 PM - 8 PM)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 block mb-1">
+                          Academic Interest / Topic
+                        </label>
+                        <select
+                          value={callbackTopic}
+                          onChange={(e) => setCallbackTopic(e.target.value)}
+                          className="w-full h-11 px-3 text-xs bg-white border border-slate-200 rounded-xl outline-none focus:border-[#2563EB]"
+                        >
+                          <option>Course & Syllabus Guidance</option>
+                          <option>1-on-1 Educator Matching</option>
+                          <option>Exam Preparation (JEE / NEET / Boards)</option>
+                          <option>Foundational Skills & Tutoring</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2.5 pt-1">
+                      <input
+                        type="checkbox"
+                        id="counseling-consent-check"
+                        checked={callbackConsent}
+                        onChange={(e) => setCallbackConsent(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]"
+                        required
+                      />
+                      <label htmlFor="counseling-consent-check" className="text-xs text-slate-600 leading-normal cursor-pointer">
+                        I explicitly consent to receive a one-time guidance call from an EduConnects academic advisor regarding my learning goals. (100% free with zero spam.)
+                      </label>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-1">
+                      <GlassButton
+                        type="submit"
+                        variant="primary"
+                        isLoading={submittingCallback}
+                        disabled={!callbackConsent}
+                        className="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-6 py-2.5 text-xs shadow-md shadow-[#2563EB]/20"
+                      >
+                        Submit Callback Request
+                      </GlassButton>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Step 2 Bottom Actions */}
+          <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
             <button
               type="button"
               onClick={() => setState((p) => ({ ...p, step: 1 }))}
-              className="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer"
+              className="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer order-2 sm:order-1"
             >
-              <ArrowLeft className="w-3.5 h-3.5" /> Back to Information
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Profile Information
             </button>
 
-            <GlassButton
-              type="button"
-              variant="learner"
-              disabled={!state.selectedCourse && !state.selectedEducator}
-              onClick={() => setState((p) => ({ ...p, step: 3 }))}
-              className="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-6"
-              rightIcon={<ArrowRight className="h-4 w-4" />}
-            >
-              Review Selection
-            </GlassButton>
+            <div className="flex items-center gap-3 w-full sm:w-auto order-1 sm:order-2 justify-end">
+              <button
+                type="button"
+                onClick={() => setState((p) => ({ ...p, step: 7 }))}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                Skip to Dashboard (Free)
+              </button>
+
+              <GlassButton
+                type="button"
+                variant="learner"
+                disabled={!state.selectedCourse && !state.selectedEducator}
+                onClick={() => setState((p) => ({ ...p, step: 3 }))}
+                className="w-full sm:w-auto bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-6 py-2.5 shadow-md shadow-[#2563EB]/20"
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              >
+                Review Selection
+              </GlassButton>
+            </div>
           </div>
         </GlassCard>
       )}
 
       {/* ========================================================================= */}
-      {/* STEP 3: REVIEW SELECTION */}
+      {/* STEP 3: REVIEW SELECTION & CONFIRMATION */}
       {/* ========================================================================= */}
       {state.step === 3 && (
-        <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-7 sm:p-10 border border-white/90 shadow-xl space-y-6">
+        <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-6 sm:p-10 border border-white/90 shadow-xl space-y-6">
           <div className="text-center sm:text-left space-y-1.5 border-b border-slate-100 pb-5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#2563EB]/10 text-[#2563EB] text-xs font-bold uppercase tracking-wider border border-[#2563EB]/20">
-              <ShieldCheck className="w-3.5 h-3.5" /> Step 3 of 7: Review Selection
+              <ShieldCheck className="w-3.5 h-3.5" /> Review Enrollment Selection
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Confirm Your Enrollment
+              Confirm Your Program Selection
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Please verify your learner account information and selected curriculum before proceeding to checkout.
+              Verify your learner credentials and selected curriculum before proceeding. Payment is only initiated when you deliberately choose to check out.
             </p>
           </div>
 
@@ -1399,7 +1637,7 @@ function LearnerRegistrationFlowContent() {
             <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
               <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Learner Profile</span>
-                <span className="text-[11px] text-blue-600 font-bold">✓ Verified</span>
+                <span className="text-[11px] text-emerald-600 font-bold">✓ Verified Free Account</span>
               </div>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
@@ -1479,42 +1717,66 @@ function LearnerRegistrationFlowContent() {
               <span className="text-white font-medium">Included</span>
             </div>
             <div className="border-t border-slate-800 pt-3 flex justify-between items-center">
-              <span className="text-sm font-bold text-white">Total Amount</span>
-              <span className="text-2xl font-black text-blue-400">
+              <div>
+                <span className="text-sm font-bold text-white block">Total Payable</span>
+                {activePrice > 0 && (
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    Secure checkout via Cashfree Payments
+                  </span>
+                )}
+              </div>
+              <span className={`text-2xl font-black ${activePrice === 0 ? "text-emerald-400" : "text-blue-400"}`}>
                 {activePrice === 0 ? "FREE" : formatCurrency(activePrice)}
               </span>
             </div>
           </div>
 
           {/* Navigation Action Buttons */}
-          <div className="flex items-center justify-between gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
             <button
               type="button"
               onClick={() => setState((p) => ({ ...p, step: 2 }))}
-              className="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer"
+              className="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer order-2 sm:order-1"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Modify Selection
             </button>
 
-            <GlassButton
-              type="button"
-              variant="primary"
-              onClick={handleInitiatePayment}
-              className="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-8 py-3.5 shadow-lg shadow-[#2563EB]/20"
-              rightIcon={<CreditCard className="h-4 w-4" />}
-            >
-              {activePrice === 0
-                ? "Complete Free Enrollment"
-                : state.selectionType === "EDUCATOR" || state.isTrial
-                ? "Book Now"
-                : "Pay Now"}
-            </GlassButton>
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto order-1 sm:order-2">
+              {activePrice > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setState((p) => ({ ...p, step: 7 }))}
+                  className="w-full sm:w-auto px-4 py-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Skip Payment & Go to Dashboard
+                </button>
+              )}
+
+              <GlassButton
+                type="button"
+                variant="primary"
+                onClick={handleInitiatePayment}
+                className={`w-full sm:w-auto text-white font-bold px-8 py-3.5 shadow-lg ${
+                  activePrice === 0
+                    ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
+                    : "bg-[#2563EB] hover:bg-[#1E40AF] shadow-[#2563EB]/25"
+                }`}
+                rightIcon={activePrice === 0 ? <Check className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
+              >
+                {activePrice === 0
+                  ? "Complete Free Enrollment"
+                  : state.selectionType === "EDUCATOR" || state.isTrial
+                  ? `Pay ${formatCurrency(activePrice)} & Book Session`
+                  : `Pay ${formatCurrency(activePrice)} via Cashfree`}
+              </GlassButton>
+            </div>
           </div>
         </GlassCard>
       )}
 
       {/* ========================================================================= */}
       {/* STEP 4 & 5: CASHFREE PAYMENT & SERVER VERIFICATION */}
+      {/* (Only reached when user deliberately clicked Pay in Step 3) */}
       {/* ========================================================================= */}
       {(state.step === 4 || state.step === 5) && (
         <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-8 sm:p-12 border border-white/90 shadow-2xl space-y-6 text-center">
@@ -1528,6 +1790,15 @@ function LearnerRegistrationFlowContent() {
                 <p className="text-xs text-slate-500">
                   Please do not close or refresh this window while we verify your transaction.
                 </p>
+              </div>
+              <div className="pt-4">
+                <button
+                  type="button"
+                  onClick={() => setState((p) => ({ ...p, step: 3, paymentLoading: false }))}
+                  className="text-xs text-slate-500 hover:text-slate-800 underline"
+                >
+                  Cancel and return to review
+                </button>
               </div>
             </div>
           ) : state.activeEnrollmentNotice ? (
@@ -1553,7 +1824,7 @@ function LearnerRegistrationFlowContent() {
                 <AlertCircle className="w-8 h-8" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-bold text-slate-900">Payment Verification Issue</h3>
+                <h3 className="text-lg font-bold text-slate-900">Payment Notice</h3>
                 <p className="text-xs text-rose-600/90 leading-relaxed">{state.paymentError}</p>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -1563,6 +1834,13 @@ function LearnerRegistrationFlowContent() {
                   className="w-full py-3 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50"
                 >
                   Change Selection
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setState((p) => ({ ...p, step: 7, paymentError: null }))}
+                  className="w-full py-3 rounded-xl border border-blue-200 text-[#2563EB] text-xs font-bold hover:bg-blue-50"
+                >
+                  Skip to Free Dashboard
                 </button>
                 <GlassButton
                   type="button"
@@ -1581,30 +1859,39 @@ function LearnerRegistrationFlowContent() {
               </div>
               <h3 className="text-lg font-bold text-slate-900">Cashfree Checkout Ready</h3>
               <p className="text-xs text-slate-500">Click below if checkout did not open automatically.</p>
-              <GlassButton
-                type="button"
-                variant="primary"
-                onClick={handleInitiatePayment}
-                className="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-8"
-              >
-                {state.selectionType === "EDUCATOR" || state.isTrial ? "Book Now" : "Pay Now"}
-              </GlassButton>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setState((p) => ({ ...p, step: 7 }))}
+                  className="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50"
+                >
+                  Skip to Dashboard
+                </button>
+                <GlassButton
+                  type="button"
+                  variant="primary"
+                  onClick={handleInitiatePayment}
+                  className="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-8"
+                >
+                  {state.selectionType === "EDUCATOR" || state.isTrial ? "Book Now" : "Pay Now"}
+                </GlassButton>
+              </div>
             </div>
           )}
         </GlassCard>
       )}
 
       {/* ========================================================================= */}
-      {/* STEP 6: ACCOUNT CREATION & ENROLLMENT FINALIZATION */}
+      {/* STEP 6: ACCOUNT SETUP & ENROLLMENT FINALIZATION */}
       {/* ========================================================================= */}
-      {state.step === 6 && (state.transactionData || state.orderData?.isFree) && (
+      {state.step === 6 && (
         <GlassCard glowColor="rgba(37, 99, 235, 0.2)" className="p-8 sm:p-12 border border-white/90 shadow-2xl text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-blue-100 text-[#2563EB] flex items-center justify-center mx-auto animate-bounce">
+          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto animate-bounce">
             <CheckCircle2 className="w-9 h-9" />
           </div>
-          <h2 className="text-2xl font-black text-slate-900">Enrollment Verified!</h2>
+          <h2 className="text-2xl font-black text-slate-900">Configuring Your Account...</h2>
           <p className="text-xs text-slate-600 max-w-md mx-auto">
-            Configuring your learner classroom privileges, syllabus timetable, and verified credentials...
+            Setting up your personalized learner privileges, classroom timetable, and verified dashboard...
           </p>
           <div className="w-32 h-1.5 bg-slate-100 rounded-full overflow-hidden mx-auto">
             <div className="w-full h-full bg-[#2563EB] animate-pulse" />
@@ -1614,44 +1901,87 @@ function LearnerRegistrationFlowContent() {
 
       {/* ========================================================================= */}
       {/* STEP 7: READY & DASHBOARD SUCCESS SCREEN */}
+      {/* Handles both Free Learner Registration and Confirmed Program Enrollment */}
       {/* ========================================================================= */}
-      {state.step === 7 && (state.transactionData || state.orderData?.isFree) && (
+      {state.step === 7 && (
         <GlassCard glowColor="rgba(37, 99, 235, 0.2)" className="p-8 sm:p-12 border border-white/90 shadow-2xl text-center space-y-6">
           <div className="w-20 h-20 rounded-3xl bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/30 flex items-center justify-center mx-auto shadow-xl shadow-[#2563EB]/15">
             <Sparkles className="w-10 h-10 text-[#2563EB]" />
           </div>
 
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider">
-              <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" /> Registration & Enrollment Complete
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Your EduConnects account is ready!
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
-              Welcome to the learner community, <span className="font-bold text-slate-900">{state.fullName || "Learner"}</span>! Your course enrollment is confirmed and your interactive classroom workspace is unlocked.
-            </p>
-          </div>
+          {/* Differentiate between Confirmed Paid/Free Enrollment vs Free Registration Account */}
+          {state.transactionData || state.orderData?.isFree ? (
+            <>
+              <div className="space-y-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Registration & Enrollment Complete
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                  Your EduConnects account is ready!
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
+                  Welcome to the learner community, <span className="font-bold text-slate-900">{state.fullName || "Learner"}</span>! Your course enrollment is confirmed and your interactive classroom workspace is unlocked.
+                </p>
+              </div>
 
-          {/* Enrolled Details Card */}
-          <div className="p-5 rounded-2xl bg-blue-50/80 border border-blue-200 text-left max-w-md mx-auto space-y-2 text-xs">
-            <div className="flex justify-between items-center text-slate-500 pb-2 border-b border-blue-100">
-              <span>Status</span>
-              <span className="font-bold text-blue-600">Active Enrollment ✓</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Enrolled Program:</span>
-              <span className="font-bold text-slate-900 text-right truncate max-w-[200px]">
-                {state.selectedCourse ? state.selectedCourse.title : state.selectedEducator?.name || "EduConnects Curriculum"}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-600">Access Mode:</span>
-              <span className="font-semibold text-[#1E40AF]">Full Browser Classroom & LMS</span>
-            </div>
-          </div>
+              {/* Enrolled Details Card */}
+              <div className="p-5 rounded-2xl bg-blue-50/80 border border-blue-200 text-left max-w-md mx-auto space-y-2 text-xs">
+                <div className="flex justify-between items-center text-slate-500 pb-2 border-b border-blue-100">
+                  <span>Status</span>
+                  <span className="font-bold text-emerald-600">Active Enrollment ✓</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600">Enrolled Program:</span>
+                  <span className="font-bold text-slate-900 text-right truncate max-w-[200px]">
+                    {state.selectedCourse ? state.selectedCourse.title : state.selectedEducator?.name || "EduConnects Curriculum"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600">Access Mode:</span>
+                  <span className="font-semibold text-[#1E40AF]">Full Browser Classroom & LMS</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Free Learner Account Active
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                  Welcome to EduConnects, {state.fullName || "Learner"}!
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
+                  Your account is verified and ready. You now have full free access to explore certified courses, view educator timetables, and access community learning resources.
+                </p>
+              </div>
 
-          {/* Primary Action Button */}
+              {/* Free Benefits Card */}
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-left max-w-md mx-auto space-y-2.5 text-xs">
+                <div className="font-bold text-slate-800 pb-1 border-b border-slate-200">
+                  Your Free Learner Privileges:
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Personalized learner dashboard and study progress tracking</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Browse 100+ accredited curricula and verified tutor profiles</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>24/7 access to free study guides, sample lessons, and webinars</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Zero upfront commitment — pay only when you enroll in paid programs</span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Primary Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4 max-w-md mx-auto">
             <Link href="/student/dashboard" className="w-full">
               <GlassButton
@@ -1660,7 +1990,7 @@ function LearnerRegistrationFlowContent() {
                 className="w-full bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold py-4 text-sm shadow-xl shadow-[#2563EB]/25"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
-                Continue to Learner Dashboard
+                Go to Learner Dashboard
               </GlassButton>
             </Link>
           </div>

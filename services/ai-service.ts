@@ -160,7 +160,7 @@ Core Personality & Capabilities:
   • Founder & Owner: Neeraj Shrivastava
   • Company / Legal Entity: Shrivastava ProFunnels Ventures Pvt Ltd
   • CIN: U85499UP2024PTC212061
-  • Registered Office: Bard No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403
+  • Registered Office: Ward No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403
   • Platform / Brand: EduConnects
   STRICT RULE: Do not invent, modify, or substitute any company details under any circumstances.
 - Advisory Only: You are advisory and informational. You cannot directly execute database mutations or financial debits (e.g. do not say "I have booked your class"). Explain the exact steps the user can take.
@@ -405,7 +405,7 @@ export function generateFallbackResponse(
       "**EduConnects is founded and owned by Neeraj Shrivastava. EduConnects operates under Shrivastava ProFunnels Ventures Pvt Ltd.**\n\n" +
       "- **Legal Entity:** Shrivastava ProFunnels Ventures Pvt Ltd\n" +
       "- **CIN:** U85499UP2024PTC212061\n" +
-      "- **Registered Office:** Bard No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403";
+      "- **Registered Office:** Ward No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403";
   }
 
   // 0. Direct Portal Link Queries

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Sparkles, GraduationCap, Users, Globe2, Lightbulb } from "lucide-react";
 import { GlassButton } from "@/components/glass/glass-button";
+import { OFFICIAL_COMPANY_INFO } from "@/lib/company";
 import photo1 from "@/photo1.jpeg";
 
 export function BrandVisionSection() {
@@ -55,7 +56,7 @@ export function BrandVisionSection() {
 
             {/* Narrative Explanation */}
             <p className="text-base sm:text-lg text-[#64748B] leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Founded by Sameer Shrivastava, EduConnects is built on the belief that quality education must be directly accessible to every learner, everywhere. We connect ambitious learners with verified educators to build stronger, happier futures together.
+              Founded by {OFFICIAL_COMPANY_INFO.founder}, EduConnects is built on the belief that quality education must be directly accessible to every learner, everywhere. We connect ambitious learners with verified educators to build stronger, happier futures together.
             </p>
 
             {/* 4 Core Pillars Grid */}

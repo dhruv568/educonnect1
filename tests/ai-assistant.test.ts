@@ -486,8 +486,8 @@ async function runTests() {
         `Response for "${q}" must include CIN 'U85499UP2024PTC212061'`
       );
       assert.ok(
-        res.response.includes("Bard No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403"),
-        `Response for "${q}" must include registered office address 'Bard No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403'`
+        res.response.includes("Ward No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403"),
+        `Response for "${q}" must include registered office address 'Ward No. 8, Basundhara Colony, Chandmari, Lalitpur (UP), 284403'`
       );
     }
     console.log("  ✔ Official Company Information, CIN, and Registered Office strictly verified!");

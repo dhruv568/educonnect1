@@ -947,7 +947,7 @@ export default function StudentLandingPage() {
         <section className="py-20 bg-slate-50 border-t border-slate-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
             <div className="text-center max-w-2xl mx-auto space-y-3">
-              <GlassBadge variant="learner">VERIFIED LEARNING OUTCOMES</GlassBadge>
+              <GlassBadge variant="learner">STUDENT STORIES</GlassBadge>
               <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                 Trusted by Top Performing Learners
               </h2>
@@ -960,36 +960,43 @@ export default function StudentLandingPage() {
               {testimonials.map((t, idx) => (
                 <GlassCard
                   key={idx}
-                  className="p-7 rounded-3xl border border-slate-200 bg-white shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                  className="p-7 sm:p-8 rounded-3xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-5"
                 >
-                  <div className="space-y-4">
-                    {/* Star Rating */}
-                    <div className="flex items-center gap-1 text-amber-500">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1 text-amber-400" aria-label={`Rated ${t.rating} out of 5 stars`}>
                       {[...Array(t.rating)].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-amber-400 stroke-amber-400" />
                       ))}
                     </div>
-
-                    <p className="text-xs sm:text-sm text-slate-700 italic leading-relaxed">
-                      &ldquo;{t.quote}&rdquo;
-                    </p>
-
-                    <div className="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold w-fit">
-                      🎯 {t.achievement}
-                    </div>
+                    <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
+                      {t.subject}
+                    </span>
                   </div>
 
-                  <div className="pt-6 border-t border-slate-100 flex items-center gap-3 mt-4">
-                    <img
-                      src={t.avatar}
-                      alt={t.name}
-                      className="w-11 h-11 rounded-full object-cover ring-2 ring-[#2563EB]/20"
-                    />
-                    <div>
-                      <div className="text-xs font-extrabold text-slate-900">{t.name}</div>
-                      <div className="text-[10px] text-slate-500">{t.role}</div>
-                      <div className="text-[10px] text-[#2563EB] font-semibold">{t.subject}</div>
+                  <blockquote className="flex-1 my-2">
+                    <p className="text-sm sm:text-base text-slate-800 font-normal leading-relaxed">
+                      &ldquo;{t.quote}&rdquo;
+                    </p>
+                  </blockquote>
+
+                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img
+                        src={t.avatar}
+                        alt={t.name}
+                        className="w-11 h-11 rounded-full object-cover ring-2 ring-[#2563EB]/20 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="text-xs font-extrabold text-slate-900 truncate">{t.name}</div>
+                        <div className="text-[11px] text-slate-500 font-medium truncate">{t.role}</div>
+                      </div>
                     </div>
+
+                    {t.achievement && (
+                      <span className="text-[11px] text-slate-500 font-medium text-right shrink-0 max-w-[120px] truncate">
+                        {t.achievement}
+                      </span>
+                    )}
                   </div>
                 </GlassCard>
               ))}
