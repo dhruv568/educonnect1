@@ -9,15 +9,17 @@ import { LearnerRegistrationFlow } from "@/components/learner/learner-registrati
 
 export default function StudentRegisterPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#EFF6FF] relative overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col bg-[#EFF6FF] relative font-sans">
       {/* Role-Specific Learner Navbar */}
       <FloatingNavbar variant="student" />
 
       {/* Decorative Brand Accent Background Glows */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#2563EB]/10 blur-[140px] rounded-full pointer-events-none -z-10" />
-      <div className="absolute bottom-40 right-10 w-[500px] h-[400px] bg-[#60A5FA]/10 blur-[130px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#2563EB]/10 blur-[140px] rounded-full" />
+        <div className="absolute bottom-40 right-10 w-[500px] h-[400px] bg-[#60A5FA]/10 blur-[130px] rounded-full" />
+      </div>
 
-      <main className="flex-1 pt-32 sm:pt-36 pb-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8">
+      <main className="flex-1 pt-24 sm:pt-36 pb-48 sm:pb-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8">
         <div className="flex items-center justify-between">
           <BackButton
             fallbackUrl="/student/login"

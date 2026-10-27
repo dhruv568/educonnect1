@@ -11,7 +11,7 @@ export default function StudentRegistrationPage() {
     <div className="min-h-screen flex flex-col bg-[#EFF6FF]">
       <FloatingNavbar variant="student" />
 
-      <main className="flex-1 pt-32 sm:pt-36 pb-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8">
+      <main className="flex-1 pt-24 sm:pt-36 pb-48 sm:pb-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8">
         <BackButton
           fallbackUrl="/student/login"
           label="Back to Sign In"

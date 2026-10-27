@@ -28,7 +28,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const hasPasswordToggle = isPasswordType && showPasswordToggle;
 
     return (
-      <div className="w-full space-y-1.5">
+      <div className="w-full space-y-1.5 scroll-mt-24">
         {label && (
           <label htmlFor={inputId} className="block text-xs font-semibold text-[#0F172A] uppercase tracking-wider">
             {label}
@@ -46,7 +46,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             type={effectiveType}
             className={cn(
-              "w-full h-11 px-4 text-sm rounded-xl transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#16805B]/20 focus:border-[#16805B]",
+              "w-full h-11 px-4 text-base sm:text-sm rounded-xl transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-[#16805B]/20 focus:border-[#16805B]",
               className?.includes("bg-slate-") || className?.includes("text-white")
                 ? "bg-[#0D5C41] border border-[#16805B]/60 text-white placeholder:text-emerald-100/60 dark-input-crisp"
                 : "bg-white border border-[#E2E8F0] text-[#0F172A] placeholder:text-[#94A3B8]",

@@ -132,7 +132,7 @@ export function LearnerAcademicFields({
             disabled={disabled}
             value={value.gradeLevel}
             onChange={(e) => handleGradeChange(e.target.value)}
-            className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+            className="w-full h-10 px-3 text-base sm:text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
           >
             <option value="" disabled>
               Select your Grade
@@ -198,7 +198,7 @@ export function LearnerAcademicFields({
               disabled={disabled}
               value={value.competitiveExam || ""}
               onChange={(e) => onChange({ ...value, competitiveExam: e.target.value })}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+              className="w-full h-10 px-3 text-base sm:text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
             >
               <option value="">None / Not Preparing for Competitive Exams</option>
               {COMPETITIVE_EXAMS.map((exam) => (
@@ -225,7 +225,7 @@ export function LearnerAcademicFields({
             disabled={disabled}
             value={value.diplomaBranch || ""}
             onChange={(e) => onChange({ ...value, diplomaBranch: e.target.value })}
-            className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+            className="w-full h-10 px-3 text-base sm:text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
           >
             <option value="" disabled>
               Select your Diploma Branch

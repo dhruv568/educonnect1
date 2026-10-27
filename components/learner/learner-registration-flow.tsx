@@ -819,7 +819,7 @@ function LearnerRegistrationFlowContent() {
       {/* STEP 1: LEARNER INFORMATION & VERIFICATION */}
       {/* ========================================================================= */}
       {state.step === 1 && (
-        <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-6 sm:p-10 border border-white/90 shadow-xl space-y-6">
+        <GlassCard glowColor="rgba(37, 99, 235, 0.15)" className="p-5 sm:p-10 border border-white/90 shadow-xl space-y-6">
           <div className="text-center sm:text-left space-y-1.5 border-b border-slate-100 pb-5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#2563EB]/10 text-[#2563EB] text-xs font-bold uppercase tracking-wider border border-[#2563EB]/20">
               <Sparkles className="w-3.5 h-3.5" /> Free Learner Registration
@@ -833,7 +833,18 @@ function LearnerRegistrationFlowContent() {
           </div>
 
           {!state.otpSent ? (
-            <form onSubmit={handleStep1Submit} className="space-y-4">
+            <form
+              onSubmit={handleStep1Submit}
+              className="space-y-4"
+              onFocusCapture={(e) => {
+                const target = e.target as HTMLElement;
+                if (target && (target.tagName === "INPUT" || target.tagName === "SELECT" || target.tagName === "TEXTAREA")) {
+                  setTimeout(() => {
+                    target.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+                  }, 150);
+                }
+              }}
+            >
               <Input
                 label="Full Name"
                 placeholder="e.g. Aarav Sharma"
@@ -842,6 +853,9 @@ function LearnerRegistrationFlowContent() {
                 required
                 leftIcon={<User className="h-4 w-4 text-[#2563EB]" />}
                 helperText="Enter your official first and last name"
+                autoComplete="name"
+                autoCapitalize="words"
+                spellCheck={false}
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -861,6 +875,10 @@ function LearnerRegistrationFlowContent() {
                     required
                     leftIcon={<Mail className="h-4 w-4 text-[#2563EB]" />}
                     helperText="Verification code will be sent here"
+                    autoComplete="email"
+                    inputMode="email"
+                    autoCapitalize="none"
+                    spellCheck={false}
                   />
                   <div className="pt-0.5">
                     <EmailOtpVerifyInline
@@ -897,6 +915,9 @@ function LearnerRegistrationFlowContent() {
                     maxLength={10}
                     leftIcon={<Phone className="h-4 w-4 text-[#2563EB]" />}
                     helperText="10-digit Indian mobile number"
+                    autoComplete="tel-national"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                   />
                   <div className="pt-0.5">
                     <PhoneOtpVerifyInline
@@ -928,6 +949,7 @@ function LearnerRegistrationFlowContent() {
                   required
                   leftIcon={<Lock className="h-4 w-4 text-[#2563EB]" />}
                   helperText="Min. 8 characters, 1 uppercase, 1 number"
+                  autoComplete="new-password"
                 />
 
                 <Input
@@ -939,6 +961,7 @@ function LearnerRegistrationFlowContent() {
                   required
                   leftIcon={<Lock className="h-4 w-4 text-[#2563EB]" />}
                   helperText="Must match your password"
+                  autoComplete="new-password"
                 />
               </div>
 
@@ -961,8 +984,9 @@ function LearnerRegistrationFlowContent() {
               <GlassButton
                 type="submit"
                 variant="learner"
-                className="w-full mt-4 bg-[#2563EB] hover:bg-[#1E40AF] border-[#2563EB] shadow-lg shadow-[#2563EB]/20 text-white font-bold py-3.5"
+                className="w-full mt-4 bg-[#2563EB] hover:bg-[#1E40AF] border-[#2563EB] shadow-lg shadow-[#2563EB]/20 text-white font-bold py-3.5 scroll-mb-12"
                 isLoading={submittingStep1}
+                disabled={submittingStep1}
                 rightIcon={<ArrowRight className="h-4 w-4" />}
               >
                 Continue to Email Verification

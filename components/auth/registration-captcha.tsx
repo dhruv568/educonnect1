@@ -43,7 +43,7 @@ export function RegistrationCaptcha({ onVerifyChange, error }: RegistrationCaptc
   };
 
   return (
-    <div className="p-4 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-2.5">
+    <div className="p-4 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-2.5 scroll-mt-24 scroll-mb-36">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-slate-800 text-xs font-bold uppercase tracking-wider">
           <ShieldCheck className="h-4 w-4 text-blue-600" />
@@ -77,12 +77,21 @@ export function RegistrationCaptcha({ onVerifyChange, error }: RegistrationCaptc
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"
+          enterKeyHint="done"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
           required
           aria-label="Security CAPTCHA answer"
           placeholder="Enter number"
           value={userAnswer}
           onChange={(e) => handleAnswerChange(e.target.value)}
-          className="flex-1 h-11 px-3.5 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+          onFocus={(e) => {
+            setTimeout(() => {
+              e.currentTarget.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+            }, 150);
+          }}
+          className="flex-1 h-11 px-3.5 text-base sm:text-sm bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
         />
       </div>
 
