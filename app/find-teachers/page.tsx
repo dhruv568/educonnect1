@@ -12,10 +12,42 @@ import { Search, Filter, GraduationCap } from "lucide-react";
 import { UserRole } from "@/types/auth";
 import { trackEvent } from "@/lib/analytics";
 
+function detectPortalTheme(): "learner" | "main" {
+  if (typeof window === "undefined") return "main";
+  const hostname = window.location.hostname.toLowerCase();
+  const params = new URLSearchParams(window.location.search);
+  const themeParam = (
+    params.get("theme") ||
+    params.get("site") ||
+    params.get("portal") ||
+    params.get("role") ||
+    ""
+  ).toLowerCase();
+
+  if (["learner", "learners", "student", "students"].includes(themeParam)) {
+    return "learner";
+  }
+  if (
+    hostname.startsWith("learners.") ||
+    hostname.startsWith("learner.") ||
+    hostname.startsWith("students.") ||
+    hostname.startsWith("student.")
+  ) {
+    return "learner";
+  }
+  return "main";
+}
+
 function FindTeachersContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+
+  const [pageTheme, setPageTheme] = useState<"learner" | "main">("main");
+
+  useEffect(() => {
+    setPageTheme(detectPortalTheme());
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [filters, setFilters] = useState<TeacherFilterState>({
@@ -105,14 +137,18 @@ function FindTeachersContent() {
   };
 
   return (
-    <div data-theme="main" className="min-h-screen flex flex-col bg-slate-50">
-      <FloatingNavbar />
+    <div
+      data-theme={pageTheme}
+      /* data-theme="main" */
+      className="min-h-screen flex flex-col bg-slate-50"
+    >
+      <FloatingNavbar variant={pageTheme === "learner" ? "student" : "default"} />
 
       <main className="flex-1 pt-32 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           {/* Header Banner */}
           <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-extrabold text-blue-600 uppercase tracking-widest">
+            <span className="text-xs font-extrabold text-theme-primary uppercase tracking-widest">
               Teacher Platform Discovery
             </span>
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">
@@ -136,7 +172,7 @@ function FindTeachersContent() {
               />
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all"
+                className="px-5 py-2.5 bg-theme-primary hover:bg-theme-primary-dark active:bg-theme-primary-dark text-white font-bold text-xs rounded-xl shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-primary"
               >
                 Search Tutors
               </button>
@@ -165,13 +201,14 @@ function FindTeachersContent() {
                 teachers={teachers}
                 loading={loading}
                 onOpenAuth={handleOpenAuth}
+                theme={pageTheme}
               />
             </div>
           </div>
         </div>
       </main>
 
-      <PremiumFooter />
+      <PremiumFooter variant={pageTheme === "learner" ? "student" : "default"} />
 
       <AuthModal
         isOpen={authModalOpen}

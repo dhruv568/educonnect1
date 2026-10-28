@@ -55,7 +55,15 @@ export function EducatorCard({
       (pathname === "/student" ||
         pathname?.startsWith("/student/") ||
         pathname === "/courses" ||
-        pathname?.startsWith("/courses/")));
+        pathname?.startsWith("/courses/") ||
+        (typeof window !== "undefined" &&
+          (window.location.hostname.startsWith("learners.") ||
+            window.location.hostname.startsWith("learner.") ||
+            window.location.hostname.startsWith("students.") ||
+            window.location.hostname.startsWith("student.") ||
+            new URLSearchParams(window.location.search).get("theme") === "learner" ||
+            new URLSearchParams(window.location.search).get("site") === "learner" ||
+            new URLSearchParams(window.location.search).get("portal") === "learner"))));
 
   const activeTheme =
     theme !== "auto"

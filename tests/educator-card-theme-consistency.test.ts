@@ -16,6 +16,7 @@ const globalsCssPath = path.join(process.cwd(), "app/globals.css");
 const tailwindConfigPath = path.join(process.cwd(), "tailwind.config.ts");
 const glassButtonPath = path.join(process.cwd(), "components/glass/glass-button.tsx");
 const glassBadgePath = path.join(process.cwd(), "components/glass/glass-badge.tsx");
+const filterPanelPath = path.join(process.cwd(), "components/discovery/teacher-filter-panel.tsx");
 
 assert.ok(fs.existsSync(educatorCardPath), "components/educator/educator-card.tsx must exist");
 assert.ok(fs.existsSync(discoveryCardGridPath), "components/discovery/teacher-card-grid.tsx must exist");
@@ -27,6 +28,7 @@ assert.ok(fs.existsSync(globalsCssPath), "app/globals.css must exist");
 assert.ok(fs.existsSync(tailwindConfigPath), "tailwind.config.ts must exist");
 assert.ok(fs.existsSync(glassButtonPath), "components/glass/glass-button.tsx must exist");
 assert.ok(fs.existsSync(glassBadgePath), "components/glass/glass-badge.tsx must exist");
+assert.ok(fs.existsSync(filterPanelPath), "components/discovery/teacher-filter-panel.tsx must exist");
 
 const educatorCardContent = fs.readFileSync(educatorCardPath, "utf-8");
 const discoveryCardGridContent = fs.readFileSync(discoveryCardGridPath, "utf-8");
@@ -38,6 +40,7 @@ const globalsCssContent = fs.readFileSync(globalsCssPath, "utf-8");
 const tailwindConfigContent = fs.readFileSync(tailwindConfigPath, "utf-8");
 const glassButtonContent = fs.readFileSync(glassButtonPath, "utf-8");
 const glassBadgeContent = fs.readFileSync(glassBadgePath, "utf-8");
+const filterPanelContent = fs.readFileSync(filterPanelPath, "utf-8");
 
 let passed = 0;
 let total = 0;
@@ -224,6 +227,37 @@ check("Booking URL target preserves educatorId and trial=true parameters", () =>
     discoveryCardGridContent.includes("/student/register?educatorId=${educator.id}&trial=true"),
     "Must preserve /student/register?educatorId=${educator.id}&trial=true"
   );
+});
+
+// -----------------------------------------------------------------------------
+// 7. Cross-Domain Subdomain & Discovery Page Consistency
+// -----------------------------------------------------------------------------
+console.log("\n--- 7. Cross-Domain Subdomain & Discovery Page Consistency ---");
+
+check("EducatorCard supports learners subdomain detection for live portal consistency", () => {
+  assert.ok(
+    discoveryCardGridContent.includes('window.location.hostname.startsWith("learners.")'),
+    "Must detect learners. subdomain"
+  );
+  assert.ok(
+    discoveryCardGridContent.includes('new URLSearchParams(window.location.search).get("theme") === "learner"'),
+    "Must support theme query parameter"
+  );
+});
+
+check("FindTeachersPage uses theme-aware tokens for banner badge, search button, and grid", () => {
+  assert.ok(findTeachersPageContent.includes("text-theme-primary uppercase tracking-widest"), "Banner must use text-theme-primary");
+  assert.ok(findTeachersPageContent.includes("bg-theme-primary hover:bg-theme-primary-dark"), "Search button must use bg-theme-primary");
+  assert.ok(findTeachersPageContent.includes("theme={pageTheme}"), "TeacherCardGrid must receive dynamic pageTheme");
+});
+
+check("TeacherFilterPanel uses theme tokens instead of hardcoded blue accents", () => {
+  assert.ok(filterPanelContent.includes("text-theme-primary"), "Icons and price must use text-theme-primary");
+  assert.ok(filterPanelContent.includes("focus:ring-theme-primary"), "Inputs must use focus:ring-theme-primary");
+  assert.ok(filterPanelContent.includes("bg-theme-primary text-white"), "Active rating chip must use bg-theme-primary");
+  assert.ok(!filterPanelContent.includes("text-blue-600"), "Must not hardcode text-blue-600");
+  assert.ok(!filterPanelContent.includes("focus:ring-blue-500"), "Must not hardcode focus:ring-blue-500");
+  assert.ok(!filterPanelContent.includes("bg-blue-600 text-white"), "Must not hardcode bg-blue-600");
 });
 
 console.log("\n======================================================================");

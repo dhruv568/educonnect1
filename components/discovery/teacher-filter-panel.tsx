@@ -49,11 +49,11 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
     <div className="glass-surface p-6 rounded-3xl space-y-6 border border-white/80 shadow-sm">
       <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
         <div className="flex items-center gap-2 text-slate-900 font-extrabold text-sm uppercase tracking-wider">
-          <Filter className="h-4 w-4 text-blue-600" /> Filter Tutors
+          <Filter className="h-4 w-4 text-theme-primary" /> Filter Tutors
         </div>
         <button
           onClick={onReset}
-          className="text-xs font-bold text-slate-500 hover:text-blue-600 flex items-center gap-1 transition-colors"
+          className="text-xs font-bold text-slate-500 hover:text-theme-primary flex items-center gap-1 transition-colors"
         >
           <RotateCcw className="h-3 w-3" /> Reset
         </button>
@@ -65,7 +65,7 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
         <select
           value={filters.subject}
           onChange={(e) => onChange({ ...filters, subject: e.target.value })}
-          className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+          className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary font-medium"
         >
           {subjects.map((s) => (
             <option key={s.value} value={s.value}>
@@ -78,7 +78,7 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
       {/* Academic Level Filter */}
       <div className="space-y-2">
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-          <GraduationCap className="h-3.5 w-3.5 text-blue-600" /> Academic Level
+          <GraduationCap className="h-3.5 w-3.5 text-theme-primary" /> Academic Level
         </label>
         <select
           value={filters.academicLevel || "all"}
@@ -93,7 +93,7 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
               diplomaBranch: "",
             });
           }}
-          className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+          className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary font-medium"
         >
           <option value="all">All Academic Levels</option>
           <option value="SCHOOL">School Education</option>
@@ -116,7 +116,7 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
                 competitiveExam: isSeniorSecondaryGrade(val) ? filters.competitiveExam : "",
               });
             }}
-            className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+            className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary font-medium"
           >
             <option value="all">All School Grades</option>
             {SCHOOL_GRADES.map((g) => (
@@ -136,7 +136,7 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
             <select
               value={filters.stream || "all"}
               onChange={(e) => onChange({ ...filters, stream: e.target.value === "all" ? "" : e.target.value })}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+              className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary font-medium"
             >
               <option value="all">All Streams</option>
               {SENIOR_SECONDARY_STREAMS.map((s) => (
@@ -152,7 +152,7 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
             <select
               value={filters.competitiveExam || "all"}
               onChange={(e) => onChange({ ...filters, competitiveExam: e.target.value === "all" ? "" : e.target.value })}
-              className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+              className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary font-medium"
             >
               <option value="all">Any / General Preparation</option>
               {COMPETITIVE_EXAMS.map((x) => (
@@ -172,7 +172,7 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
           <select
             value={filters.diplomaBranch || "all"}
             onChange={(e) => onChange({ ...filters, diplomaBranch: e.target.value === "all" ? "" : e.target.value })}
-            className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+            className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary font-medium"
           >
             <option value="all">All Diploma Branches</option>
             {DIPLOMA_BRANCHES.map((b) => (
@@ -188,7 +188,7 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
       <div className="space-y-2">
         <div className="flex justify-between text-xs font-bold">
           <span className="text-slate-700 uppercase tracking-wider">Max Hourly Rate</span>
-          <span className="text-blue-600">{formatCurrency(filters.priceMax)}/hr</span>
+          <span className="text-theme-primary">{formatCurrency(filters.priceMax)}/hr</span>
         </div>
         <input
           type="range"
@@ -197,7 +197,8 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
           step={25}
           value={filters.priceMax}
           onChange={(e) => onChange({ ...filters, priceMax: Number(e.target.value) })}
-          className="w-full accent-blue-600 cursor-pointer"
+          className="w-full accent-theme-primary cursor-pointer"
+          style={{ accentColor: "var(--color-primary)" }}
         />
       </div>
 
@@ -216,7 +217,7 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
               onClick={() => onChange({ ...filters, ratingMin: filters.ratingMin === item.value ? 0 : item.value })}
               className={`flex-1 py-1.5 text-xs font-bold rounded-xl border transition-all ${
                 filters.ratingMin === item.value
-                  ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                  ? "bg-theme-primary text-white border-theme-primary shadow-sm"
                   : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
               }`}
             >
@@ -232,7 +233,7 @@ export function TeacherFilterPanel({ filters, onChange, onReset }: TeacherFilter
         <select
           value={filters.sortBy}
           onChange={(e) => onChange({ ...filters, sortBy: e.target.value })}
-          className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+          className="w-full h-10 px-3 text-xs bg-white border border-slate-200 rounded-xl text-slate-900 outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary font-medium"
         >
           <option value="recommended">Recommended Tutors</option>
           <option value="rating">Highest Rated ★</option>
